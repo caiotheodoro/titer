@@ -63,8 +63,13 @@ def pava(observations: Sequence[tuple[int, bool]]) -> ReflectionCurve:
         return ReflectionCurve([], 0)
     pts = sorted(observations, key=lambda o: o[0])
 
-    # Collapse ties in delta into a single block first.
-    blocks: list[list[float]] = []          # [sum, count, delta]
+    # Collapse ties in delta into a single block first. The third slot is the
+    # block's LEFT edge - the smallest delta it covers. An earlier version kept
+    # the right edge, so a pooled block reporting 0.5 was placed at the last day
+    # it spanned rather than the first, and median_lag returned the largest day
+    # in the block instead of "the smallest elapsed day at which the estimate
+    # reaches 0.5". Both biases made providers look staler than the data says.
+    blocks: list[list[float]] = []          # [sum, count, left_edge]
     for delta, hit in pts:
         if blocks and blocks[-1][2] == delta:
             blocks[-1][0] += float(hit)
@@ -79,7 +84,7 @@ def pava(observations: Sequence[tuple[int, bool]]) -> ReflectionCurve:
         while len(merged) >= 2 and (merged[-2][0] / merged[-2][1]) > (merged[-1][0] / merged[-1][1]):
             last = merged.pop()
             prev = merged.pop()
-            merged.append([prev[0] + last[0], prev[1] + last[1], last[2]])
+            merged.append([prev[0] + last[0], prev[1] + last[1], prev[2]])
 
     steps = [Step(delta=int(d), prob=s / c, n=int(c)) for s, c, d in merged]
     return ReflectionCurve(steps, n=len(pts))

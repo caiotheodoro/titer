@@ -69,20 +69,23 @@ def test_gold_answer_scores_the_maximum(world):
     downstream is measuring the harness."""
     env = _env(world, [RawAnswer(person_name="John Smith", employer_name="BETA CORP",
                                  title_text="Chief Executive Officer",
+                                 employment_start=date(2022, 1, 1),
                                  confidence=0.95, rank=0)])
     rec = run_episode(env, never_verify(("p", "search")))
     assert rec.outcome is Outcome.CORRECT
     assert rec.atoms.identity is True
-    assert rec.atoms.title is True
+    assert rec.atoms.title is True and rec.atoms.window is True
     assert rec.atoms.total == 1.0
     assert rec.reward == pytest.approx(1.0 - 0.30 * 0.10 / 1.0)
 
 
-def test_noop_answer_scores_zero_and_is_a_miss(world):
+def test_noop_answer_is_a_miss_and_is_priced_by_the_profile(world):
+    """MISS is no longer free. Every outcome is priced by the cost profile, so
+    the trained objective is the reported loss rather than a proxy."""
     env = _env(world, [])
     rec = run_episode(env, never_verify(("p", "search")))
     assert rec.outcome is Outcome.MISS
-    assert rec.reward == 0.0
+    assert rec.reward < 0.0
 
 
 def test_confidently_naming_the_other_john_smith_is_a_false_merge(world):
@@ -225,10 +228,36 @@ def test_provider_title_text_is_classified_by_our_frozen_map(world):
         assert rec.atoms.title is True, text
 
 
-def test_wrong_title_costs_an_atom_but_not_the_identity(world):
+def test_wrong_title_costs_an_atom(world):
     env = _env(world, [RawAnswer(person_name="John Smith", employer_name="BETA CORP",
-                                 title_text="General Counsel", confidence=0.9, rank=0)])
+                                 title_text="General Counsel",
+                                 employment_start=date(2022, 1, 1),
+                                 confidence=0.9, rank=0)])
     rec = run_episode(env, never_verify(("p", "search")))
     assert rec.outcome is Outcome.CORRECT
-    assert rec.atoms.identity is True and rec.atoms.title is False
-    assert rec.atoms.total == 0.5
+    assert rec.atoms.title is False
+    # "John Smith" collides, so the identity was pinned by the returned employer
+    # and is not independent evidence: title + window only.
+    assert rec.atoms.identity_scored is False
+    assert rec.atoms.total == pytest.approx(0.5)
+
+
+def test_identity_atom_is_scored_when_the_name_is_unique(world):
+    """The complement: with no collision, identifying the person IS independent
+    evidence and does count. See docs/DECISIONS.md D024."""
+    rows, idx, iidx, tasks = world
+    rows = rows + [
+        _row("9", "UNIQUE PERSON", "A", "ALPHA CORP", date(2020, 1, 1)),
+        _row("9", "UNIQUE PERSON", "B", "BETA CORP", date(2022, 6, 1)),
+    ]
+    idx2 = build_index(rows)
+    tasks2 = [t for t in build_tasks(rows, idx2)[0] if t.person_cik == "9"]
+    env = TiterEnv(tasks2, {"p": FakeProvider("p", [RawAnswer(
+        person_name="Unique Person", employer_name="BETA CORP",
+        title_text="Chief Executive Officer", employment_start=date(2022, 1, 1),
+        confidence=0.9, rank=0)], 0.10)}, idx2, build_issuer_index(rows),
+        budget_usd=1.0)
+    rec = run_episode(env, never_verify(("p", "search")))
+    assert rec.resolution_reason == "unique_name"
+    assert rec.atoms.identity_scored is True and rec.atoms.identity is True
+    assert rec.atoms.total == 1.0

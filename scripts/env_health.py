@@ -90,10 +90,13 @@ class StochasticProvider:
         p = self.p_base / (1 + 0.35 * max(t.collision_degree - 1, 0))
         if self.rng.random() < p:
             a = RawAnswer(person_name=t.person_name_raw, employer_name=t.truth_issuer_name,
-                          title_text=t.truth_title_class.value, confidence=0.9, rank=0)
+                          title_text=t.truth_title_class.value,
+                          employment_start=t.truth_period - timedelta(days=1),
+                          confidence=0.9, rank=0)
         elif self.rng.random() < 0.5:
             a = RawAnswer(person_name=t.person_name_raw, employer_name=t.anchor_issuer_name,
-                          title_text=t.anchor_title_class.value, confidence=0.85, rank=0)
+                          title_text=t.anchor_title_class.value,
+                          employment_start=t.anchor_date, confidence=0.85, rank=0)
         else:
             a = RawAnswer(person_name=None, employer_name=None, confidence=0.0, rank=0)
         return [a], Spend(self.price, 1.0, "unit")
@@ -122,9 +125,15 @@ def main() -> int:
     for i, t in enumerate(tasks):
         ref["task"] = t
         env.reset(i)
+        # A gold answer must answer EVERY atom the task scores, including the
+        # employment window. Omitting the dates used to shrink the denominator
+        # instead of failing the atom (D024 C2); now it fails it, so a gold
+        # answer that stays silent is no longer gold.
         r = env.step({"type": "answer", "person_name": t.person_name_raw,
                       "employer_name": t.truth_issuer_name,
-                      "title_text": t.truth_title_class.value, "confidence": 0.95})
+                      "title_text": t.truth_title_class.value,
+                      "employment_start": t.truth_period - timedelta(days=1),
+                      "confidence": 0.95})
         gold_rewards.append(r.reward)
         env.reset(i)
         r = env.step({"type": "answer", "person_name": None, "employer_name": None,
@@ -132,8 +141,11 @@ def main() -> int:
         noop_rewards.append(r.reward)
     if min(gold_rewards) < 0.999:
         fails.append(f"gold reward min {min(gold_rewards):.4f} != 1.0")
-    if max(noop_rewards) != 0.0:
-        fails.append(f"noop reward max {max(noop_rewards):.4f} != 0.0")
+    # A no-op is now PRICED, not free: it is a MISS and costs profile[MISS].
+    # The gate is that it must be strictly worse than gold, not that it is zero.
+    if max(noop_rewards) >= min(gold_rewards):
+        fails.append(f"no-op reward {max(noop_rewards):.4f} is not worse than gold "
+                     f"{min(gold_rewards):.4f}")
 
     # --- 2. solve-rate histogram ----------------------------------------
     solve = []

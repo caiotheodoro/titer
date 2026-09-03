@@ -33,10 +33,8 @@ from titer.costs.profiles import PRIMARY, REPORTABLE, Profile
 from titer.oracle.outcome import Answer, Atoms, Outcome, atoms, judge
 from titer.oracle.resolve import resolve, resolve_issuer
 
-TURN_CAP = 32          # keel protocol
-LAMBDA = 0.30          # weight on spend, applied only among successes
-ABSTAIN_CREDIT = 0.05  # small: abstain_always must still lose every profile
-FALSE_MERGE_K = 1.0    # scaled by the profile's own false-merge ratio
+TURN_CAP = 32   # keel protocol
+LAMBDA = 0.30   # weight on spend, applied only among successes
 
 
 @dataclass
@@ -130,6 +128,8 @@ class TiterEnv:
                        for p in self.providers.values() for c in p.actions()],
             candidates=[{"name": a.person_name, "employer": a.employer_name,
                          "title": a.title_text, "rank": a.rank,
+                         "employment_start": a.employment_start,
+                         "employment_end": a.employment_end,
                          "confidence": a.confidence,
                          "resolution_source": a.resolution_source,
                          "identity_verified": a.identity_verified}
@@ -161,11 +161,13 @@ class TiterEnv:
         task = self.task
         reason = "abstained"
         ans = partial
+        res = None
         if not partial.abstained:
             name = raw.get("person_name")
             employer_name = raw.get("employer_name")
             employer_cik = resolve_issuer(employer_name, self.issuer_index)
-            res = resolve(name, employer_cik, self.index)
+            res = resolve(name, employer_cik, self.index,
+                          anchor_issuer_cik=task.anchor_issuer_cik)
             reason = res.reason
             # Providers return title *text*. Classifying it is our own frozen,
             # deterministic step (title_map/v1) - never the policy's, and never
@@ -183,7 +185,12 @@ class TiterEnv:
 
         truth = self._truth_tuple(task)
         outcome = judge(ans, truth)
-        got = atoms(ans, truth)
+        # The identity atom is scored only when the name alone pinned the
+        # person. If a collision had to be broken by the returned employer,
+        # identity is implied by the employer answer and scoring both
+        # double-counts one signal. See docs/DECISIONS.md D024.
+        identity_scored = bool(res is not None and res.independent_of_employer)
+        got = atoms(ans, truth, identity_scored=identity_scored)
         reward = self._reward(outcome, got)
 
         self.done = True
@@ -210,14 +217,23 @@ class TiterEnv:
         )
 
     def _reward(self, outcome: Outcome, got: Atoms) -> float:
-        """CONTRACTS section 6. No shaping term exists anywhere in this method."""
-        r = got.total if outcome is Outcome.CORRECT else 0.0
-        if outcome is Outcome.CORRECT:
-            # Efficiency only among successes.
-            r -= LAMBDA * (self.ledger.spent.usd / self.budget_usd)
-        if outcome is Outcome.FALSE_MERGE:
-            k = self.profile[Outcome.FALSE_MERGE] / max(self.profile[Outcome.MISS], 1e-9)
-            r -= FALSE_MERGE_K * k / 10.0
-        if outcome is Outcome.ABSTAIN:
-            r += ABSTAIN_CREDIT
-        return r
+        """CONTRACTS section 6. No shaping term exists anywhere in this method.
+
+        Two earlier defects are fixed here:
+
+        * The atoms were computed and then thrown away for every outcome except
+          CORRECT, so a policy that named the right human with the right title
+          and was merely STALE scored exactly the same as one returning nothing.
+        * There was a flat `ABSTAIN_CREDIT` bonus. Combined with a free provider
+          it made stalling to the turn cap - which force-abstains - pay the same
+          as answering, and strictly better than answering wrong. That is a
+          shaping term rewarding delay, which CONTRACTS 6 prohibits outright.
+
+        Abstention is now priced by the cost profile like every other outcome,
+        so the trained objective is the reported loss rather than a proxy for it.
+        """
+        norm = max(self.profile.values()) or 1.0
+        return got.total - self.profile[outcome] / norm - (
+            LAMBDA * (self.ledger.spent.usd / self.budget_usd)
+            if outcome is Outcome.CORRECT else 0.0
+        )

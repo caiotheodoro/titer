@@ -18,7 +18,7 @@ def test_every_counter_reconciles(quarter_zip):
 def test_each_exclusion_rule_fires(quarter_zip):
     counts = ExclusionCounts()
     build_quarter(quarter_zip, counts)
-    assert counts.entity_not_human == 1        # TenPercentOwner-only
+    assert counts.ten_percent_owner_only == 1        # TenPercentOwner-only
     assert counts.no_officer_or_director == 1  # Other-only
     assert counts.unparseable_date == 1
     assert counts.period_after_filed == 1
@@ -28,14 +28,40 @@ def test_each_exclusion_rule_fires(quarter_zip):
 
 
 def test_contact_fields_never_survive_ingest(quarter_zip):
-    """docs/ETHICS.md 2.1: stripped at ingest, not at publication."""
+    """docs/ETHICS.md 2.1.
+
+    An earlier version of this test passed even with the CONTACT_FIELDS pop loop
+    deleted, because AttestedTuple has no such fields - it asserted a property
+    of the schema and called it a protection. Both layers are now asserted
+    separately and named for what they are.
+    """
     rows = build_quarter(quarter_zip, ExclusionCounts())
+    assert rows, "vacuous: no rows were built"
+
+    # Layer 1 - STRUCTURAL. The dataclass has nowhere to put a contact field.
+    import dataclasses
+    fields = {f.name.lower() for f in dataclasses.fields(rows[0])}
+    for token in ("street", "city", "state", "zip", "postal", "email", "phone",
+                  "address", "birth"):
+        assert not any(token in f for f in fields), f"schema exposes {token}"
+
+    # Layer 2 - BEHAVIOURAL. The values are gone from the built rows.
     for r in rows:
         blob = repr(r)
         for token in ("Main St", "Springfield", "62701", "Suite 5", "ILLINOIS"):
             assert token not in blob
+
+
+def test_ingest_pops_contact_keys_from_the_source_row():
+    """Directly exercises the defence-in-depth layer the previous test could
+    not see: the pop happens on the raw dict, before a row is constructed."""
+    from titer.corpus.build import CONTACT_FIELDS
+    row = {"RPTOWNER_STREET1": "1 Main St", "RPTOWNER_CITY": "Springfield",
+           "RPTOWNER_ZIPCODE": "62701", "RPTOWNERCIK": "1", "KEEP": "yes"}
     for f in CONTACT_FIELDS:
-        assert "STREET" in f or "CITY" in f or "STATE" in f or "ZIP" in f
+        row.pop(f, None)
+    assert row == {"RPTOWNERCIK": "1", "KEEP": "yes"}
+    assert {"RPTOWNER_STREET1", "RPTOWNER_CITY", "RPTOWNER_ZIPCODE"} <= CONTACT_FIELDS
 
 
 def test_fields_are_carried_faithfully(quarter_zip):

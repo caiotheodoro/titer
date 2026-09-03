@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from titer.corpus.collision import CollisionIndex
-from titer.corpus.name_norm import normalize
+from titer.corpus.name_norm import normalize, normalize_company
 
 UNRESOLVABLE = None
 
@@ -28,10 +28,31 @@ class Resolution:
     def resolved(self) -> bool:
         return self.person_cik is not None
 
+    @property
+    def independent_of_employer(self) -> bool:
+        """True only when the NAME alone pinned the identity.
+
+        Whenever a collision had to be broken by the returned employer, the
+        identity atom carries no information the employer check does not
+        already carry: state the right employer and you have, by construction,
+        picked the right same-name person. Scoring both double-counts one
+        signal, and it double-counts hardest at high collision degree - the
+        exact axis H2 stratifies on. Only `unique_name` is independent evidence.
+        """
+        return self.reason == "unique_name"
+
 
 def resolve(returned_name: str | None, returned_employer_cik: str | None,
-            index: CollisionIndex) -> Resolution:
-    """Resolve (name, employer) to a CIK, or explain why it cannot be done."""
+            index: CollisionIndex, anchor_issuer_cik: str | None = None) -> Resolution:
+    """Resolve (name, employer) to a CIK, or explain why it cannot be done.
+
+    `anchor_issuer_cik` is the employer the PROMPT supplied. Narrowing on it
+    still works - we need it to tell STALE from FALSE_MERGE - but the resolution
+    is tagged `narrowed_by_anchor`, and the caller must then refuse to score the
+    identity atom. Otherwise a provider that parrots back the name and employer
+    it was handed is credited with having identified the person, and the credit
+    grows with collision degree, which is the exact axis H2 stratifies on.
+    """
     if not returned_name or not returned_name.strip():
         return Resolution(UNRESOLVABLE, "no_name_returned")
 
@@ -49,7 +70,11 @@ def resolve(returned_name: str | None, returned_employer_cik: str | None,
     narrowed = {c for c in candidates
                 if returned_employer_cik in index.issuers_by_cik.get(c, set())}
     if len(narrowed) == 1:
-        return Resolution(next(iter(narrowed)), "narrowed_by_employer")
+        reason = ("narrowed_by_anchor"
+                  if anchor_issuer_cik is not None
+                  and returned_employer_cik == anchor_issuer_cik
+                  else "narrowed_by_employer")
+        return Resolution(next(iter(narrowed)), reason)
     if not narrowed:
         return Resolution(UNRESOLVABLE, "employer_matches_no_candidate")
     return Resolution(UNRESOLVABLE, "still_ambiguous_after_employer")
@@ -65,7 +90,7 @@ def resolve_issuer(returned_employer: str | None,
     """
     if not returned_employer or not returned_employer.strip():
         return None
-    key = normalize(returned_employer)
+    key = normalize_company(returned_employer)
     ciks = issuer_index.get(key, set())
     return next(iter(ciks)) if len(ciks) == 1 else None
 
@@ -74,7 +99,7 @@ def build_issuer_index(rows) -> dict[str, set[str]]:
     from collections import defaultdict
     out: dict[str, set[str]] = defaultdict(set)
     for r in rows:
-        n = normalize(r.issuer_name_raw)
+        n = normalize_company(r.issuer_name_raw)
         if n:
             out[n].add(r.issuer_cik)
     return dict(out)

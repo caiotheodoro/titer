@@ -628,3 +628,151 @@ an extrapolated median would be an invention.
 smaller variance, but it assumes a shape for exactly the thing being measured.
 Logistic regression on `delta` - assumes monotone *and* sigmoid; isotonic
 assumes only monotone.
+
+---
+
+## D024 - Scoring corrections found by adversarial review, before any data (2026-09-02)
+
+Two fresh-context reviews attacked the scoring core. Every finding below was
+**re-verified against live code** before being acted on, per the standing rule
+that review findings are wrong in both directions often enough to check. Five
+were confirmed critical. They are recorded here because several change how a
+number will be computed, and `CONTRACTS.md` sections 4 and 6 must be read
+alongside this entry.
+
+Nothing had been measured yet. All of this was caught before a credit was spent.
+
+### C1 - A provider that volunteered nothing scored `CORRECT`
+
+`judge` returned `CORRECT` whenever the person matched and `employer_cik` was
+`None`. The task asks which organisation the person was at, so a bare name is a
+non-answer - but supplying a *wrong* employer scored `STALE` while supplying
+*none* scored `CORRECT`. The metric was non-monotone in honesty and every
+provider's optimal strategy was to return a name and nothing else.
+
+**Now:** a missing employer is `MISS`.
+
+### C2 - The answerer decided which atoms were scored
+
+`window_scored` was `True` only if the provider volunteered employment dates,
+and `Atoms.total` averaged over *scored* atoms - so omitting the dates shrank
+the denominator and **raised** the score. Withholding paid.
+
+**Now:** which atoms are scored is a property of the **task**. The window atom
+is always scored; no dates means it fails. Only `title_class = UNKNOWN` drops an
+atom, because that is our coverage gap and not the answerer's fault.
+
+### C3 - The reward discarded the atoms it claims to sum
+
+`R` took `atoms.total` only when the outcome was `CORRECT`, and `0.0`
+otherwise. A policy that named the right human with the right title and was
+merely `STALE` scored identically to one returning nothing - discarding exactly
+the credit the atom system exists to carry, on the class `CONTRACTS` 4 calls
+"the R1 signal". The reward was also profile-sensitive only for `FALSE_MERGE`,
+so the trained objective was not the reported loss under any profile.
+
+**Now:** `R = atoms.total - profile[outcome]/max(profile) - lambda*spend` (spend
+charged only among successes). Every outcome is priced by the cost profile, so
+the trained objective is the reported loss rather than a proxy for it.
+
+### C4 - Stalling to the turn cap paid the same as abstaining
+
+A flat `ABSTAIN_CREDIT` was added on every abstention, including the forced one
+at the turn cap. With a free provider in the mix, burning 32 turns paid `+0.05`
+- identical to abstaining immediately, and strictly better than answering
+wrong. That is a shaping term rewarding delay, which `CONTRACTS` 6 prohibits.
+
+**Now:** `ABSTAIN_CREDIT` is deleted. Abstention is priced by the profile like
+every other outcome, and stalling earns a negative reward.
+
+### C5 - Two parrot channels on the atoms
+
+**The title was printed in the prompt.** Titles persist across a move for most
+executives and `title_map` has nine coarse classes, so emitting the anchor title
+handed over the answer to atom 2. The prompt no longer names it; the anchor
+*employer* alone identifies the person, and that is the fact we do not score.
+
+**Identity was credited when only the employer pinned it.** `resolve` breaks a
+name collision using the returned employer. State the right employer and you
+have, by construction, picked the right same-name person - so scoring both
+double-counted one signal, and hardest at high collision degree, the exact axis
+H2 stratifies on.
+
+**Now:** the identity atom is scored **only** when the name alone was unique
+(`reason == "unique_name"`). For colliding names the employer answer *is* the
+identity answer, and is counted once.
+
+### C6 - Task construction did not require the person to have left
+
+`build_tasks` accepted "a second distinct issuer 180+ days later", which is a
+concurrent board seat, not a move - and concurrent directorships are the norm in
+this population. A provider answering with the still-current anchor issuer was
+scored `STALE` for being factually right, contaminating H1's staleness signal
+toward finding staleness that is not there.
+
+**Now:** the target must post-date the person's **last** filing at the anchor
+issuer.
+
+### C7 - The leak probe could not detect the only leak that existed
+
+`_bucket` is a pure function of the signature, so train and test signatures were
+disjoint by construction and `leak_rate` read exactly `0.0` for any input. It
+verified the implementation, not the corpus. Meanwhile the real leak was wide
+open: one executive generates many *different* signatures across a career
+(different issuers, titles, periods), so the same person appeared in train and
+test.
+
+**Measured on a synthetic 200-person corpus with three filings each: the
+person-level leak under signature bucketing was 0.9239.** Almost every person in
+the test set had been seen in training.
+
+**Now:** splits bucket on `person_cik`, which is strictly stronger than
+signature-disjointness and satisfies `CONTRACTS` 7. `leak_rate` takes a `level`
+argument, the person-level rate is the reported one, and a test asserts the
+probe distinguishes the two schemes - so the probe has demonstrated power rather
+than asserted it.
+
+### C8 - The flat-profile probe is an algebraic identity
+
+Under `FLAT`, `expected_loss == 1 - accuracy` exactly, so "the flat ranking
+equals the accuracy ranking" cannot fail. Over 20,000 random arm sets it
+disagreed **zero** times. It was on the publish-regardless list as evidence the
+harness works, and it is not evidence of anything.
+
+Its one failure case was a bug of ours: an arm with *no* outcomes returned loss
+`0.0` and ranked best.
+
+**Now:** empty arms return `None` from both `expected_loss` and `accuracy`, and
+`flat_probe_has_power` is the falsifiable companion - a non-flat profile must be
+able to produce a different ranking, or the cost lookup is not wired in. The
+identity itself is documented as an identity, not reported as a check.
+
+### C9 - Smaller confirmed defects
+
+| Defect | Effect | Fix |
+|---|---|---|
+| `signature()` sorted field *values* | person/issuer CIKs share a namespace, so `(100,200)` and `(200,100)` hashed identically and two facts became one task | labels included, order fixed |
+| `name_norm` stripped `"v"` | ate the middle initial in "SMITH JOHN V", manufacturing a collision and inflating the false-merge rate H2 reports | `"v"` removed from suffixes |
+| apostrophes were spaced | "O'BRIEN JOHN" and "OBRIEN JOHN" split one human in two | deleted, not spaced |
+| `resolve_issuer` used the *person* normalizer on company names | "Microsoft Corporation" missed "MICROSOFT CORP", and an unmatched employer resolved to `None`, which C1 then read as `CORRECT` - every miss flattered the provider | separate `normalize_company` |
+| isotonic blocks kept the **right** edge | `median_lag` returned the largest day in a pooled block, not the smallest; providers looked staler than the data supports, on H1's headline number | left edge |
+| `wilson(0, 0).point == 0.0` | an empty bin rendered as a hard zero, i.e. a claim the rate *is* zero | `point=None` |
+| out-of-range confidences | dropped from every bin while still counting in `n`, biasing ECE **low** - a miscalibration measure under-reporting miscalibration | rejected with an error |
+| `int(5.0 // 0.1) == 49` | every non-dyadic price published an `n` one too small, including the `n=25` row of the frozen power table | `floor(round(...))` |
+| Exa adapter read `title` as a person name | Exa returns a web-page title; every answer became token soup and scored `MISS`, fabricating a finding about a provider | page-title parsing, conservative on failure |
+| `entity_not_human` counter | did not test humanity: a human founder with >10% and no board seat was counted non-human | renamed `ten_percent_owner_only`, both counters documented as one rule |
+| contact-field test | passed with the protection deleted, because the dataclass has no such fields - it asserted the schema and called it a protection | structural and behavioural layers asserted separately |
+| `TitleClass` compared with `is` | `TitleClass` subclasses `str`, so a value surviving a JSON round-trip compares equal but is not identical, silently failing every title atom | `==` |
+| `title_map` | "Vice Chairman"/"Deputy Chairman" mapped to `CHAIR`; "Chief Exec. Officer" missed `CEO`; `CIO` claimed for technology while "Chief Investment Officer" fell elsewhere | guards and patterns corrected |
+
+### What this says about the instrument
+
+Every one of these was found *before* a measurement existed, by pointing fresh
+context at the code with a mandate to find defects rather than to approve. Four
+of the confirmed findings were defects in the **probes themselves** - the leak
+probe, the flat probe, the contact-field test, and the health gate's own hack
+probe. A probe that cannot fail is worse than no probe, because it is reported
+as evidence that nothing failed. That is precisely the error this project was
+built to catch in other people's measurements, and we shipped four of them.
+
+`docs/RED-TEAM.md` A8 is now closed; the remaining LIVE attacks stand.

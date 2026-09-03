@@ -20,6 +20,8 @@ def _answer_from_top(obs) -> dict[str, Any]:
     return {"type": "answer", "person_name": top["name"],
             "employer_name": top["employer"],
             "title_text": top.get("title"),
+            "employment_start": top.get("employment_start"),
+            "employment_end": top.get("employment_end"),
             "confidence": max(float(top.get("confidence") or 0.0), 0.9)}
 
 

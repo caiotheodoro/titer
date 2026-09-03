@@ -65,10 +65,20 @@ class Task:
         return (as_of - self.truth_filed).days
 
     def prompt(self) -> str:
+        """The anchor EMPLOYER identifies the person; the anchor TITLE is not
+        emitted.
+
+        Titles persist across a move for most executives, and title_map has only
+        nine coarse classes, so printing the anchor title handed the provider
+        the answer to reward atom 2 - a parrot could pass it by echoing the
+        prompt. The employer alone is enough to disambiguate, and the employer
+        we print is the one we do NOT score.
+        """
         return (
-            f"{self.person_name_raw} was {self.anchor_title_class.value} at "
+            f"{self.person_name_raw} was an officer or director at "
             f"{self.anchor_issuer_name} as of {self.anchor_date.isoformat()}. "
-            f"What organisation were they at on {self.target_date.isoformat()}?"
+            f"What organisation were they at on {self.target_date.isoformat()}, "
+            f"and in what role?"
         )
 
 
@@ -100,11 +110,23 @@ def build_tasks(rows: Iterable[AttestedTuple], index: CollisionIndex,
     for cik, rs in by_person.items():
         rs.sort(key=lambda r: (r.period, r.filed, r.accession))
         anchor = rs[0]
+        anchor_periods = [r.period for r in rs if r.issuer_cik == anchor.issuer_cik]
+        last_at_anchor = max(anchor_periods)
         target = None
         for r in rs[1:]:
-            if r.issuer_cik != anchor.issuer_cik and (r.period - anchor.period).days >= min_gap_days:
-                target = r
-                break
+            if r.issuer_cik == anchor.issuer_cik:
+                continue
+            if (r.period - anchor.period).days < min_gap_days:
+                continue
+            # A move means they LEFT. Concurrent multi-board directorships are
+            # the norm in this population, and without this check a director who
+            # joins board B while still sitting on board A generates a task whose
+            # ground truth says "B" - so a provider answering "A" is scored STALE
+            # for being factually right, contaminating H1's staleness signal.
+            if r.period <= last_at_anchor:
+                continue
+            target = r
+            break
         if target is None:
             continue
         stats.people_with_a_move += 1

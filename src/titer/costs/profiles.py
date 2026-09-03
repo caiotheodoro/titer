@@ -49,15 +49,36 @@ PRIMARY = "gtm_outbound"
 FLAT: Profile = _p(1.0, 1.0, 1.0, 1.0, 1.0)
 
 
-def expected_loss(outcomes, profile: Profile) -> float:
+def expected_loss(outcomes, profile: Profile) -> float | None:
+    """None for an empty arm, never 0.0.
+
+    Returning 0.0 made an arm with no outcomes rank BEST on loss while ranking
+    worst on accuracy - the single case where the flat integrity probe fires,
+    and it fired on a bug of ours rather than on anything about a provider."""
     outcomes = list(outcomes)
     if not outcomes:
-        return 0.0
+        return None
     return sum(profile[o] for o in outcomes) / len(outcomes)
 
 
-def accuracy(outcomes) -> float:
+def accuracy(outcomes) -> float | None:
     outcomes = list(outcomes)
     if not outcomes:
-        return 0.0
+        return None
     return sum(1 for o in outcomes if o is Outcome.CORRECT) / len(outcomes)
+
+
+def flat_probe_has_power(arms: dict[str, list]) -> bool:
+    """Does the harness distinguish profiles at all?
+
+    Under FLAT, expected_loss == 1 - accuracy identically, so "the flat ranking
+    equals the accuracy ranking" is an algebraic tautology and cannot fail. It
+    is therefore NOT evidence that the harness works, and must not be reported
+    as if it were. This is the falsifiable companion: a NON-flat profile must be
+    able to produce a different ranking, or the cost lookup is not wired in.
+    """
+    by_flat = sorted(arms, key=lambda k: (expected_loss(arms[k], FLAT), k))
+    for prof in REPORTABLE.values():
+        if sorted(arms, key=lambda k: (expected_loss(arms[k], prof), k)) != by_flat:
+            return True
+    return False

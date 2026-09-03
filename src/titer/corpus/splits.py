@@ -40,19 +40,32 @@ def _bucket(signature: str, seed: int) -> int:
 
 
 def split(rows: Iterable[AttestedTuple], seed: int = 11,
-          hillclimb_pct: int = 15, test_pct: int = 15) -> Splits:
-    """Split by *signature*, not by row.
+          hillclimb_pct: int = 15, test_pct: int = 15,
+          by: str = "person") -> Splits:
+    """Split by PERSON, not by signature and not by row.
 
-    Two filings of the same attested fact share a signature and therefore land
-    in the same split. Splitting by row would put them on opposite sides and
-    leak the answer.
+    Signature bucketing satisfies CONTRACTS 7 literally - two filings of one
+    attested fact share a signature and co-locate - but it leaves a real leak
+    open, and made the leak probe unfalsifiable at the same time.
+
+    The same executive generates many DIFFERENT signatures across a career:
+    different issuers, titles and periods. Under signature bucketing those land
+    in different splits, so a model can meet a person in training and be scored
+    on that same person at test. Meanwhile `leak_rate` over signatures reads
+    exactly 0.0 for any input, because the bucket is a pure function of the
+    signature - it verified a property of the implementation, not of the corpus.
+
+    Bucketing by `person_cik` closes the leak and is strictly stronger than
+    signature-disjointness. `by="signature"` is retained ONLY so the probe can
+    demonstrate it has power by measuring the leak the old scheme allowed.
     """
     assert 0 < hillclimb_pct + test_pct < 100
     train: list[AttestedTuple] = []
     hill: list[AttestedTuple] = []
     test: list[AttestedTuple] = []
     for r in rows:
-        b = _bucket(r.signature(), seed)
+        key = r.person_cik if by == "person" else r.signature()
+        b = _bucket(key, seed)
         if b < test_pct:
             test.append(r)
         elif b < test_pct + hillclimb_pct:
@@ -62,17 +75,22 @@ def split(rows: Iterable[AttestedTuple], seed: int = 11,
     return Splits(train=train, hillclimb=hill, test=test)
 
 
-def leak_rate(train: Sequence[AttestedTuple], held_out: Sequence[AttestedTuple]) -> float:
-    """Fraction of held-out signatures that also appear in train.
+def leak_rate(train: Sequence[AttestedTuple], held_out: Sequence[AttestedTuple],
+              level: str = "person") -> float:
+    """Fraction of held-out items whose key also appears in train.
+
+    `level="person"` is the informative one: it can be nonzero, and under
+    signature bucketing it IS nonzero, which is what gives this probe power.
+    `level="signature"` is the literal CONTRACTS 7 check.
 
     0.0 on an honest split. 1.0 when the held-out set was copied from train.
-    Anything in between is a partial leak and is a defect, not a warning.
+    Anything between is a partial leak and is a defect, not a warning.
     """
     if not held_out:
         return 0.0
-    train_sigs = {r.signature() for r in train}
-    hit = sum(1 for r in held_out if r.signature() in train_sigs)
-    return hit / len(held_out)
+    key = (lambda r: r.person_cik) if level == "person" else (lambda r: r.signature())
+    train_keys = {key(r) for r in train}
+    return sum(1 for r in held_out if key(r) in train_keys) / len(held_out)
 
 
 def near_duplicate_rate(rows: Sequence[AttestedTuple]) -> float:

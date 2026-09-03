@@ -23,11 +23,17 @@ VERSION = "name_norm/v1"
 
 # Generational and honorific suffixes carry no identity information and vary by
 # filing agent. Professional suffixes (PhD, MD, CPA) are also stripped.
+# "v" is deliberately ABSENT. It is both a generational suffix and a common
+# middle initial, and stripping it merged "SMITH JOHN V" into "SMITH JOHN" -
+# manufacturing a collision, which inflates d and therefore the false-merge
+# rate that H2 reports. Losing a handful of genuine "V" suffixes is the safer
+# direction: it splits one person into two, which shows up as UNRESOLVABLE
+# rather than as a fabricated finding about a provider.
 _SUFFIXES = {
-    "jr", "sr", "ii", "iii", "iv", "v",
+    "jr", "sr", "ii", "iii", "iv",
     "phd", "md", "cpa", "esq", "jd", "mba", "dds", "dvm",
 }
-_DOT = re.compile(r"\.")
+_TIGHT = re.compile(r"[.'\u2019-]")
 _PUNCT = re.compile(r"[^\w\s]+")
 _WS = re.compile(r"\s+")
 
@@ -44,8 +50,34 @@ def normalize(name_raw: str | None) -> str:
         return ""
     # Periods are deleted, not spaced: "M.D." must reduce to the single suffix
     # token "md", not to two tokens "m" and "d" that no suffix rule can match.
-    canon = _WS.sub(" ", _PUNCT.sub(" ", _DOT.sub("", name_raw))).strip().lower()
+    # Apostrophes and hyphens are deleted, not spaced: RPTOWNERNAME carries
+    # "O'BRIEN JOHN" and "OBRIEN JOHN" for the same human, and spacing the
+    # apostrophe split them into different people.
+    canon = _WS.sub(" ", _PUNCT.sub(" ", _TIGHT.sub("", name_raw))).strip().lower()
     tokens = [t for t in canon.split() if t and t not in _SUFFIXES]
     # Single-letter tokens are initials; they are kept, because dropping them
     # would merge "John A Smith" into "John Smith" and inflate collisions.
     return " ".join(sorted(tokens))
+
+
+# Corporate suffixes and noise words. An issuer is "MICROSOFT CORP" in EDGAR and
+# "Microsoft Corporation" from a provider; running either through `normalize`
+# left them distinct, and an unmatched employer resolved to None - which the
+# judge then read as CORRECT. Every miss flattered the provider.
+_CORP_NOISE = {
+    "inc", "incorporated", "corp", "corporation", "co", "company", "llc", "llp",
+    "lp", "ltd", "limited", "plc", "sa", "nv", "ag", "gmbh", "ab", "as", "oyj",
+    "holdings", "holding", "group", "the", "and", "of", "trust", "reit",
+    "partners", "capital", "class",
+}
+
+
+def normalize_company(name_raw: str | None) -> str:
+    """Canonical form for an ISSUER name. Separate from `normalize` on purpose:
+    person rules strip generational suffixes, company rules strip corporate
+    forms, and applying either to the other kind of name is a defect."""
+    if not name_raw:
+        return ""
+    canon = _WS.sub(" ", _PUNCT.sub(" ", _TIGHT.sub("", name_raw))).strip().lower()
+    tokens = [t for t in canon.split() if t and t not in _CORP_NOISE]
+    return " ".join(tokens) if tokens else canon

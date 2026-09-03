@@ -16,7 +16,7 @@ Z95 = 1.959963984540054
 
 @dataclass(frozen=True, slots=True)
 class Interval:
-    point: float
+    point: float | None
     lo: float
     hi: float
     n: int
@@ -26,7 +26,8 @@ class Interval:
         return (self.hi - self.lo) / 2
 
     def __str__(self) -> str:
-        return f"{self.point:.4f} [{self.lo:.4f}, {self.hi:.4f}] n={self.n}"
+        pt = "empty" if self.point is None else f"{self.point:.4f}"
+        return f"{pt} [{self.lo:.4f}, {self.hi:.4f}] n={self.n}"
 
 
 def wilson(successes: int, n: int, z: float = Z95) -> Interval:
@@ -37,7 +38,9 @@ def wilson(successes: int, n: int, z: float = Z95) -> Interval:
     false-merge rate, say) are exactly what we expect to be reporting.
     """
     if n == 0:
-        return Interval(0.0, 0.0, 1.0, 0)
+        # `point=None`, never 0.0. A bin with no data must render as empty; a
+        # hard zero on a chart is a claim that the rate IS zero.
+        return Interval(None, 0.0, 1.0, 0)
     p = successes / n
     denom = 1 + z * z / n
     centre = (p + z * z / (2 * n)) / denom

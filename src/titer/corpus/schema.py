@@ -77,14 +77,19 @@ class AttestedTuple:
         same person in the same role at the same issuer on the same date are
         the same *task*, and must not land on opposite sides of a split.
         """
+        # Field LABELS are part of the digest and the order is fixed. An
+        # earlier version sorted the values, which destroyed field identity:
+        # person and issuer CIKs share a numeric namespace, so (person=100,
+        # issuer=200) and (person=200, issuer=100) hashed identically and two
+        # distinct attested facts collapsed into one task.
         parts = [
-            self.person_cik,
-            self.issuer_cik,
-            ",".join(sorted(r.value for r in self.role_class)),
-            self.title_class.value,
-            self.period.isoformat(),
+            f"person={self.person_cik}",
+            f"issuer={self.issuer_cik}",
+            "roles=" + ",".join(sorted(r.value for r in self.role_class)),
+            f"title={self.title_class.value}",
+            f"period={self.period.isoformat()}",
         ]
-        return hashlib.sha256("|".join(sorted(parts)).encode()).hexdigest()
+        return hashlib.sha256("|".join(parts).encode()).hexdigest()
 
     def name_hash(self, salt: str) -> str:
         """Salted hash of the normalized name. This, not the name, is published."""
@@ -102,7 +107,7 @@ class ExclusionCounts:
     input_rows: int = 0
     kept: int = 0
     no_officer_or_director: int = 0
-    entity_not_human: int = 0
+    ten_percent_owner_only: int = 0
     bad_person_cik: int = 0
     unparseable_date: int = 0
     period_after_filed: int = 0
@@ -116,7 +121,7 @@ class ExclusionCounts:
     def dropped(self) -> int:
         return (
             self.no_officer_or_director
-            + self.entity_not_human
+            + self.ten_percent_owner_only
             + self.bad_person_cik
             + self.unparseable_date
             + self.period_after_filed

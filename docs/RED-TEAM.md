@@ -89,11 +89,14 @@ in the repository to get quietly wrong, so it gets an explicit failing test.
 
 We claim zero shaping. Claims like that are usually wrong somewhere.
 
-**Status: OPEN.** The efficiency term applies only among successes, which is the
-known trap. Unknown: whether the abstention credit `a` is large enough that
-`abstain_always` becomes competitive under some profile. That is a computable
-check, and it is a required test - `abstain_always` must lose under every
-reportable profile, or `a` is wrong.
+**Status: CLOSED, and it had landed.** See `docs/DECISIONS.md` D024 C4. There
+was a flat abstention credit, and combined with a free provider it made stalling
+to the turn cap pay exactly what abstaining immediately paid, and strictly more
+than answering wrong - a shaping term rewarding delay. The credit is deleted;
+abstention is priced by the cost profile like every other outcome.
+
+The wider lesson is recorded in D024: four of the confirmed review findings were
+defects in the *probes*, not in the thing being probed.
 
 ## A9. "You are measuring a vendor while asking them for a job." — MITIGATED
 

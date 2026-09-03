@@ -92,8 +92,14 @@ def build_quarter(zip_path: Path, counts: ExclusionCounts) -> list[AttestedTuple
         # Rule 1: officers and directors only. This is also what removes the
         # ~5-8% of reporting owners that are legal entities, not humans.
         if not (RoleClass.OFFICER in roles or RoleClass.DIRECTOR in roles):
+            # Both counters describe the SAME rule from two angles, so only one
+            # fires per row. The split is reported for colour, not as two
+            # independent exclusions - a reader summing them would double-count.
+            # Note it is not a humanity test: a human founder holding >10% with
+            # no board seat lands in `ten_percent_owner_only`, and a filing
+            # entity declaring "Other" lands in `no_officer_or_director`.
             if roles == frozenset({RoleClass.TEN_PERCENT_OWNER}):
-                counts.entity_not_human += 1
+                counts.ten_percent_owner_only += 1
             else:
                 counts.no_officer_or_director += 1
             continue

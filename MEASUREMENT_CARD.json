@@ -1,10 +1,10 @@
 {
   "project": "titer",
   "contracts_version": "contracts/v1",
-  "wave": "W0",
+  "wave": "W6 (code); W1-W7 results blocked",
   "generated": "2026-09-02",
   "verdict": "NOT_VERIFIED",
-  "rationale": "No measurement has been taken. src/ is empty by design. A card that always exits zero is decoration; this one names every unmet claim.",
+  "rationale": "No measurement has been taken. The code through W6 exists and is tested, but no provider has been called and the corpus has not been built: SEC returns 403 to this network and no provider API key is configured. A card that always exits zero is decoration; this one names every unmet claim.",
   "unmet_claims": [
     "H1 staleness half-life: not measured",
     "H2 false-merge rate under name collision: not measured",
@@ -21,12 +21,28 @@
     "doc spine present",
     "PRE-REGISTRATION frozen before src/",
     "provider Terms-of-Service gate resolved (DECISIONS D019)",
-    "privacy gate: no contact-field patterns in tracked files"
+    "privacy gate: no contact-field patterns in tracked files",
+    "oracle self-check: gold 1.0, no-op priced below gold, inverted collapses",
+    "env health: 98.3% of tasks in the 10-80% solve band, 0% zero-advantage groups",
+    "leak probe demonstrated to have power (0.92 person-level leak under the old scheme)"
   ],
-  "providers_in_scope": ["ploid", "exa", "webfloor"],
+  "providers_in_scope": [
+    "ploid",
+    "exa",
+    "webfloor"
+  ],
   "providers_excluded": {
     "apollo": "ToS 3(f)(vii) prohibits disclosing benchmark results without prior written consent; consent requested",
     "peopledatalabs": "SSA 5 sweeps derived information into confidentiality; SSA 6.4 requires deletion within 30 days of termination, incompatible with a retained reproducible corpus",
     "clay": "excluded on comparability, not law: an orchestrator over 75+ tools rather than a proprietary index"
+  },
+  "blocked_on": {
+    "corpus": "SEC returns HTTP 403 for every sec.gov host from this egress IP (Akamai rate-threshold block). No quarterly archive has been downloaded.",
+    "provider_calls": "No Ploid or Exa API key configured. Zero credits spent."
+  },
+  "code_state": {
+    "python_loc": 5209,
+    "tests_passing": 178,
+    "gates": "make validate green; oracle_selfcheck and env_health pass"
   }
 }

@@ -76,6 +76,17 @@ def reliability(confidences: Sequence[float], correct: Sequence[bool],
                 n_bins: int = N_BINS) -> ReliabilityDiagram:
     if len(confidences) != len(correct):
         raise ValueError("confidences and correct must be the same length")
+    # A confidence outside [0, 1] matches no bin, so it vanished from every bin
+    # while still counting in `n`. The bin weights then no longer summed to 1
+    # and ECE was silently biased LOW - a miscalibration measurement quietly
+    # reporting better calibration than the data supports.
+    bad = [c for c in confidences if not (0.0 <= c <= 1.0)]
+    if bad:
+        raise ValueError(
+            f"{len(bad)} confidence value(s) outside [0, 1], e.g. {bad[:3]}. "
+            "Refusing to bin them: they would drop out of every bin while still "
+            "counting in n, biasing ECE low."
+        )
     edges = [i / n_bins for i in range(n_bins + 1)]
     bins: list[Bin] = []
     for lo, hi in zip(edges, edges[1:]):

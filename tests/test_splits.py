@@ -73,3 +73,44 @@ def test_near_duplicate_rate_is_measured_not_assumed(quarter_zip):
     rows = _rows(quarter_zip)
     assert near_duplicate_rate(rows) == 0.0
     assert near_duplicate_rate(rows + rows) == 0.5
+
+
+def test_signature_bucketing_leaks_people_and_person_bucketing_does_not(population):
+    """The old scheme's real defect, and the proof this probe has power.
+
+    Signature bucketing satisfied CONTRACTS 7 literally while letting the same
+    executive appear in train and test under different signatures - and
+    leak_rate over signatures read exactly 0.0 for any input, because the bucket
+    is a pure function of the signature. It verified the implementation, not the
+    corpus.
+    """
+    import dataclasses
+    from datetime import timedelta
+    multi = []
+    for r in population:
+        for j in range(3):
+            multi.append(dataclasses.replace(
+                r, accession=f"{r.accession}-{j}", issuer_cik=f"{r.issuer_cik}{j}",
+                period=r.period + timedelta(days=400 * j)))
+
+    sig = split(multi, seed=11, by="signature")
+    per = split(multi, seed=11, by="person")
+
+    assert leak_rate(sig.train, sig.test, level="signature") == 0.0   # tautology
+    assert leak_rate(sig.train, sig.test, level="person") > 0.5       # the real leak
+    assert leak_rate(per.train, per.test, level="person") == 0.0      # closed
+    assert leak_rate(per.train, per.train, level="person") == 1.0     # control
+
+
+def test_a_person_never_straddles_a_split(population):
+    import dataclasses
+    from datetime import timedelta
+    multi = [dataclasses.replace(r, accession=f"{r.accession}-{j}",
+                                 issuer_cik=f"{r.issuer_cik}{j}",
+                                 period=r.period + timedelta(days=400 * j))
+             for r in population for j in range(3)]
+    s = split(multi, seed=11)
+    buckets = [{r.person_cik for r in b} for b in (s.train, s.hillclimb, s.test)]
+    for i, a in enumerate(buckets):
+        for b in buckets[i + 1:]:
+            assert not (a & b)

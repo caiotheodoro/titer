@@ -55,13 +55,19 @@ class TitleClass(str, Enum):
 # both "CEO" and an already-spaced "C E O" resolve identically.
 _RULES: tuple[tuple[TitleClass, re.Pattern[str]], ...] = (
     (TitleClass.CEO, re.compile(
-        r"\b(c\s*e\s*o|chief\s+executive)\b", re.I)),
+        r"\b(c\s*e\s*o|chief\s+exec\w*)\b", re.I)),
     (TitleClass.CFO, re.compile(
-        r"\b(c\s*f\s*o|chief\s+financial|principal\s+financial\s+officer)\b", re.I)),
+        r"\b(c\s*f\s*o|chief\s+financial|principal\s+financial"
+        r"(\s+and\s+accounting)?\s+officer)\b", re.I)),
     (TitleClass.COO, re.compile(
         r"\b(c\s*o\s*o|chief\s+operating)\b", re.I)),
+    # "Chief Investment Officer" is NOT this class - at insurers and asset
+    # managers "CIO" means investment, and mapping the abbreviation here while
+    # the spelled-out form fell to OFFICER_OTHER made the two halves of one
+    # office disagree, failing the atom on a correct answer.
     (TitleClass.CTO_CIO, re.compile(
-        r"\b(c\s*t\s*o|c\s*i\s*o|chief\s+(technology|technical|information|digital))\b", re.I)),
+        r"\b(c\s*t\s*o|chief\s+(technology|technical|information|digital)"
+        r"(\s+security)?\s*(officer)?)\b", re.I)),
     (TitleClass.GC_LEGAL, re.compile(
         r"\b(general\s+counsel|chief\s+legal|gen\s+counsel)\b", re.I)),
     # The lookbehinds are load-bearing: "Senior Vice President" is not the
@@ -69,8 +75,12 @@ _RULES: tuple[tuple[TitleClass, re.Pattern[str]], ...] = (
     # defect, caught by smoke-testing before any data existed.
     (TitleClass.PRESIDENT, re.compile(
         r"(?<!vice )(?<!vice-)\bpresident\b", re.I)),
+    # The vice/deputy guard was written for President and never applied here:
+    # "Vice Chairman" and "Deputy Chairman" are not the Chair. A committee
+    # chair is not the board Chair either.
     (TitleClass.CHAIR, re.compile(
-        r"\b(chairman|chairwoman|chairperson|chair)\b", re.I)),
+        r"(?<!vice )(?<!deputy )(?<!co )\b(chairman|chairwoman|chairperson|chair)\b"
+        r"(?!\s*,?\s*\w+\s+committee)", re.I)),
     (TitleClass.OFFICER_OTHER, re.compile(
         r"\b(chief\s+\w+\s+officer|officer|vice\s+president|v\s*p|evp|svp|"
         r"secretary|controller|treasurer|principal\s+accounting|"

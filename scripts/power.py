@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -78,7 +79,10 @@ def main() -> int:
              else [0.01, 0.02, 0.05, 0.10, 0.20, 0.50])
     achievable = {}
     for c in costs:
-        n = int(args.budget_usd // c)
+        # int(5.0 // 0.1) is 49, not 50: binary floats. Every non-dyadic price
+        # published an n one too small, including the n=25 row of the frozen
+        # PRE-REGISTRATION table.
+        n = math.floor(round(args.budget_usd / c, 9))
         hw = wilson(int(round(0.15 * n)), n).half_width if n else 1.0
         name, note = branch_for(hw)
         achievable[f"${c:.2f}/task"] = {"n": n, "half_width_at_p015": hw, "branch": name}
@@ -87,7 +91,7 @@ def main() -> int:
     report["achievable"] = achievable
 
     if args.cost_per_task_usd:
-        n = int(args.budget_usd // args.cost_per_task_usd)
+        n = math.floor(round(args.budget_usd / args.cost_per_task_usd, 9))
         hw = wilson(int(round(0.15 * n)), n).half_width if n else 1.0
         name, note = branch_for(hw)
         report["selected_branch"] = {"n": n, "half_width": hw, "branch": name, "note": note}

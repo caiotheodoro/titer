@@ -15,7 +15,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from titer.corpus.schema import AttestedTuple, RoleClass  # noqa: E402
 from titer.corpus.title_map import TitleClass  # noqa: E402
-from titer.costs.profiles import FLAT, accuracy, expected_loss  # noqa: E402
+from titer.costs.profiles import (FLAT, accuracy, expected_loss,  # noqa: E402
+                                  flat_probe_has_power)
 from titer.oracle.outcome import Answer, Outcome, atoms, judge  # noqa: E402
 
 
@@ -66,18 +67,29 @@ def main() -> int:
     if accuracy(i_out) != 0.0:
         fails.append("inverted accuracy did not collapse to 0.0")
 
-    # Flat-profile integrity probe: loss ranking must equal accuracy ranking.
+    # Flat profile. Under FLAT, expected_loss == 1 - accuracy identically, so
+    # "the rankings agree" is an ALGEBRAIC IDENTITY and cannot fail. It is
+    # reported as an identity, never as evidence the harness works. See D024 C8.
     arms = {"gold": g_out, "noop": n_out, "inverted": i_out,
             "mixed": g_out[:100] + n_out[100:]}
     by_acc = sorted(arms, key=lambda k: (-accuracy(arms[k]), k))
     by_flat = sorted(arms, key=lambda k: (expected_loss(arms[k], FLAT), k))
     if by_acc != by_flat:
-        fails.append(f"flat profile disagrees with accuracy: {by_acc} vs {by_flat}")
+        fails.append(f"flat identity violated (a real harness bug): {by_acc} vs {by_flat}")
+
+    # The falsifiable companion: a NON-flat profile must be able to reorder the
+    # arms, or the cost lookup is not wired into the scoring path at all.
+    if not flat_probe_has_power(arms):
+        fails.append("no reportable cost profile can reorder these arms; the cost "
+                     "lookup is not reaching the scoring path")
 
     print(f"gold atoms       min={min(g_atoms):.3f}  outcomes={set(o.value for o in g_out)}")
     print(f"no-op atoms      max={max(n_atoms):.3f}  outcomes={set(o.value for o in n_out)}")
     print(f"inverted         accuracy={accuracy(i_out):.3f} outcomes={set(o.value for o in i_out)}")
-    print(f"flat probe       accuracy order == flat-loss order: {by_acc == by_flat}")
+    print(f"flat identity    accuracy order == flat-loss order: {by_acc == by_flat} "
+          f"(an identity, not evidence)")
+    print(f"probe power      a non-flat profile CAN reorder arms: "
+          f"{flat_probe_has_power(arms)}")
     if fails:
         print("\nFAILED:", file=sys.stderr)
         for f in fails:

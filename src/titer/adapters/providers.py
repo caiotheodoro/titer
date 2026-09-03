@@ -14,6 +14,7 @@ MSA 2.4(j)'s prohibition on publishing benchmark analysis.
 """
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Protocol
@@ -119,9 +120,17 @@ class Exa:
                               {"query": prompt, "numResults": kw.get("num_results", 10)})
         out = []
         for i, r in enumerate(data.get("results", [])):
+            # Exa returns a web-page `title` ("Jane Roe - CFO - Acme | LinkedIn"),
+            # not a person record. Reading it straight into `person_name` made
+            # every Exa answer normalize to token soup, miss the corpus, and
+            # score MISS - manufacturing exactly the fabricated finding about a
+            # provider that `NotConfigured` exists to prevent.
+            person, employer, role = _parse_page_title(r.get("title"))
             out.append(RawAnswer(
-                person_name=r.get("title"), employer_name=r.get("company"),
-                title_text=r.get("role"), confidence=float(r.get("score", 0.0) or 0.0),
+                person_name=person,
+                employer_name=r.get("company") or employer,
+                title_text=r.get("role") or role,
+                confidence=float(r.get("score", 0.0) or 0.0),
                 rank=i,
             ))
         return out, Spend(self.SEARCH_USD, 1.0, "request")
@@ -153,6 +162,28 @@ class WebFloor:
                 confidence=float(r.get("score", 0.0) or 0.0), rank=i,
             ))
         return out, Spend(0.0, 0.0, "free")
+
+
+_SITE_SUFFIX = re.compile(r"\s*[|\u2013-]\s*(LinkedIn|Bloomberg|Crunchbase|ZoomInfo)\s*$", re.I)
+
+
+def _parse_page_title(title: str | None) -> tuple[str | None, str | None, str | None]:
+    """Best-effort split of a web-page title into (person, employer, role).
+
+    Deliberately conservative: anything that does not match the common
+    "Name - Role - Company" shape yields the raw string as the name and None
+    for the rest, so a parse failure degrades to a miss rather than to an
+    invented employer.
+    """
+    if not title:
+        return None, None, None
+    cleaned = _SITE_SUFFIX.sub("", title).strip()
+    parts = [s.strip() for s in cleaned.split(" - ") if s.strip()]
+    if len(parts) >= 3:
+        return parts[0], parts[2], parts[1]
+    if len(parts) == 2:
+        return parts[0], None, parts[1]
+    return cleaned or None, None, None
 
 
 def timed(fn: Callable[[], Any]) -> tuple[Any, float]:
