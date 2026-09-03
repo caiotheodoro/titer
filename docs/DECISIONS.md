@@ -512,3 +512,66 @@ critical path, as D003 requires.
 partially met: gates green, pre-registration published and hash-locked,
 repositories created. The two outreach items remain open and are not blockers for
 W1, which touches only free SEC bulk files.
+
+---
+
+## D022 - Task construction: the queried fact is never the scored fact (2026-09-02)
+
+**Supplements, does not supersede, `docs/PRE-REGISTRATION.md`.** The
+pre-registration fixes the hypotheses, estimators and falsification conditions.
+It does not specify how a task is phrased, and that turned out to matter.
+
+**The defect found.** The obvious task is "who was CFO of ISSUER on DATE"; the
+obvious way to map a provider's returned person back to a CIK is by name plus
+the employer they returned. Combining the two is **circular**: we would supply
+the employer in the query, resolve the answer using the employer, and then score
+whether the employer was right. Every answer scores `CORRECT` and the instrument
+measures nothing. Resolving on name alone does not save it either - for a name
+with collision degree 3 the provider has no signal telling it which of the three
+we meant, so penalising it is unfair rather than informative.
+
+**Decision - one task family serves both R1 and R2.**
+
+> Person named *N*, who was *&lt;role&gt;* at **issuer A** on date *t1* (attested).
+> What organisation were they at on date *t2*?
+
+- Ground truth is **issuer B**, attested by a filing at *t2*.
+- The query supplies *t1*'s employer. The scored fact is *t2*'s employer. The
+  two are never the same fact, so the circularity is gone by construction.
+- Identity resolution uses the returned employer, which was **not** supplied in
+  the query, so it remains an independent signal.
+
+**How the outcome classes fall out of one task:**
+
+| Returned | Class | Which result it feeds |
+|---|---|---|
+| issuer B, same CIK | `CORRECT` | both |
+| **issuer A**, same CIK | `STALE` | **R1** - the index has not caught up with the move |
+| an employer belonging to a *different* CIK sharing the normalized name, confidence >= tau | `FALSE_MERGE` | **R2** |
+| the same, confidence < tau | `UNSURE_WRONG` | R2 |
+| nothing / not_found | `MISS` | both |
+| declined | `ABSTAIN` | both |
+
+`STALE` is no longer an awkward sixth class; it is the R1 measurement.
+
+**Population consequence, and it is a real narrowing.** The task requires a
+person with **at least two distinct attested issuers at two distinct times** -
+someone who actually moved. People who filed at a single issuer for their whole
+career cannot generate this task and are excluded from the measurement
+population. That is a coverage gap caused by the design, it is published in
+`docs/COVERAGE.md`, and the retained fraction is reported as a number once the
+corpus is built rather than estimated now.
+
+It is also the *right* population: "the index refreshes as people change jobs"
+is a claim about people who changed jobs.
+
+**Alternatives rejected.** Name-only queries - unfair at collision degree > 1,
+because no signal distinguishes the targets. Supplying a LinkedIn URL or
+provider person_id as the anchor - no public mapping from either to a CIK
+exists, so it would reintroduce a judged resolution step. Scoring only people
+with unique names - discards precisely the high-collision cases the project
+exists to measure.
+
+**Consequence for `CONTRACTS.md`.** No definition changes. Section 4's outcome
+classes and section 4.1's resolution rule are unchanged; this entry fixes how a
+task is drawn, which section 4.1 left open.
