@@ -21,3 +21,5 @@ results/intervals.json                  W3
 src/titer/corpus/scholar.py             W9
 scripts/build_scholar_corpus.py         W9
 scripts/build_expert_tasks.py           W10
+data/scholar.jsonl                      W9
+results/scholar_stats.json              W9

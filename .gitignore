@@ -15,3 +15,4 @@ data/
 # committed by accident and made the repo unpushable (GitHub caps files at
 # 100 MB). The corpus is published as an HF dataset (D008), never through git.
 results/*.jsonl
+data/scholar.jsonl

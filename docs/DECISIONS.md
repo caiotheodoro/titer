@@ -1152,3 +1152,53 @@ identity spine; OpenAlex and DOIs carry the attestation.
 the only thing this project is good at. A second repository - duplicates the
 oracle, cost and calibration machinery. Dropping EDGAR - discards 4.2M attested
 rows and the cross-domain contrast.
+
+---
+
+## D031 - Constructed-false claims get a difficulty axis (2026-09-03)
+
+**Amends `CONTRACTS.md` A3, which specified one adjacency rule. It now specifies
+two tiers, reported separately.**
+
+**What the data showed.** A3's rule - same domain, different field, zero
+attested works - was implemented and the first negatives inspected before any
+measurement. They ranged from genuinely hard to trivially rejectable:
+
+| Author's attested topic | Constructed-false topic | Verdict |
+|---|---|---|
+| Cutaneous melanoma detection | Dental education and practice | plausible |
+| Immunotherapy and immune responses | Microbial metabolism | plausible |
+| Diabetes and associated disorders | **Hemiptera insect studies** | absurd |
+| Inorganic and organometallic chemistry | **Approximation theory and sequence spaces** | absurd |
+
+The cause is that an OpenAlex *domain* is enormous - "Physical Sciences" spans
+chemistry, mathematics, physics, computer science and engineering. "Different
+field within the same domain" therefore admits chemistry-to-pure-maths.
+
+**Why that matters more than it looks.** A benchmark whose negatives are mostly
+absurd measures nothing: any provider rejects "this chemist studies approximation
+theory", the false-affirmation rate comes back near zero, and the null is an
+artefact of the construction rather than a property of the provider. That is
+precisely the shape of the H1 and H2 sampling failures - a design that cannot
+observe the thing it was built to observe.
+
+**Decision.** Two mechanical tiers, both zero-attested-works, both reported and
+**never pooled**:
+
+- **`NEAR`** - same *field*, different *subfield*. An immunologist asked about
+  neurogenetic disorders; a dermatologic oncologist asked about rheumatology.
+  This tier carries the signal.
+- **`FAR`** - same *domain*, different *field*. The original A3 rule, retained
+  as the easy control that demonstrates the axis is doing work.
+
+Negative difficulty now joins claim polarity and name-collision degree as a
+pre-registered stratification axis. If a provider separates on `FAR` and not on
+`NEAR`, that is the finding, and pooling the two would have hidden it.
+
+**No model participates.** Both tiers are set operations over the OpenAlex topic
+hierarchy, versioned `topic_adjacency/v1`, deterministic given the seed.
+
+**What would have been reported under A3 as written.** A single
+false-affirmation rate over a mixture of hard and absurd negatives, in unknown
+proportion, with no way to tell whether a low rate meant a careful provider or
+an easy test set.
