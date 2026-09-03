@@ -1,0 +1,32 @@
+{
+  "project": "titer",
+  "contracts_version": "contracts/v1",
+  "wave": "W0",
+  "generated": "2026-09-02",
+  "verdict": "NOT_VERIFIED",
+  "rationale": "No measurement has been taken. src/ is empty by design. A card that always exits zero is decoration; this one names every unmet claim.",
+  "unmet_claims": [
+    "H1 staleness half-life: not measured",
+    "H2 false-merge rate under name collision: not measured",
+    "H3 calibration of free signals: not measured",
+    "H4 value-of-information policy beats floors: not measured",
+    "same-human-two-CIK contamination bound: not measured",
+    "achieved n and PRE-REGISTRATION section 3 branch: not determined",
+    "flat-profile integrity probe: not run",
+    "leak probe: not run",
+    "environment health report: not emitted",
+    "across-seed spread: nothing trained"
+  ],
+  "gates_passed": [
+    "doc spine present",
+    "PRE-REGISTRATION frozen before src/",
+    "provider Terms-of-Service gate resolved (DECISIONS D019)",
+    "privacy gate: no contact-field patterns in tracked files"
+  ],
+  "providers_in_scope": ["ploid", "exa", "webfloor"],
+  "providers_excluded": {
+    "apollo": "ToS 3(f)(vii) prohibits disclosing benchmark results without prior written consent; consent requested",
+    "peopledatalabs": "SSA 5 sweeps derived information into confidentiality; SSA 6.4 requires deletion within 30 days of termination, incompatible with a retained reproducible corpus",
+    "clay": "excluded on comparability, not law: an orchestrator over 75+ tools rather than a proprietary index"
+  }
+}

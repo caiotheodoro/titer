@@ -1,0 +1,19 @@
+# Paths referenced in the docs that do not exist yet, and the wave that creates
+# them. The claim gate checks every other cited path resolves; this file makes
+# the promises explicit so a typo still fails the build.
+#
+# path                                  wave
+src/titer/corpus/title_map.py           W1
+scripts/build_corpus.py                 W1
+scripts/leak_probe.py                   W1
+scripts/oracle_selfcheck.py             W1
+scripts/measure_cost.py                 W2
+scripts/power.py                        W2
+scripts/full_run.py                     W3
+scripts/intervals.py                    W3
+scripts/calibration.py                  W4
+scripts/env_health.py                   W5
+scripts/seed_spread.py                  W6
+docs/disclosures/                       on first disclosable finding
+results/cost_unit.json                  W2
+results/intervals.json                  W3

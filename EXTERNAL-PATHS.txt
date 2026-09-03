@@ -1,0 +1,8 @@
+# Paths cited for lineage that live in OTHER repositories in this workspace.
+# Declared here so the claim gate still catches typos without asserting that
+# they exist inside titer.
+assay/src/assay/adapters/openenv.py
+assay/src/assay/costs/
+regretbench/src/lossbench/
+vernier/docs/METHOD.md
+keel/docs/superpowers/specs/00-keel-protocol.md

@@ -1,0 +1,36 @@
+# titer
+
+> An instrument for measuring how often commercial people-search indexes
+> confidently resolve the wrong human, and what it is worth paying to find out.
+> Ground truth is an SEC filing, not a model's judgement.
+
+Status: W0. Docs frozen, `src/` empty by design, no results exist.
+`MEASUREMENT_CARD.json` reads NOT_VERIFIED.
+
+## Core
+
+- [CONTRACTS](CONTRACTS.md): frozen definitions — attestation tiers, the attested
+  tuple, closed taxonomies, outcome classes, cost profiles, reward, splits.
+- [PRE-REGISTRATION](docs/PRE-REGISTRATION.md): hypotheses H1-H4 with
+  falsification conditions, estimators, and the pre-committed power rule. Never
+  edited; superseded only by dated DECISIONS entries.
+- [METHOD](docs/METHOD.md): why a filing and not a judge; why cost and not
+  accuracy; where a model is allowed to act.
+- [ARCHITECTURE](docs/ARCHITECTURE.md): modules and seams.
+- [DECISIONS](docs/DECISIONS.md): append-only decision log, D001-D020.
+
+## Honesty surface
+
+- [COVERAGE](docs/COVERAGE.md): what this cannot see, in PeopleSearchBench's
+  vocabulary rather than ours.
+- [RED-TEAM](docs/RED-TEAM.md): 11 attacks on our own claims; 4 carried as LIVE.
+- [RETRACTIONS](docs/RETRACTIONS.md): empty, on purpose.
+- [RUBRIC](docs/RUBRIC.md): self-score, with the unavailable points named.
+- [ETHICS](docs/ETHICS.md): pointers not records; no contact fields ever;
+  rectification within 7 days.
+
+## Operations
+
+- [WAVES](docs/WAVES.md), [HANDOFF](docs/HANDOFF.md),
+  [REPRODUCTION](docs/REPRODUCTION.md), [SURVEY](docs/SURVEY.md),
+  [LINEAGE](docs/LINEAGE.md), [BENCHMARK](docs/BENCHMARK.md)
