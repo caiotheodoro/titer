@@ -1202,3 +1202,38 @@ hierarchy, versioned `topic_adjacency/v1`, deterministic given the seed.
 false-affirmation rate over a mixture of hard and absurd negatives, in unknown
 proportion, with no way to tell whether a low rate meant a careful provider or
 an easy test set.
+
+---
+
+## D032 - E2's colliding population is built by search, not by sampling (2026-09-03)
+
+**Measured, before designing the task.** Name-collision degree over the 20,000
+author corpus: 499 colliding names, 1,241 authors affected (6.21%), maximum
+degree 9.
+
+**That number is an artefact of the sample size, not a property of the world.**
+The corpus is a 20,000-author slice of roughly 3.66M eligible ORCID authors.
+Two researchers sharing a name are unlikely to *both* land in a 1-in-180 sample,
+so within-sample collision under-counts real collision by a large and unknown
+factor.
+
+The EDGAR corpus did not have this problem: it is the complete population of
+Section 16 filers, so a degree computed over it is the real degree. Here it is
+not, and treating it as real would repeat D027 - a sampling scheme that cannot
+observe the thing it is meant to measure.
+
+**Decision.** E2's colliding population is constructed by **targeted search**:
+query OpenAlex directly for authors sharing a normalized presented name, rather
+than waiting for collisions to appear by chance. E1 continues to use the random
+corpus, because polarity and negative difficulty are properties of the claim
+rather than of the population, and random sampling is correct for them.
+
+**Consequence, published.** The two studies therefore use differently
+constructed populations, and no collision rate from E2 may be read as a
+population rate - it is a deliberately enriched sample, exactly like a
+case-control design. The `pooling_rule` field already carries this warning for
+stratified runs and will carry it here.
+
+**What would have been reported otherwise.** A false-merge-under-collision rate
+computed over 1,241 accidentally-colliding authors, presented as if collision
+were 6% of researchers. The real figure is unknown and larger.

@@ -117,3 +117,52 @@ def atoms(answer: Answer, truth: AttestedTuple, identity_scored: bool = True) ->
 
     return Atoms(identity=identity, title=title, window=window,
                  title_scored=title_scored, identity_scored=identity_scored)
+
+
+# --------------------------------------------------------------------------
+# Expertise verification (CONTRACTS addendum A, PRE-REGISTRATION-EXPERTISE E1)
+# --------------------------------------------------------------------------
+
+ATTESTED, CONSTRUCTED_FALSE = "ATTESTED", "CONSTRUCTED_FALSE"
+
+
+@dataclass(frozen=True, slots=True)
+class ExpertiseAnswer:
+    """A provider's verdict on 'does this person have published expertise in X'.
+
+    `affirms is None` means no usable verdict was returned - not a denial. The
+    difference matters: a provider that cannot answer is failing to verify, not
+    correctly rejecting, and collapsing the two would credit silence as caution.
+    """
+
+    affirms: bool | None = None
+    confidence: float = 0.0
+    abstained: bool = False
+
+
+def judge_expertise(answer: ExpertiseAnswer, polarity: str,
+                    tau: float = DEFAULT_TAU) -> Outcome:
+    """Score a verdict against an attested publication record.
+
+    The mapping onto the existing classes is deliberate, not cosmetic:
+
+    * Affirming a **constructed-false** claim confidently is `FALSE_MERGE` -
+      a **fake expert admitted**, which is the error the `expert_sourcing`
+      profile prices at 150x a miss.
+    * Denying an **attested** claim is `MISS` - a real expert not verified,
+      which costs roughly one sourcing bounty.
+    * A correct denial is `CORRECT`. Rejecting a false claim is the job, not a
+      non-event, and scoring it as anything else would make abstention look
+      identical to competence.
+    """
+    if answer.abstained:
+        return Outcome.ABSTAIN
+    if answer.affirms is None:
+        return Outcome.MISS
+    if polarity == ATTESTED:
+        return Outcome.CORRECT if answer.affirms else Outcome.MISS
+    if polarity == CONSTRUCTED_FALSE:
+        if not answer.affirms:
+            return Outcome.CORRECT
+        return Outcome.FALSE_MERGE if answer.confidence >= tau else Outcome.UNSURE_WRONG
+    raise ValueError(f"unknown polarity {polarity!r}")

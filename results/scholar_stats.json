@@ -2,24 +2,24 @@
   "contracts_version": "contracts/v1-expertise",
   "adjacency_version": "topic_adjacency/v1",
   "topics_in_hierarchy": 4516,
-  "authors": 400,
+  "authors": 20000,
   "exclusions": {
-    "seen": 413,
-    "kept": 400,
+    "seen": 20878,
+    "kept": 20000,
     "no_orcid": 0,
     "works_out_of_band": 0,
-    "no_attested_topic": 0,
-    "no_institution": 13,
-    "dropped": 13
+    "no_attested_topic": 29,
+    "no_institution": 849,
+    "dropped": 878
   },
   "attested_topics_per_author": {
     "median": 5.0,
     "mean": 5.0
   },
   "attested_topic_domain_distribution": {
-    "Life Sciences": 292,
-    "Health Sciences": 750,
-    "Social Sciences": 122,
-    "Physical Sciences": 836
+    "Life Sciences": 15295,
+    "Health Sciences": 31462,
+    "Social Sciences": 6637,
+    "Physical Sciences": 46590
   }
 }
