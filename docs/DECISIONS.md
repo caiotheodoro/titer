@@ -575,3 +575,56 @@ exists to measure.
 **Consequence for `CONTRACTS.md`.** No definition changes. Section 4's outcome
 classes and section 4.1's resolution rule are unchanged; this entry fixes how a
 task is drawn, which section 4.1 left open.
+
+---
+
+## D023 - H1's estimator changes from Kaplan-Meier to isotonic regression (2026-09-02)
+
+**This supersedes the estimator named in `docs/PRE-REGISTRATION.md` H1.** The
+pre-registration is not edited; this entry is the record, and it carries the
+counterfactual the reversal clause requires.
+
+**What changed.** H1 pre-registered "Kaplan-Meier over `delta`". The estimator
+is now **isotonic regression via the Pool Adjacent Violators Algorithm**, with
+bucketed Wilson rates published alongside.
+
+**Why - the pre-registered estimator was wrong for the data.** Kaplan-Meier
+estimates a survival function from right-censored time-to-event observations:
+you watch a subject until the event happens or you stop watching. That is not
+what R1 collects. Each task is inspected **exactly once**, at elapsed time
+`delta`, and yields a single binary observation - was the move reflected by
+then. The event time is interval-censored at one inspection point. This is
+**current status data**, and its nonparametric maximum likelihood estimator is
+isotonic regression on the indicators ordered by `delta`, not Kaplan-Meier.
+
+Feeding current status data to Kaplan-Meier by pretending each observation is an
+event-or-censoring at time `delta` would produce a curve, and the curve would be
+biased in a direction that depends on the `delta` distribution - which is set by
+our sampling, not by the index's behaviour. It would have looked fine.
+
+**What would have been reported under the original plan.** A Kaplan-Meier curve
+and a median lag read off it. On a synthetic check the two estimators disagree
+whenever the elapsed-time distribution is non-uniform, which ours certainly is:
+filings cluster by quarter. The direction of the disagreement is not fixed, so
+the original plan would have produced a number of unknown bias rather than an
+obviously wrong one - the worse failure mode.
+
+**What is unchanged.** The hypothesis, the falsification condition ("reflection
+probability is flat in `delta`"), the paired bootstrap for provider differences,
+the 10,000 resamples and seed 11, and the commitment to publish the curve rather
+than a single summary. Only the estimator changes.
+
+**One property gained, and it is load-bearing.** Isotonic regression is monotone
+by construction, which encodes the single structural assumption we are willing
+to make: an index that has reflected a change does not un-reflect it.
+`ReflectionCurve.is_monotone` is asserted in tests so the property cannot
+silently lapse.
+
+**`median_lag` returns `None` rather than extrapolating** when the curve never
+reaches 0.5 within the observed range. "Not reached within N days" is a result;
+an extrapolated median would be an invention.
+
+**Alternatives rejected.** A parametric survival fit (Weibull, log-logistic) -
+smaller variance, but it assumes a shape for exactly the thing being measured.
+Logistic regression on `delta` - assumes monotone *and* sigmoid; isotonic
+assumes only monotone.
