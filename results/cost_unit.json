@@ -1,0 +1,13 @@
+{
+  "dry_run": true,
+  "providers": {
+    "exa": {
+      "list_price_usd": 0.007,
+      "note": "dry run: no call made. Re-run with --spend."
+    },
+    "ploid": {
+      "list_price_usd": 0.1,
+      "note": "dry run: no call made. Re-run with --spend."
+    }
+  }
+}

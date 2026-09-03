@@ -32,8 +32,9 @@ _LINK = re.compile(
     r"(\d{4})q([1-4])_form345\.zip",
     re.I,
 )
-# Deliberately 2 req/s against a 10 req/s limit.
-MIN_INTERVAL_S = 0.5
+# Deliberately ~0.67 req/s against a stated 10 req/s limit. SEC's real
+# behaviour is burst-sensitive well below the documented ceiling.
+MIN_INTERVAL_S = 1.5
 
 
 class SecAccessError(RuntimeError):
@@ -90,11 +91,20 @@ def _get(url: str, timeout: int = 60) -> bytes:
     except urllib.error.HTTPError as e:
         if e.code == 403:
             raise SecAccessError(
-                f"SEC returned 403 for {url}. This is almost always a rate-threshold "
-                "block on the whole source IP, not a bad User-Agent: it applies to "
-                "every sec.gov host at once. SEC lifts it after requests stay below "
-                "the threshold for 10 minutes. Stop all SEC traffic and wait - "
-                "retrying resets the clock."
+                f"SEC returned 403 for {url}.\n\n"
+                "Diagnosed 2026-09-03: this is BURST throttling keyed on "
+                "(source IP, User-Agent), not a persistent IP ban, and SEC's 403 "
+                "page is titled 'Request Rate Threshold Exceeded' regardless of "
+                "cause - do not diagnose from the page title. A few requests "
+                "sent back-to-back trigger it; the same request spaced a couple "
+                "of seconds apart succeeds.\n\n"
+                "Checks, in order:\n"
+                "  1. Is TITER_SEC_UA of the form 'Company Name contact@domain'? "
+                "An address containing '+' has been observed failing.\n"
+                "  2. Wait ~30s and retry ONCE. Do not loop - each retry "
+                "re-triggers the throttle.\n"
+                "  3. MIN_INTERVAL_S is the guard; raise it rather than adding "
+                "retries."
             ) from e
         raise
     finally:
