@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from titer.corpus.name_norm import normalize_presented  # noqa: E402
 from titer.corpus.scholar import (FAR, NEAR, AttestedTopic,  # noqa: E402
                                   Author, adjacent_false_topic, fetch_topics,
-                                  user_agent)
+                                  has_works_in_topic, user_agent)
 
 ROOT = Path(__file__).resolve().parent.parent
 CORPUS = ROOT / "data" / "scholar.jsonl"
@@ -57,12 +57,21 @@ def prompt(name: str, institution: str, topic: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=11)
+    ap.add_argument("--limit", type=int, default=None,
+                    help="authors to use; verification costs one /works call "
+                         "per candidate negative, so a smaller verified corpus "
+                         "beats a large unverified one")
+    ap.add_argument("--out", default="expert_tasks.jsonl")
     ap.add_argument("--mailto", default=os.environ.get("TITER_OPENALEX_MAILTO", ""))
     args = ap.parse_args()
     if not CORPUS.exists():
         raise SystemExit(f"{CORPUS} not found. Run scripts/build_scholar_corpus.py first.")
 
-    topics = fetch_topics(user_agent(args.mailto))
+    ua = user_agent(args.mailto)
+    topics = fetch_topics(ua)
+
+    def verify(author_id: str, topic_id: str) -> int:
+        return has_works_in_topic(author_id, topic_id, ua)
     rng = random.Random(args.seed)
 
     # Collision degree over the corpus. D032: this is SAMPLE-relative and
@@ -78,8 +87,13 @@ def main() -> int:
     pol: collections.Counter = collections.Counter()
     no_negative = 0
 
-    with OUT.open("w") as out:
+    out_path = ROOT / "data" / args.out
+    used = 0
+    with out_path.open("w") as out:
         for d, a in load_authors():
+            if args.limit and used >= args.limit:
+                break
+            used += 1
             top = max(a.attested, key=lambda t: t.n_works)
             # Tier is assigned per author by seed, 50/50. Always asking for NEAR
             # and falling back produced 19,978 NEAR against 22 FAR - the easy
@@ -87,7 +101,7 @@ def main() -> int:
             # show the difficulty axis is doing work. Polarity stays balanced
             # 50/50 because each author still yields exactly one of each.
             want = NEAR if rng.random() < 0.5 else FAR
-            got = adjacent_false_topic(a, topics, rng, want)
+            got = adjacent_false_topic(a, topics, rng, want, verify=verify)
             if got is None:
                 no_negative += 1
                 continue
@@ -117,7 +131,8 @@ def main() -> int:
                 if ntier:
                     tiers[ntier] += 1
 
-    stats = {"tasks": n_written, "authors_used": n_written // 2,
+    stats = {"verified_negatives": True, "tasks": n_written,
+             "authors_used": n_written // 2, "authors_considered": used,
              "authors_without_a_negative": no_negative,
              "polarity": dict(pol), "negative_tiers": dict(tiers),
              "balanced": pol[ATTESTED] == pol[FALSE],

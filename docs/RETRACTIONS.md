@@ -78,3 +78,63 @@ published; a harness defect of precisely this kind is the most likely
 explanation for a spread that size. We produced one, and the only reason it is
 not in a results table is that the retraction step was built before the
 measurement was.
+
+
+## R002 - The raw E1 false-affirmation rates are retracted; the NET rates stand (2026-09-03)
+
+**Originally measured:** Exa affirmed constructed-false expertise claims at
+17.25% (FAR) and 21.00% (NEAR), n=400 per stratum, against 96.75% correct on
+attested claims. Never published outside the repository.
+
+**Where:** `results/expertise_e1.json`, 2026-09-03.
+
+**What was wrong:** the negatives. A constructed-false claim was defined as a
+topic absent from the author's OpenAlex `topics` field - which is a **top-N
+summary**, median 5 topics for authors with roughly 120 works, not an exhaustive
+record. "Absent from the top five" is not "never published in".
+
+**How it was found:** by reading the evidence strings behind the affirmations
+before reporting the number. They kept looking correct. Catarina Kiefe was
+affirmed for "Educational Methods and Outcomes" and has co-authored medical
+education research; Agostino Virdis for "Obesity and Health Practices" and
+publishes on endothelial dysfunction in obesity; J. C-L. Tseng for "Radioactive
+Decay" and works on SNO+ neutrinoless double beta decay. Those are not
+hallucinations. They are correct answers scored as errors.
+
+**Measured contamination**, against `/works`, which is exhaustive:
+
+| Tier | Contaminated | Raw affirm | **NET, verified-false only** |
+|---|---|---|---|
+| FAR | 8.17% [5.17, 12.70] | 18.75% [14.03, 24.60] | **18.32% [13.48, 24.42]** n=191 |
+| NEAR | 18.43% [13.84, 24.13] | 22.12% [17.11, 28.10] | **17.51% [12.62, 23.79]** n=177 |
+
+**Corrected claim: the NET rates stand.** Restricting to claims verified false
+against `/works`, Exa affirms them at roughly **18%**, and both intervals
+exclude zero by a wide margin. This is the first headline number in this project
+to survive an attack on it.
+
+**Two things the correction destroyed, and they matter:**
+
+1. **The difficulty axis.** Raw, NEAR (22.12%) looked worse than FAR (18.75%),
+   which is what D031 predicted. Net of contamination they are
+   indistinguishable - 17.51% against 18.32%. **The entire apparent effect of
+   negative difficulty was contamination**, because a same-field topic is
+   exactly where a stray paper hides: NEAR contamination is 2.3x FAR's. D031's
+   FAR tier was built as the control that would show whether the axis was doing
+   work. It showed the axis was not.
+2. **Any reading of the raw NEAR number.** At 18.43% contamination against a
+   22.12% raw rate, the raw NEAR figure is almost entirely explained by our own
+   construction.
+
+**What changed to prevent recurrence:** `adjacent_false_topic` now takes a
+`verify` callable, hits `/works` per candidate, and returns None rather than
+falling back to a contaminated negative. Catch-all OpenAlex labels are excluded
+- "Diverse Scientific Research Studies" was among the first false claims
+affirmed, and a negative nobody can be wrong about measures nothing. Four tests
+cover it.
+
+**Still open, and stated rather than resolved:** the NET figures are a post-hoc
+correction on a sample whose catch-all topics were not filtered, and only 425 of
+800 measured tasks completed the paired check. A confirmatory run on a
+verified, catch-all-free corpus is the right evidence and is budgeted; it is
+blocked until the OpenAlex daily budget resets.
