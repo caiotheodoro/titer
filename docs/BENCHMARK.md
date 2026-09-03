@@ -1,6 +1,74 @@
 # BENCHMARK
 
-Results. One run has produced numbers; everything else is unmeasured or void.
+Results. Two findings survive attack; the rest is unmeasured, void, or retracted.
+
+---
+
+# E1 — expertise verification (the headline)
+
+**Exa `/answer`, n=750, zero errors, $3.75, 2026-09-03.** Negatives verified
+false against OpenAlex `/works` **before** the provider was asked, catch-all
+topics excluded, stratified per `docs/PRE-REGISTRATION-EXPERTISE.md`.
+
+| Stratum | n | `CORRECT` | **`FALSE_MERGE`** |
+|---|---|---|---|
+| `ATTESTED` | 250 | **0.9600 [0.9279, 0.9781]** | 0.0000 [0.0000, 0.0151] |
+| `FALSE_far` | 250 | 0.8680 | **0.1320 [0.0956, 0.1796]** |
+| `FALSE_near` | 250 | 0.8320 | **0.1680 [0.1268, 0.2193]** |
+
+**The finding: Exa confirms real expertise 96% of the time and affirms claims
+that are provably false roughly one time in seven.** Across both false tiers,
+0.1500 [0.1214, 0.1840] — though that pooled figure mixes two tiers in a
+proportion we chose, so the per-tier rates are the reportable ones.
+
+It is not that the provider is bad at the task. It is specifically bad at
+saying *no*.
+
+Under the `expert_sourcing` profile (CONTRACTS A5, a 150x false-merge ratio
+grounded in observed sourcing bounties of $250-$15,000 against an infiltration
+incident and a breach), expected loss is **19.8** and **25.2** on the false
+strata against **0.04** on attested. The asymmetry is the entire result.
+
+## This number survived two independent attacks
+
+| | FAR | NEAR |
+|---|---|---|
+| Raw, contaminated corpus (**retracted**, R002) | 0.1875 | 0.2212 |
+| Post-hoc, net of measured contamination | 0.1832 [0.1348, 0.2442] | 0.1751 [0.1262, 0.2379] |
+| **Confirmatory, verified negatives** | **0.1320 [0.0956, 0.1796]** | **0.1680 [0.1268, 0.2193]** |
+
+The post-hoc correction slightly **over**stated FAR — its point estimate sits
+above the confirmatory interval's centre, though the intervals overlap. That is
+worth stating: a post-hoc correction is weaker evidence than a clean
+measurement, and here it was measurably so.
+
+## D031's difficulty axis is not supported
+
+NEAR 0.1680 against FAR 0.1320 is 3.6 points with heavily overlapping intervals,
+and the post-hoc analysis put them in the *opposite* order. **Negative
+difficulty does not detectably change the false-affirmation rate.** The FAR tier
+was built as the control that would reveal whether the axis did any work; it
+revealed that it does not, and the apparent effect in the raw data was
+contamination (NEAR contamination 21.94%, FAR 4.14%).
+
+## E3 — calibration, on clean labels
+
+Brier **0.1191**, ECE **0.1153**, ten bins, empty bins reported as empty.
+
+**686 of 750 answers (91.5%) landed in the 0.9-1.0 confidence bin, at mean
+confidence 0.987 against accuracy 0.889** — a ten-point overconfidence gap in
+the bin holding nearly all the mass. Confidence is effectively pinned at
+ceiling and does not track correctness there.
+
+Measured against the earlier contaminated labels this gap read 12.5 points; it
+shrinks on clean labels, because the provider was right more often than the
+contaminated labels credited. The smaller number is the correct one.
+
+---
+
+# Employment study
+
+One run has produced numbers; everything else is unmeasured or void.
 
 **Measurement window:** 2026-09 (as of 2026-09-03). Seed 11,
 simple random sampling from the 46,332-task corpus. Zero provider errors.

@@ -1,17 +1,19 @@
 {
   "project": "titer",
   "contracts_version": "contracts/v1",
-  "wave": "W3 partial; Ploid arm retracted",
+  "wave": "W11 complete (E1 + E3); employment study partial",
   "generated": "2026-09-02",
-  "verdict": "NOT_VERIFIED",
-  "rationale": "The corpus is built and two arms measured, but no hypothesis is verified. The pre-registered power branch is cannot_separate (n=25 at the measured $0.20/task gives half-width 0.1413 against a 0.10 threshold frozen before any data). The Ploid arm is retracted outright - see docs/RETRACTIONS.md R001.",
+  "verdict": "PARTIALLY_VERIFIED",
+  "rationale": "E1 and E3 are measured on verified negatives and survive attack. The employment study's H1-H4 remain unfinished and the Ploid arm is retracted. A card that always exits zero is decoration.",
   "unmet_claims": [
-    "H1 staleness half-life: not measured (median lag never reached 0.5)",
-    "H2 false-merge rate: 0 observed at n=24, interval too wide to claim anything",
-    "H3 calibration of free signals: not measured",
-    "H4 value-of-information policy: no model trained",
-    "Ploid arm: RETRACTED, budget exhausted before the defect was found",
-    "no cross-provider ranking may be stated: branch is cannot_separate"
+    "E1 difficulty axis (D031): NOT SUPPORTED - NEAR and FAR do not separate",
+    "E2 disambiguation under a capability constraint: not run, needs Ploid credit",
+    "E4 cross-domain coverage: not run",
+    "H1 staleness half-life: sampling failure, not measurable from a random draw",
+    "H2 false merge under name collision: strata empty by construction in the one run",
+    "Ploid: RETRACTED after three runs, unmeasured",
+    "web floor: parser artefact, withdrawn",
+    "R4 value-of-information policy: no model trained"
   ],
   "gates_passed": [
     "doc spine present",
@@ -50,5 +52,9 @@
     "exa": "n=24, 10 CORRECT, 1 STALE, 13 MISS; correct 0.4167 [0.2447, 0.6117]",
     "webfloor": "n=24, 0 CORRECT; correct 0.0000 [0.0000, 0.1380]",
     "false_merge_all_arms": "0 observed; interval [0, 0.138] - cannot rule out 14%"
+  },
+  "verified": {
+    "E1_false_affirmation": "Exa affirms verified-false expertise claims at 0.1320 [0.0956,0.1796] FAR and 0.1680 [0.1268,0.2193] NEAR, n=250 each, while confirming attested expertise at 0.9600 [0.9279,0.9781]. Negatives verified against /works before asking. Survived a post-hoc and a confirmatory test.",
+    "E3_calibration": "91.5% of answers in the 0.9-1.0 confidence bin at mean 0.987 vs accuracy 0.889; ECE 0.1153, Brier 0.1191."
   }
 }
