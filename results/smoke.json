@@ -1,0 +1,101 @@
+{
+  "window": "2026-09",
+  "as_of": "2026-09-03",
+  "seed": 11,
+  "live_calls": {
+    "exa": 0
+  },
+  "max_calls": null,
+  "requested_n": 3,
+  "dry_run": true,
+  "strategy": "random",
+  "strata": null,
+  "pooling_rule": "RANDOM: marginal rates are population estimates.",
+  "corpus": {
+    "rows_streamed": 4206080,
+    "people": 230405,
+    "tasks": 46332,
+    "retained_fraction": 0.20108938608103122,
+    "bands": {
+      "unique": 39189,
+      "low": 5026,
+      "medium": 1768,
+      "high": 349
+    },
+    "min_gap_days": 180
+  },
+  "arms": {
+    "exa": {
+      "n": 3,
+      "spend_usd": 0.015,
+      "outcomes": {
+        "CORRECT": 1,
+        "FALSE_MERGE": 0,
+        "UNSURE_WRONG": 0,
+        "MISS": 2,
+        "ABSTAIN": 0,
+        "STALE": 0
+      },
+      "accuracy": 0.3333333333333333,
+      "correct": "0.3333 [0.0615, 0.7923] n=3",
+      "false_merge": "0.0000 [0.0000, 0.5615] n=3",
+      "stale": "0.0000 [0.0000, 0.5615] n=3",
+      "expected_loss": {
+        "recruiter": 0.6666666666666666,
+        "gtm_outbound": 0.6666666666666666,
+        "kyc_sanctions": 2.0,
+        "journalism": 0.6666666666666666
+      },
+      "mean_atoms": 0.611111111111111,
+      "reflection_by_elapsed": [
+        [
+          "0-30d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "30-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-180d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "180-365d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "365-730d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "730-infd",
+          "0.3333 [0.0615, 0.7923] n=3"
+        ]
+      ],
+      "median_reflection_lag_days": 2526,
+      "by_band": {
+        "unique": {
+          "n": 3,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 3
+      }
+    }
+  },
+  "matched_n": 3
+}

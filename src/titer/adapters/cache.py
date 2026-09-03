@@ -69,6 +69,16 @@ class CacheEntry:
     spend_units: float
     latency_ms: float
     recorded_at: str
+    raw: dict | None = None
+    """The provider's own response body, contact-stripped.
+
+    Storing only parsed answers was a real design defect: every parser bug then
+    cost credits to discover AND credits to verify a fix, on grants that do not
+    refill. The cache is meant to be the unit of reproducibility - if a result
+    cannot be regenerated from it, it is not reproducible - and a parser is part
+    of what needs regenerating. Contact fields are stripped before this reaches
+    disk, exactly as for `answers`.
+    """
 
 
 class ReplayCache:
@@ -96,18 +106,29 @@ class ReplayCache:
         return self._index.get(key.digest())
 
     def put(self, key: CacheKey, answers: list[RawAnswer], spend: Spend,
-            latency_ms: float, recorded_at: str) -> CacheEntry:
+            latency_ms: float, recorded_at: str,
+            raw: dict | None = None) -> CacheEntry:
         payload = [strip_contact_fields({k: _iso(v) for k, v in asdict(a).items()})
                    for a in answers]
         entry = CacheEntry(
             key=key.digest(), provider=key.provider, action=key.action,
             window=key.window, answers=payload, spend_usd=spend.usd,
             spend_units=spend.units, latency_ms=latency_ms, recorded_at=recorded_at,
+            raw=strip_contact_fields(raw) if raw is not None else None,
         )
         self._index[entry.key] = entry
         with self.path.open("a") as fh:
             fh.write(json.dumps(asdict(entry)) + "\n")
         return entry
+
+    @staticmethod
+    def reparse(entry: CacheEntry, parser) -> list[RawAnswer] | None:
+        """Re-derive answers from the stored raw body with a (possibly fixed)
+        parser. Returns None when no raw body was recorded, so a caller can fall
+        back to the stored answers rather than silently getting nothing."""
+        if entry.raw is None:
+            return None
+        return parser(entry.raw)
 
     @staticmethod
     def to_answers(entry: CacheEntry) -> list[RawAnswer]:

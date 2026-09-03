@@ -43,6 +43,7 @@ class Ploid:
     transport: Transport | None = None
     api_key: str | None = None
     name: str = "ploid"
+    last_raw: dict | None = None
 
     # MEASURED 2026-09-03, not the list price. The pricing page says $0.10 per
     # 10 matches; a live search reports meta.credits_charged = 1, which at the
@@ -75,8 +76,12 @@ class Ploid:
         The facts disclosed are unchanged: person name plus the anchor employer.
         The scored fact - the employer at the target date - is still withheld.
         """
-        return {"query": _presented_name(task.person_name_raw),
-                "filters": {"company": task.anchor_issuer_name}}
+        # The anchor is CONTEXT, never a filter. Ploid's company filter selects
+        # people currently at that company, so filtering on the anchor
+        # guarantees the anchor comes back - and the anchor is exactly what we
+        # score as STALE. See docs/DECISIONS.md D028 C1.
+        return {"query": f"{_presented_name(task.person_name_raw)}, "
+                         f"formerly at {_company_for_filter(task.anchor_issuer_name)}"}
 
     def query(self, action: str, prompt, **kw) -> tuple[list[RawAnswer], Spend]:
         if self.transport is None:
@@ -86,6 +91,7 @@ class Ploid:
             body = {"category": "people", "type": action.split("_", 1)[1],
                     "num_results": kw.get("num_results", 10), **rendered}
             data = self.transport("POST", "/v1/search", body)
+            self.last_raw = data
             return self._parse_search(data), _ploid_spend(data, self.SEARCH_USD)
         if action == "person_verify":
             data = self.transport("POST", "/v1/person", {"person_id": kw["person_id"]})
@@ -104,15 +110,18 @@ class Ploid:
         out = []
         for i, r in enumerate(results):
             p = r.get("person", {}) or {}
-            # `person.title` is the LinkedIn HEADLINE, not a role title - it
-            # carries marketing prose. It is passed through unaltered and
-            # title_map/v1 classifies it; a headline that names no office
-            # becomes UNKNOWN and fails the title atom. That is the honest
-            # result for a tier that does not return a role, and inferring one
-            # from the headline would put a judged step in the scoring path.
+            # Verified against the live schema (2026-09-03), which is:
+            #   result: {url, title, score, person}
+            #   person: {person_id, title, company, location, linkedin_url,
+            #            identity_verified, resolution_source}
+            # There is NO person.name - `result.title` carries the person's
+            # name, and `person.title` is a genuine job title ("Chief Financial
+            # Officer"). An earlier comment here claimed person.title was a
+            # LinkedIn headline full of marketing prose; that was an artefact of
+            # our own malformed query returning junk rows, not Ploid's schema.
             out.append(RawAnswer(
-                person_name=p.get("name") or _name_from_title(r.get("title")),
-                employer_name=p.get("company") or p.get("company_name"),
+                person_name=_name_from_title(r.get("title")),
+                employer_name=p.get("company"),
                 title_text=p.get("title"),
                 confidence=float(r.get("score", 0.0) or 0.0),
                 rank=i,
@@ -165,6 +174,7 @@ class Exa:
     transport: Transport | None = None
     api_key: str | None = None
     name: str = "exa"
+    last_raw: dict | None = None
 
     ANSWER_USD = 0.005    # observed 2026-09-03; the response reports the real figure
     SEARCH_USD = 0.007
@@ -184,10 +194,12 @@ class Exa:
         if action == "answer":
             data = self.transport("POST", "/answer",
                                   {"query": prompt, "outputSchema": ANSWER_SCHEMA})
+            self.last_raw = data
             return self._parse_answer(data), _spend_from(data, self.ANSWER_USD)
         if action == "search":
             data = self.transport("POST", "/search",
                                   {"query": prompt, "numResults": kw.get("num_results", 10)})
+            self.last_raw = data
             out = []
             for i, r in enumerate(data.get("results", [])):
                 person, employer, role = _parse_page_title(r.get("title"))
@@ -262,6 +274,29 @@ def _ploid_spend(data: dict, fallback_usd: float) -> Spend:
     if isinstance(credits, (int, float)):
         return Spend(float(credits) * Ploid.ACU_USD, float(credits), "acu_reported")
     return Spend(fallback_usd, 0.0, "usd_listprice_estimate")
+
+
+# Corporate-registrant noise that a people index does not index companies
+# under. EDGAR says "GOOGLE INC."; Ploid's company filter matches "Google".
+_FILTER_NOISE = re.compile(
+    r"\b(inc|incorporated|corp|corporation|co|company|llc|llp|lp|ltd|limited|"
+    r"plc|holdings?|group|trust|reit|the)\b\.?", re.I)
+
+
+def _company_for_filter(name: str | None) -> str:
+    """Strip registrant suffixes for a company FILTER.
+
+    A structured filter is an exact-ish match, so handing it the SEC registrant
+    form matches nothing and the whole task returns no rows - which then scores
+    as a MISS and looks like the provider failed. Verified live: filtering
+    "Google" returns the person; the SEC form does not.
+    """
+    if not name:
+        return ""
+    cleaned = _FILTER_NOISE.sub(" ", name)
+    cleaned = re.sub(r"[^\w\s&-]", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned.title() if cleaned.isupper() else (cleaned or name)
 
 
 def _presented_name(raw: str | None) -> str:

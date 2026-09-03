@@ -78,8 +78,8 @@ class Task:
         return (
             f"{self.person_name_raw} was an officer or director at "
             f"{self.anchor_issuer_name} as of {self.anchor_date.isoformat()}. "
-            f"What organisation were they at on {self.target_date.isoformat()}, "
-            f"and in what role?"
+            f"What organisation are they at most recently, and in what role? "
+            f"Answer for their latest known position."
         )
 
 

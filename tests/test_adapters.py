@@ -109,11 +109,13 @@ def test_adapters_refuse_to_run_unconfigured():
 def test_ploid_parses_search_and_reports_price():
     def fake(method, url, payload):
         assert url == "/v1/search" and payload["category"] == "people"
-        return {"results": [
-            {"score": 0.9, "person": {"name": "Jane Roe", "company": "ACME",
-                                      "title": "CFO", "resolution_source": "ploid_people_index",
-                                      "identity_verified": False}},
-        ]}
+        # Live shape: the person's NAME is result.title; person.title is the job.
+        return {"data": {"results": [
+            {"score": 0.9, "title": "Jane Roe",
+             "person": {"company": "ACME", "title": "CFO",
+                        "resolution_source": "ploid_people_index",
+                        "identity_verified": False}},
+        ]}}
     answers, spend = Ploid(transport=fake).query("search_fast", "who?")
     assert answers[0].person_name == "Jane Roe"
     assert answers[0].employer_name == "ACME"
@@ -219,19 +221,31 @@ def _fake_task():
                 collision_degree=1, strict_degree=1)
 
 
-def test_ploid_render_uses_the_documented_structured_filters():
-    """R001: packing the company into the free-text query measured our wire
-    format, not Ploid's index, and produced a 0/21 result that cost the budget
-    before it was caught. A company belongs in `filters`, which Ploid documents."""
+def test_ploid_render_never_filters_on_the_anchor_employer():
+    """D028 C1. Ploid's company filter selects people CURRENTLY at that company,
+    so filtering on the anchor guarantees the anchor comes back - and the anchor
+    is exactly what we score as STALE. Every task would have been STALE by
+    construction, and it would have looked like a damning freshness finding."""
     r = Ploid.render(_fake_task())
     assert isinstance(r, dict), "render must be structured, not a string"
-    assert r["filters"]["company"] == "GOOGLE INC."
-    assert "GOOGLE" not in r["query"], "the company must not be in the free text"
+    assert "filters" not in r or "company" not in r.get("filters", {})
 
 
-def test_ploid_render_sends_a_human_readable_name():
-    """SEC files "REYES GEORGE"; a people index expects "George Reyes"."""
-    assert Ploid.render(_fake_task())["query"] == "George Reyes"
+def test_ploid_render_carries_the_anchor_as_context_not_a_constraint():
+    """The anchor still has to disambiguate the person; it just must not
+    constrain the answer."""
+    q = Ploid.render(_fake_task())["query"]
+    assert "George Reyes" in q          # SEC files "REYES GEORGE"
+    assert "Google" in q                # registrant suffix stripped
+    assert "formerly" in q              # framed as past, not current
+
+
+def test_prompt_asks_what_a_current_state_index_can_answer():
+    """D028 C2. A people index returns a CURRENT employer; asking it about a
+    date four years ago is not giving it a fair shot at the question."""
+    p = _fake_task().prompt()
+    assert "most recently" in p or "latest" in p
+    assert "Gen Digital" not in p       # the scored fact is still withheld
 
 
 def test_ploid_render_withholds_the_scored_fact():
@@ -256,3 +270,81 @@ def test_every_arm_discloses_the_same_facts():
     for blob in (ploid, exa):
         assert "GOOGLE" in blob.upper()          # anchor employer disclosed
         assert "Gen Digital" not in blob         # target employer withheld
+
+
+# --- parser pinned to the VERIFIED live schema (2026-09-03) ---
+
+PLOID_LIVE_SHAPE = {
+    "data": {"results": [{
+        "url": "https://www.linkedin.com/in/george-reyes-3954846",
+        "title": "George Reyes",
+        "score": 140000.963828,
+        "person": {"person_id": "person_89b1", "title": "Chief Financial Officer",
+                   "company": "google", "location": "San Francisco, United States",
+                   "linkedin_url": "https://www.linkedin.com/in/george-reyes-3954846",
+                   "identity_verified": False,
+                   "resolution_source": "ploid_people_index"}}]},
+    "meta": {"credits_charged": 1},
+}
+
+
+def test_ploid_parses_the_verified_live_schema():
+    """There is NO person.name. result.title carries the person's name and
+    person.title is a real job title. Captured from a live call, not guessed -
+    an earlier version scraped the name out of a display string and produced
+    no_name_returned on 9 of 21 tasks."""
+    answers, spend = Ploid(transport=lambda *a: PLOID_LIVE_SHAPE).query("search_fast", {})
+    a = answers[0]
+    assert a.person_name == "George Reyes"
+    assert a.title_text == "Chief Financial Officer"
+    assert a.employer_name == "google"
+    assert a.identity_verified is False
+    assert a.resolution_source == "ploid_people_index"
+    assert spend.usd == pytest.approx(0.20) and spend.unit_name == "acu_reported"
+
+
+def test_ploid_never_leaks_a_linkedin_url_into_the_cache():
+    """person.linkedin_url is in every row. docs/ETHICS.md forbids it on disk."""
+    from titer.adapters.cache import strip_contact_fields
+    blob = json.dumps(strip_contact_fields(PLOID_LIVE_SHAPE))
+    assert "linkedin" not in blob.lower()
+
+
+@pytest.mark.parametrize("registrant,expected", [
+    ("GOOGLE INC.", "Google"),
+    ("APPLE INC", "Apple"),
+    ("Gen Digital Inc.", "Gen Digital"),
+    ("PAR PACIFIC HOLDINGS, INC.", "Par Pacific"),
+])
+def test_company_filter_strips_registrant_suffixes(registrant, expected):
+    """A structured filter is near-exact. Handing it the SEC registrant form
+    matched nothing, the task returned no rows, and it scored as a MISS that
+    looked like the provider failing. Verified live: "Google" finds the person,
+    "GOOGLE INC." does not."""
+    from titer.adapters.providers import _company_for_filter
+    assert _company_for_filter(registrant) == expected
+
+
+def test_cache_round_trips_the_raw_body_so_a_parser_fix_is_free(tmp_path):
+    """Storing only parsed answers meant every parser bug cost credits twice -
+    once to hit it, once to verify the fix - on grants that do not refill."""
+    from titer.adapters.cache import CacheKey, ReplayCache
+    cache = ReplayCache(tmp_path / "c.jsonl")
+    key = CacheKey("ploid", "search_fast", "req", "2026-09")
+    answers, spend = Ploid(transport=lambda *a: PLOID_LIVE_SHAPE).query("search_fast", {})
+    cache.put(key, answers, spend, 1.0, "t", raw=PLOID_LIVE_SHAPE)
+
+    entry = ReplayCache(tmp_path / "c.jsonl").get(key)
+    assert entry.raw is not None
+    again = ReplayCache.reparse(entry, Ploid._parse_search)
+    assert again[0].person_name == "George Reyes"
+
+
+def test_reparse_returns_none_when_no_raw_was_stored(tmp_path):
+    """So a caller falls back to stored answers instead of silently getting
+    nothing from older cache entries."""
+    from titer.adapters.cache import CacheKey, ReplayCache
+    cache = ReplayCache(tmp_path / "c.jsonl")
+    key = CacheKey("ploid", "search_fast", "req", "w")
+    cache.put(key, [], Spend(0.0), 1.0, "t")
+    assert ReplayCache.reparse(cache.get(key), Ploid._parse_search) is None

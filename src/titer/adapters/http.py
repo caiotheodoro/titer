@@ -19,8 +19,18 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any
 
-MIN_INTERVAL_S = 1.0
 CLIENT_UA = "titer/0.1 (+https://github.com/caiotheodoro/titer)"
+
+# Per-provider request spacing, from each provider's PUBLISHED limit - not a
+# guess, and not one global default. Ploid's Free plan is 10 requests/minute;
+# firing at the old global 1.0s (60/min) drew 14 straight 429s and wasted a run
+# on a grant denominated in credits. The limit was already written down in
+# docs/HANDOFF.md and simply never reached the transport.
+MIN_INTERVAL_S = 1.0
+PROVIDER_INTERVAL_S = {
+    "ploid": 7.0,   # published 10/min on Free; 7s leaves margin
+    "exa": 1.0,     # published 10 QPS on /search
+}
 
 
 class ProviderHTTPError(RuntimeError):
@@ -49,7 +59,8 @@ class HTTPTransport:
     _last: float = 0.0
 
     def __call__(self, method: str, path: str, payload: dict[str, Any]) -> dict:
-        wait = MIN_INTERVAL_S - (time.monotonic() - self._last)
+        interval = PROVIDER_INTERVAL_S.get(self.provider, MIN_INTERVAL_S)
+        wait = interval - (time.monotonic() - self._last)
         if wait > 0:
             time.sleep(wait)
         url = self.base_url.rstrip("/") + path

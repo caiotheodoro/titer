@@ -33,6 +33,13 @@ MIN_GAP_DAYS = 180
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--min-gap-days", type=int, default=MIN_GAP_DAYS)
+    ap.add_argument("--require-last-employer", action="store_true",
+                    help="D028 C2: keep only tasks whose target IS the person's "
+                         "last attested employer, so 'where are they now' is the "
+                         "honest question for a current-state index")
+    ap.add_argument("--max-age-years", type=float, default=None,
+                    help="drop tasks whose last filing is older than this; the "
+                         "corpus cannot see moves it never recorded")
     args = ap.parse_args()
     if not CORPUS.exists():
         raise SystemExit(f"{CORPUS} not found. Run scripts/build_corpus.py first.")
@@ -83,6 +90,13 @@ def main() -> int:
                 break
             if target is None:
                 continue
+            last_issuer = rows[-1][1]
+            is_last = target[1] == last_issuer
+            age_days = (date.today() - date.fromisoformat(rows[-1][4])).days
+            if args.require_last_employer and not is_last:
+                continue
+            if args.max_age_years is not None and age_days > args.max_age_years * 365.25:
+                continue
             raw = names[cik]
             deg = len(by_presented.get(normalize_presented(raw), ()))
             strict = len(by_strict.get(normalize(raw), ()))
@@ -97,6 +111,8 @@ def main() -> int:
                 "truth_filed": target[4], "truth_period": target[0],
                 "collision_degree": deg, "collision_band": band(deg),
                 "strict_degree": strict,
+                "target_is_last_employer": is_last,
+                "last_filing_age_days": age_days,
             }) + "\n")
             written += 1
 
@@ -113,7 +129,9 @@ def main() -> int:
 
     stats = {"rows_streamed": n, "people": len(hist), "tasks": written,
              "retained_fraction": written / len(hist), "bands": dict(bands),
-             "min_gap_days": args.min_gap_days}
+             "min_gap_days": args.min_gap_days,
+             "require_last_employer": args.require_last_employer,
+             "max_age_years": args.max_age_years}
     (ROOT / "results" / "task_stats.json").write_text(json.dumps(stats, indent=2) + "\n")
     print(json.dumps(stats, indent=2))
     return 0

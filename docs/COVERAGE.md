@@ -63,6 +63,27 @@ reasons, and those reasons are published:
 A reader should treat the provider set as "who could be measured lawfully at
 this budget", not "who matters".
 
+## The cumulative narrowing, in one place
+
+Each restriction was forced by a mismatch between what a filing can attest and
+what a provider surface answers. None was chosen for convenience, and none is
+applied quietly.
+
+| Stage | Remaining | Why |
+|---|---|---|
+| People in the corpus | 230,405 | 4,206,080 rows, 2006q1-2026q2 |
+| ...who actually moved employer | 46,332 (20.1%) | D022: the query fact and the scored fact must differ |
+| ...whose target is their LAST employer | 30,607 (13.3%) | D028 C2: a people index returns a CURRENT employer |
+| ...last attested within 5 years | **16,896 (7.3%)** | the corpus cannot see moves it never recorded |
+
+**7.3% of the corpus is usable.** A reader should hold that against every rate
+this instrument reports: the population measured is US public-company officers
+and directors who changed employer, whose move is the most recent thing SEC
+knows about them, and who filed recently. That is a narrow and unusually
+well-documented slice of humanity, and providers should be expected to do
+BETTER on it than on a representative target. Any error rate here is plausibly
+a lower bound.
+
 ## Measurement gaps
 
 - **The paid `confidence` field is not tested.** H3 calibrates the free signals

@@ -959,3 +959,74 @@ guessing what the prose says would put a judged step in the corpus.
 Measured title coverage: **45.55% UNKNOWN, of which 42.40 points are titles the
 filer left blank** and only 3.14 points are non-empty strings the map missed.
 The gap is in the source, not the normalizer, and it is published either way.
+
+---
+
+## D028 - The task must ask what a current-state index can answer (2026-09-03)
+
+**Two harness defects, found within minutes of each other, both of which made
+every Ploid outcome an artefact. Neither is about Ploid.**
+
+### C1 - Filtering on the anchor employer forced the answer
+
+The corrected renderer sent `filters: {"company": <anchor>}`. Ploid's company
+filter selects people **currently at that company**, so constraining it to the
+anchor guaranteed the anchor came back - and the anchor is precisely the answer
+we score as `STALE`. Every task would have been `STALE` by construction, and it
+would have looked exactly like a damning finding about index freshness.
+
+Verified live: `{"query": "George Reyes", "filters": {"company": "Google"}}`
+returns George Reyes at google. The truth for that task is Gen Digital. The
+filter, not the index, produced the stale answer.
+
+**Now:** the anchor is disambiguating **context inside the query text**, never a
+filter. The `company` filter is not used at all.
+
+### C2 - The question did not match what the surface answers
+
+Deeper, and the one that matters. A people-search index returns a person's
+**current** employer. Our task asked for their employer **on a specific past
+date**, median four years ago. A perfect index would answer "wrong" on most
+tasks - not because it is stale, but because we asked something it does not
+claim to answer. `docs/METHOD.md` says each arm must be given its best fair shot
+at the same question; asking a current-state index about 2019 is not that.
+
+**Now:** the task population is restricted to people whose **target employer is
+their last attested employer**, so "where are they now" is the honest question
+and a wrong answer means something.
+
+Measured over the 46,332 tasks:
+
+| Subset | n | Share |
+|---|---|---|
+| target is the person's last known employer | 30,607 | 66.1% |
+| ...and that filing is under 5 years old | 16,896 | 36.5% |
+
+Median age of the last filing is 4.0 years. The recency cut matters: a person
+last attested in 2011 may have moved twice since, and the corpus cannot see it -
+scoring an index wrong for knowing something SEC does not is not a measurement.
+
+**Consequence, stated plainly.** This narrows the population again, on top of
+D022's "must have moved" and D026's coverage window. `docs/COVERAGE.md` carries
+the cumulative figure: from 230,405 people to 16,896 usable tasks, **7.3%**.
+Every narrowing was forced by a mismatch between what we could attest and what
+the surface answers, and each is published rather than quietly applied.
+
+### What this says about the two Ploid runs
+
+Both are void, and R001's diagnosis was **incomplete rather than wrong**. The
+free-text rendering was a real defect. But the corrected rendering had two more,
+and the run that produced 0/21 through the "fixed" harness (20 MISS, 1
+FALSE_MERGE, resolution failing on 20 of 21) was measuring C1 and C2, not Ploid.
+
+**No number about Ploid has survived any of the three runs.** The credits are
+nearly gone. That is the honest state, and it is recorded rather than rounded
+into a finding.
+
+### The pattern worth naming
+
+Three runs, three harness defects, zero findings about a vendor. Every one was
+caught by reading returned rows rather than by reading a summary statistic, and
+every one would have produced a publishable-looking number. `docs/SURVEY.md`
+records the same provider at 42.4% and 78% in two published comparisons with no
+methodology; this is what that gap is made of.

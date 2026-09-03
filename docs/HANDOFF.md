@@ -23,6 +23,18 @@ What to run, and what not to do. Read before touching anything.
 - **Do not trust a local green.** Verify from a fresh tree; a stale venv passes
   things it should not.
 
+## Published rate limits must reach the transport
+
+Ploid Free is **10 requests/minute**. That number was in the budget ledger below
+from W2 and never made it into `http.py`, which fired at 60/min and drew 14
+consecutive 429s - wasting most of a run on a grant denominated in credits.
+Rate-limited calls are not charged, so nothing was lost but time; a paid 429
+would have been worse.
+
+`PROVIDER_INTERVAL_S` now carries one interval per provider, taken from each
+provider's published limit. Writing a limit in a document is not the same as
+enforcing it.
+
 ## The rule R001 cost us
 
 **Before spending a budget on an arm, run one task through it and READ THE

@@ -82,17 +82,23 @@ def load_indices():
     return index, issuer_index
 
 
-def build_arms(spend: bool):
+def build_arms(spend: bool, wanted: set[str]):
     arms = {}
-    try:
-        arms["ploid"] = (Ploid(transport=ploid_transport() if spend else None), "search_fast")
-    except RuntimeError as e:
-        print(f"  ploid unavailable: {e}", file=sys.stderr)
-    try:
-        arms["exa"] = (Exa(transport=exa_transport() if spend else None), "answer")
-        arms["webfloor"] = (Exa(transport=exa_transport() if spend else None), "search")
-    except RuntimeError as e:
-        print(f"  exa unavailable: {e}", file=sys.stderr)
+    if "ploid" in wanted:
+        try:
+            arms["ploid"] = (Ploid(transport=ploid_transport() if spend else None),
+                             "search_fast")
+        except RuntimeError as e:
+            print(f"  ploid unavailable: {e}", file=sys.stderr)
+    if {"exa", "webfloor"} & wanted:
+        try:
+            if "exa" in wanted:
+                arms["exa"] = (Exa(transport=exa_transport() if spend else None), "answer")
+            if "webfloor" in wanted:
+                arms["webfloor"] = (Exa(transport=exa_transport() if spend else None),
+                                    "search")
+        except RuntimeError as e:
+            print(f"  exa unavailable: {e}", file=sys.stderr)
     return arms
 
 
@@ -102,6 +108,13 @@ def main() -> int:
     ap.add_argument("--n", type=int, default=40, help="matched n across arms")
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--budget-usd", type=float, default=1.0, help="per provider")
+    ap.add_argument("--providers", default="ploid,exa,webfloor",
+                    help="comma-separated arms to run")
+    ap.add_argument("--out", default="full_run.json", help="results filename")
+    ap.add_argument("--max-calls", type=int, default=None,
+                    help="hard cap on LIVE calls per provider. The ledger caps "
+                         "dollars; this caps credits, which is what a grant is "
+                         "denominated in. Cached replays do not count.")
     ap.add_argument("--strategy", choices=("random", "stratified"), default="random",
                     help="random for R1 (a claim about the population); "
                          "stratified for R2 (colliding names are 15%% of movers "
@@ -140,8 +153,9 @@ def main() -> int:
     window = datetime.now().strftime("%Y-%m")
     as_of = date.today()
     cache = ReplayCache(ROOT / "data" / "replay.jsonl")
-    arms = build_arms(args.spend)
+    arms = build_arms(args.spend, {a.strip() for a in args.providers.split(',')})
     ledgers = {k: Ledger(args.budget_usd) for k in arms}
+    live_calls: dict[str, int] = {k: 0 for k in arms}
     records: dict[str, list[dict]] = {k: [] for k in arms}
 
     for i, task in enumerate(sample, 1):
@@ -152,6 +166,8 @@ def main() -> int:
             if entry is None:
                 if not args.spend:
                     continue
+                if args.max_calls is not None and live_calls[arm] >= args.max_calls:
+                    continue  # credit cap reached; not an error, just the budget
                 try:
                     answers, sp = adapter.query(action, rendered)
                 except (ProviderHTTPError, Exception) as e:  # noqa: BLE001
@@ -162,7 +178,9 @@ def main() -> int:
                 except BudgetExceeded as e:
                     print(f"  [{i}] {arm} budget exhausted: {e}", file=sys.stderr)
                     continue
-                entry = cache.put(key, answers, sp, 0.0, datetime.now().isoformat())
+                live_calls[arm] += 1
+                entry = cache.put(key, answers, sp, 0.0, datetime.now().isoformat(),
+                                  raw=getattr(adapter, 'last_raw', None))
             got = ReplayCache.to_answers(entry)
             top = got[0] if got else None
             emp_cik = resolve_issuer(top.employer_name if top else None, issuer_index)
@@ -195,6 +213,7 @@ def main() -> int:
                   flush=True)
 
     report = {"window": window, "as_of": as_of.isoformat(), "seed": args.seed,
+              "live_calls": live_calls, "max_calls": args.max_calls,
               "requested_n": args.n, "dry_run": not args.spend,
               "strategy": args.strategy, "strata": strata,
               "pooling_rule": (
@@ -239,7 +258,7 @@ def main() -> int:
                                    for rr in {r["resolution_reason"] for r in recs}},
         }
     RESULTS.mkdir(exist_ok=True)
-    (RESULTS / "full_run.json").write_text(json.dumps(report, indent=2, default=str) + "\n")
+    (RESULTS / args.out).write_text(json.dumps(report, indent=2, default=str) + "\n")
     print(json.dumps(report, indent=2, default=str))
     return 0
 
