@@ -469,3 +469,46 @@ by ordinary web search.
 - harsher and arguably fairer, but it tests the oracle partly against itself and
 needs framing we do not yet have; deferred, and recorded here so the omission is
 deliberate. No floor at all - abandons the stated bar.
+
+---
+
+## D021 - Pre-registration published and hash-locked; repositories created (2026-09-02)
+
+**Decision.** The frozen pre-registration and contracts are published to a public
+Hugging Face dataset repository before any measurement exists. The working code
+repository is created private.
+
+**Artifacts.**
+
+| What | Where |
+|---|---|
+| Code (private until W7) | `https://github.com/caiotheodoro/titer` |
+| Public pre-registration timestamp | `https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers` |
+
+**Hashes, recorded here so a later edit is detectable by anyone.**
+
+```
+PRE-REGISTRATION.md  d27dfeba1474b678bfde60f16f80ebbf1ae954024c2a78aa81df6252a2ba8fe9
+CONTRACTS.md         6e4488c0fde3fad1bc31f7819e87ff1714ccc6e12d39f9b41cca2daf0cacb423
+```
+
+Verified by downloading the published files and re-hashing them against the
+working tree, rather than by trusting the upload to have succeeded.
+
+**Rationale.** Commit dates in a private repository are locally forgeable, so
+they are not evidence that the analysis plan was fixed before the data. A public
+hash is. The same repository reserves the eventual dataset name, and its card
+states in its first line that no data exists yet - so the reservation cannot be
+mistaken for a release.
+
+**Not done, deliberately.** The Apollo written-consent request and the Companies
+House Product 216 request are drafted at W0 in the plan but were not sent: both
+are outward-facing contacts and the user chose to hold them. Apollo therefore
+remains excluded, and `docs/COVERAGE.md` already records that its absence is a
+contractual fact and not a quality finding. Companies House remains outside the
+critical path, as D003 requires.
+
+**Consequence for W0.** The wave's exit conditions in `docs/WAVES.md` are now
+partially met: gates green, pre-registration published and hash-locked,
+repositories created. The two outreach items remain open and are not blockers for
+W1, which touches only free SEC bulk files.
