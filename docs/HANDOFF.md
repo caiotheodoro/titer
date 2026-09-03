@@ -41,9 +41,36 @@ the snippets disagree on the entire pricing model.
 
 ## Source access notes
 
-- **SEC**: declare a `User-Agent` identifying the project plus a contact address.
-  Stated limit 10 req/s. The corpus needs ~80 requests total; do not crawl EDGAR
-  page by page when a bulk file exists.
+- **SEC**: declare a `User-Agent` of the form `Company Name contact@domain`.
+  Stated limit 10 req/s; real behaviour is burst-sensitive well below that, so
+  `MIN_INTERVAL_S` is 1.5. The corpus needs ~80 requests total; do not crawl
+  EDGAR page by page when a bulk file exists.
+
+  **Two traps, both diagnosed the hard way on 2026-09-03:**
+
+  1. **SEC's 403 page is titled "Request Rate Threshold Exceeded" regardless of
+     cause.** Do not diagnose from the page title. It says rate limit when the
+     actual problem is the User-Agent, which cost this project a wrong
+     conclusion and a needless VPN connection.
+  2. **A GitHub `users.noreply` address is rejected.** Measured with the same
+     format and the same spacing across four domains:
+
+     | User-Agent contact domain | Result |
+     |---|---|
+     | `example.com` | 200 |
+     | a mainstream mail provider | 200 |
+     | a project-owned domain | 200 |
+     | GitHub `users.noreply` | **403** |
+
+     SEC requires a *contactable* address; a noreply address is not one. Declare
+     a real address you control. Do not declare one you do not - the policy is
+     about being reachable, and a fake address defeats it.
+
+     Addresses are not written into this repository. `TITER_SEC_UA` is read from
+     the environment, and `scripts/validate.py` fails the build on any
+     email-shaped string in a tracked file - it caught an earlier draft of this
+     very table.
+
 - **ORCID** (Tier B): anonymous public API works with no token, 12 req/s, 25k
   reads/day per IP. Prefer the annual bulk file. **Unverified**: whether the
   Public Data File summaries are truncated to three affiliations, as the UI docs
