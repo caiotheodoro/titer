@@ -25,3 +25,5 @@ data/scholar.jsonl                      W9
 results/scholar_stats.json              W9
 data/expert_tasks.jsonl                 W10
 results/expert_task_stats.json          W10
+scripts/run_expertise.py                W11
+results/expertise_e1.json               W11

@@ -1,0 +1,23 @@
+{
+  "window": "2026-09",
+  "seed": 11,
+  "dry_run": true,
+  "strata": {
+    "ATTESTED": {
+      "available": 20000,
+      "sampled": 3
+    },
+    "FALSE_far": {
+      "available": 10009,
+      "sampled": 3
+    },
+    "FALSE_near": {
+      "available": 9991,
+      "sampled": 3
+    }
+  },
+  "n": 0,
+  "spend_usd": 0,
+  "pooling_rule": "STRATIFIED and deliberately balanced 50/50 by polarity. Per-stratum rates only; a pooled marginal rate would describe the task design, not any population.",
+  "by_stratum": {}
+}

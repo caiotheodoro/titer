@@ -141,6 +141,19 @@ class Ploid:
         )]
 
 
+EXPERTISE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "affirms": {"type": "boolean",
+                    "description": "true only if this specific person has "
+                                   "published research in this topic"},
+        "confidence": {"type": "number", "description": "0 to 1"},
+        "evidence": {"type": "string",
+                     "description": "a specific work or venue, or 'none found'"},
+    },
+    "required": ["affirms", "confidence", "evidence"],
+}
+
 ANSWER_SCHEMA = {
     "type": "object",
     "properties": {
@@ -186,11 +199,17 @@ class Exa:
 
     def actions(self) -> list[Call]:
         return [Call(self.name, "answer", self.ANSWER_USD),
+                Call(self.name, "expertise", self.ANSWER_USD),
                 Call(self.name, "search", self.SEARCH_USD)]
 
     def query(self, action: str, prompt: str, **kw) -> tuple[list[RawAnswer], Spend]:
         if self.transport is None:
             raise NotConfigured("exa adapter has no transport configured")
+        if action == "expertise":
+            data = self.transport("POST", "/answer",
+                                  {"query": prompt, "outputSchema": EXPERTISE_SCHEMA})
+            self.last_raw = data
+            return self._parse_expertise(data), _spend_from(data, self.ANSWER_USD)
         if action == "answer":
             data = self.transport("POST", "/answer",
                                   {"query": prompt, "outputSchema": ANSWER_SCHEMA})
@@ -207,6 +226,30 @@ class Exa:
                                      title_text=role, confidence=0.0, rank=i))
             return out, _spend_from(data, self.SEARCH_USD)
         raise ValueError(f"unknown exa action {action!r}")
+
+    @staticmethod
+    def _parse_expertise(data: dict):
+        """Returns an ExpertiseAnswer, not a RawAnswer.
+
+        A non-JSON reply yields `affirms=None`, which scores MISS rather than a
+        correct denial. Parsing prose here would put a judged step in the
+        measurement path, and treating an unparseable reply as "no" would hand
+        a perfect false-merge rate to an arm that never answers.
+        """
+        from titer.oracle.outcome import ExpertiseAnswer
+        raw = data.get("answer")
+        if isinstance(raw, str):
+            try:
+                raw = json.loads(raw)
+            except (ValueError, TypeError):
+                return ExpertiseAnswer()
+        if not isinstance(raw, dict) or not isinstance(raw.get("affirms"), bool):
+            return ExpertiseAnswer()
+        try:
+            conf = min(max(float(raw.get("confidence")), 0.0), 1.0)
+        except (TypeError, ValueError):
+            conf = 0.0
+        return ExpertiseAnswer(affirms=raw["affirms"], confidence=conf)
 
     @staticmethod
     def _parse_answer(data: dict) -> list[RawAnswer]:
