@@ -1,0 +1,42 @@
+{
+  "env": "titer/v0",
+  "harness": "TiterEnv+keel",
+  "provider": "StochasticProvider",
+  "n_tasks": 60,
+  "k_rollouts": 16,
+  "seed": 11,
+  "verifier_gold": 1.0,
+  "verifier_noop": 0.0,
+  "solve_rate_hist": {
+    "0.0-0.1": 0,
+    "0.1-0.2": 1,
+    "0.2-0.3": 1,
+    "0.3-0.4": 3,
+    "0.4-0.5": 7,
+    "0.5-0.6": 16,
+    "0.6-0.7": 20,
+    "0.7-0.8": 11,
+    "0.8-0.9": 1,
+    "0.9-1.0": 0
+  },
+  "mean_solve_rate": 0.58125,
+  "pct_in_band_10_80": 0.9833333333333333,
+  "pct_groups_zero_adv": 0.0,
+  "sampler_trainer_kl": null,
+  "train_vs_eval_protocol_diff": "none at W5: no policy is trained yet",
+  "hack_probes": {
+    "abstain_always_mean": 0.05,
+    "honest_mean": -0.40858333333333335,
+    "gold_min": 1.0,
+    "abstain_beats_this_policy": true,
+    "note": "abstain_beats_this_policy is a diagnostic about the provider, not a gate; only abstain >= gold fails the build",
+    "shaping_terms_present": false
+  },
+  "task_population": {
+    "people_total": 120,
+    "people_with_a_move": 120,
+    "retained_fraction": 1.0
+  },
+  "pass": true,
+  "failures": []
+}

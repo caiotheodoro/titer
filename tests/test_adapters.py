@@ -40,14 +40,18 @@ def test_one_ploid_person_verify_nearly_exhausts_the_real_budget():
 # --- contact stripping ---
 
 def test_stripping_is_recursive_and_covers_unlisted_keys():
-    d = {"name": "X", "email": "a@b.com", "work_email": "c@d.com",
-         "nested": {"phone": "555", "home_address": "1 Main", "title": "CEO"},
-         "links": [{"url": "http://x", "label": "bio"}],
-         "date_of_birth": "1970-01-01", "employer_phone_number": "555"}
+    # Sentinel values, deliberately NOT email- or phone-shaped. The stripper is
+    # key-based, so the test loses nothing - and putting real-looking contact
+    # data in a fixture is the exact habit that ends with a genuine one being
+    # committed. The privacy gate flagged an earlier version of this test.
+    d = {"name": "X", "email": "SENTINEL-1", "work_email": "SENTINEL-2",
+         "nested": {"phone": "SENTINEL-3", "home_address": "SENTINEL-4", "title": "CEO"},
+         "links": [{"url": "SENTINEL-5", "label": "bio"}],
+         "date_of_birth": "SENTINEL-6", "employer_phone_number": "SENTINEL-7"}
     out = strip_contact_fields(d)
     blob = json.dumps(out)
-    for leak in ("a@b.com", "c@d.com", "555", "1 Main", "http://x", "1970-01-01"):
-        assert leak not in blob
+    for n in range(1, 8):
+        assert f"SENTINEL-{n}" not in blob
     assert out["name"] == "X" and out["nested"]["title"] == "CEO"
 
 

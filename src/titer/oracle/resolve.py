@@ -53,3 +53,28 @@ def resolve(returned_name: str | None, returned_employer_cik: str | None,
     if not narrowed:
         return Resolution(UNRESOLVABLE, "employer_matches_no_candidate")
     return Resolution(UNRESOLVABLE, "still_ambiguous_after_employer")
+
+
+def resolve_issuer(returned_employer: str | None,
+                   issuer_index: dict[str, set[str]]) -> str | None:
+    """Map a returned employer *name* to an issuer CIK.
+
+    `issuer_index` maps a normalized issuer name to the CIKs filed under it.
+    Ambiguous or unknown names return None rather than a guess: an invented
+    employer CIK would flip an outcome between CORRECT and STALE.
+    """
+    if not returned_employer or not returned_employer.strip():
+        return None
+    key = normalize(returned_employer)
+    ciks = issuer_index.get(key, set())
+    return next(iter(ciks)) if len(ciks) == 1 else None
+
+
+def build_issuer_index(rows) -> dict[str, set[str]]:
+    from collections import defaultdict
+    out: dict[str, set[str]] = defaultdict(set)
+    for r in rows:
+        n = normalize(r.issuer_name_raw)
+        if n:
+            out[n].add(r.issuer_cik)
+    return dict(out)
