@@ -248,9 +248,43 @@ def iter_authors(ua: str, counts: ScholarCounts, target: int,
 NEAR, FAR = "near", "far"
 
 
+# Catch-all topic labels. OpenAlex carries a handful of unfalsifiable buckets
+# ("Diverse Scientific Research Studies") that almost any researcher could be
+# argued into. They appeared among the first false claims a provider affirmed,
+# and a negative nobody can be wrong about measures nothing.
+_CATCHALL = ("diverse", "various", "miscellaneous", "interdisciplinary studies",
+             "research studies", "scientific studies", "and applications")
+
+
+def is_catchall(label: str) -> bool:
+    low = label.lower()
+    return any(tok in low for tok in _CATCHALL)
+
+
+def has_works_in_topic(author_id: str, topic_id: str, ua: str) -> int:
+    """Authoritative count of an author's works in a topic.
+
+    **This is the check the first corpus was missing, and it voided a whole
+    study.** An author object's `topics` field is a TOP-N SUMMARY - median 5
+    topics for authors with ~120 works - not an exhaustive record. Treating
+    "absent from the top-5 list" as "never published in" made 13.3% of the
+    constructed-false claims actually true, and that contamination was the same
+    size as the effect being measured.
+
+    `/works` filtered by author and topic is exhaustive. It is free, and one
+    call per candidate negative is the entire cost of not repeating this.
+    """
+    aid = author_id.rsplit("/", 1)[-1]
+    tid = topic_id.rsplit("/", 1)[-1]
+    d = _get(f"{API}/works?filter=authorships.author.id:{aid},topics.id:{tid}"
+             f"&per-page=1", ua)
+    return d["meta"]["count"]
+
+
 def adjacent_false_topic(author: Author, topics: dict[str, Topic],
-                         rng: random.Random,
-                         difficulty: str = NEAR) -> tuple[Topic, str] | None:
+                         rng: random.Random, difficulty: str = NEAR,
+                         verify=None, max_verify: int = 8
+                         ) -> tuple[Topic, str] | None:
     """A topic the author has provably never published in. CONTRACTS A3, D031.
 
     Two mechanical tiers, both reported separately and never pooled:
@@ -262,6 +296,12 @@ def adjacent_false_topic(author: Author, topics: dict[str, Topic],
 
     Both require zero attested works in the topic. No model participates; this
     is a set operation over the OpenAlex hierarchy.
+
+    `verify` is a callable ``(author_id, topic_id) -> int`` returning the
+    author's true work count in that topic. **Pass it.** Without it the negative
+    means only "absent from the author's top-N topic summary", which is a
+    different and much weaker claim - it made 13.3% of the first corpus's
+    negatives actually true, at the same magnitude as the effect measured.
     """
     if not author.attested:
         return None
@@ -279,9 +319,19 @@ def adjacent_false_topic(author: Author, topics: dict[str, Topic],
                 and t.id not in author.topic_ids]
 
     for tier in ([NEAR, FAR] if difficulty == NEAR else [FAR, NEAR]):
-        pool = pool_for(tier)
-        if pool:
-            # Sorted before choice so the corpus rebuilds identically from the
-            # seed alone, without storing which topic was picked.
-            return rng.choice(sorted(pool, key=lambda t: t.id)), tier
+        pool = [t for t in pool_for(tier) if not is_catchall(t.display_name)]
+        if not pool:
+            continue
+        # Sorted before choice so the corpus rebuilds identically from the seed
+        # alone, without storing which topic was picked.
+        ordered = sorted(pool, key=lambda t: t.id)
+        rng.shuffle(ordered)
+        if verify is None:
+            return ordered[0], tier
+        # Verify against /works until one is genuinely false. Without this the
+        # negative is only "absent from a top-N summary", which is not the same
+        # thing and cost an entire study.
+        for cand in ordered[:max_verify]:
+            if verify(author.author_id, cand.id) == 0:
+                return cand, tier
     return None

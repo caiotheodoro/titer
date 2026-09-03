@@ -152,3 +152,56 @@ def test_contact_address_is_required_and_not_committed():
     with pytest.raises(Exception):
         user_agent("")
     assert "mailto:x@y.z" in user_agent("x@y.z")
+
+
+# --- the check whose absence voided a whole study (R002) ---
+
+def test_verify_is_used_and_a_contaminated_candidate_is_rejected(topics, immunologist):
+    """An author's `topics` field is a TOP-N SUMMARY, not an exhaustive record.
+    Treating 'absent from the top-5' as 'never published in' made 13.3% of the
+    first corpus's negatives actually true - the same size as the effect being
+    measured. `verify` hits /works, which is exhaustive."""
+    seen = []
+
+    def verify(author_id, topic_id):
+        seen.append(topic_id)
+        return 5 if topic_id == "T3" else 0      # T3 is contaminated
+
+    got = adjacent_false_topic(immunologist, topics, random.Random(11), NEAR,
+                               verify=verify)
+    assert seen, "verify was never called"
+    assert got is None or got[0].id != "T3"
+
+
+def test_no_clean_candidate_returns_none_rather_than_a_contaminated_one(topics,
+                                                                       immunologist):
+    """If every candidate is contaminated the author yields NO task. Falling
+    back to a contaminated negative is what produced the void result."""
+    got = adjacent_false_topic(immunologist, topics, random.Random(11), NEAR,
+                               verify=lambda a, t: 3)
+    assert got is None
+
+
+def test_catchall_topics_are_excluded(immunologist):
+    """OpenAlex carries unfalsifiable buckets. 'Diverse Scientific Research
+    Studies' was among the first false claims a provider affirmed, and a
+    negative nobody can be wrong about measures nothing."""
+    from titer.corpus.scholar import is_catchall
+    assert is_catchall("Diverse Historical and Scientific Studies")
+    assert is_catchall("Diverse Scientific Research Studies")
+    assert not is_catchall("Cutaneous Melanoma Detection and Management")
+
+    junk = {"T9": _t("T9", "Diverse Scientific Research Studies", "Other",
+                     "Immunology and Microbiology", "Life")}
+    assert adjacent_false_topic(immunologist, junk, random.Random(1), NEAR,
+                                verify=lambda a, t: 0) is None
+
+
+def test_unverified_construction_is_still_possible_but_must_be_explicit():
+    """verify=None is the old behaviour. It stays available for offline tests,
+    and the docstring says plainly what it costs."""
+    import inspect
+
+    from titer.corpus import scholar
+    src = inspect.getsource(scholar.adjacent_false_topic)
+    assert "verify" in src and "top-n" in src.lower()
