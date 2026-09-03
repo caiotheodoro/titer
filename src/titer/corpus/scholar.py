@@ -61,6 +61,18 @@ def user_agent(mailto: str) -> str:
 _last = 0.0
 
 
+def _auth_headers() -> dict[str, str]:
+    """OpenAlex premium key, as a header rather than an `api_key` query param.
+
+    Both are accepted. The header is used because a query param would land in
+    log lines, error messages and cache keys - `CacheKey` hashes the request
+    string - and a credential does not belong in any of those.
+    """
+    import os
+    key = os.environ.get("OPENALEX_API_KEY", "").strip()
+    return {"Authorization": f"Bearer {key}"} if key else {}
+
+
 def _get(url: str, ua: str, timeout: int = 60) -> dict:
     global _last
     wait = MIN_INTERVAL_S - (time.monotonic() - _last)
@@ -68,11 +80,19 @@ def _get(url: str, ua: str, timeout: int = 60) -> dict:
         time.sleep(wait)
     try:
         req = urllib.request.Request(url, headers={"User-Agent": ua,
-                                                   "Accept": "application/json"})
+                                                   "Accept": "application/json",
+                                                   **_auth_headers()})
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read().decode())
     except urllib.error.HTTPError as e:
-        raise OpenAlexError(f"OpenAlex {e.code} for {url}: {e.read()[:200]!r}") from e
+        body = e.read()[:200]
+        if e.code == 429 and b"Insufficient budget" in body:
+            raise OpenAlexError(
+                "OpenAlex daily budget exhausted. It resets at midnight UTC. "
+                "Set OPENALEX_API_KEY for a premium key, which lifts the cap. "
+                "Do NOT loop - each retry burns budget you do not have."
+            ) from e
+        raise OpenAlexError(f"OpenAlex {e.code} for {url}: {body!r}") from e
     finally:
         _last = time.monotonic()
 

@@ -43,9 +43,11 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--budget-usd", type=float, default=8.0)
     ap.add_argument("--out", default="expertise_e1.json")
+    ap.add_argument("--tasks", default="expert_tasks.jsonl")
     args = ap.parse_args()
 
-    tasks = [json.loads(l) for l in TASKS.open()]
+    tasks_path = ROOT / "data" / args.tasks
+    tasks = [json.loads(l) for l in tasks_path.open()]
     by: dict[str, list] = collections.defaultdict(list)
     for t in tasks:
         by[strat(t)].append(t)
