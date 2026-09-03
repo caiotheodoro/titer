@@ -122,12 +122,65 @@ def test_ploid_parses_search_and_reports_price():
     assert spend.usd == 0.10
 
 
-def test_ploid_person_verify_is_priced_at_five_dollars():
+def test_ploid_person_verify_falls_back_to_list_price_and_says_so():
+    """No cost field in the response, so the list price is used - and tagged, so
+    an assumed figure can never be read as a measured one."""
     def fake(method, url, payload):
         return {"person": {"name": "Jane Roe", "company": "ACME", "identity_verified": True}}
     answers, spend = Ploid(transport=fake).query("person_verify", "", person_id="p1")
-    assert spend.usd == 5.00 and spend.units == 25
+    assert spend.usd == 5.00
+    assert spend.unit_name == "usd_listprice_estimate"
     assert answers[0].identity_verified is True
+
+
+def test_ploid_spend_is_read_from_meta_credits_charged():
+    """Live shape: meta.credits_charged. It is 0 when a search returns nothing,
+    so an empty result is correctly free rather than billed at our list price."""
+    def empty(method, url, payload):
+        return {"data": {"results": []}, "meta": {"credits_charged": 0}}
+    answers, spend = Ploid(transport=empty).query("search_fast", "q")
+    assert answers == [] and spend.usd == 0.0 and spend.unit_name == "acu_reported"
+
+    def charged(method, url, payload):
+        return {"data": {"results": []}, "meta": {"credits_charged": 0.5}}
+    _, spend = Ploid(transport=charged).query("search_fast", "q")
+    assert spend.usd == pytest.approx(0.5 * Ploid.ACU_USD)
+
+
+def test_ploid_reads_results_from_the_nested_data_envelope():
+    """Live shape is {"data": {"results": [...]}}. Reading `results` at the top
+    level returned nothing and scored every Ploid answer as a MISS - a
+    fabricated finding about the provider, not a measurement."""
+    def fake(method, url, payload):
+        return {"data": {"results": [{"title": "Jane Roe, CFO at Acme", "score": 0.9,
+                                      "person": {"company": "Acme",
+                                                 "identity_verified": False,
+                                                 "resolution_source": "ploid_people_index"}}]},
+                "meta": {"credits_charged": 1}}
+    answers, _ = Ploid(transport=fake).query("search_fast", "q")
+    assert len(answers) == 1
+    assert answers[0].person_name == "Jane Roe"      # name led the result title
+    assert answers[0].employer_name == "Acme"
+    assert answers[0].identity_verified is False
+
+
+def test_exa_reads_reported_cost_dollars():
+    def fake(method, url, payload):
+        return {"answer": {"person_name": "Jane Roe", "organisation": "Acme",
+                           "role": "CFO", "confidence": 0.8},
+                "costDollars": {"total": 0.005}}
+    answers, spend = Exa(transport=fake).query("answer", "q")
+    assert spend.usd == 0.005 and spend.unit_name == "usd_reported"
+    assert answers[0].employer_name == "Acme" and answers[0].confidence == 0.8
+
+
+def test_exa_prose_answer_is_not_parsed_by_a_model():
+    """A non-JSON answer scores as a miss rather than being interpreted. Parsing
+    prose would put a judged step in the measurement path."""
+    def fake(method, url, payload):
+        return {"answer": "He was at Apple.", "costDollars": {"total": 0.005}}
+    answers, _ = Exa(transport=fake).query("answer", "q")
+    assert answers == []
 
 
 def test_webfloor_is_free():

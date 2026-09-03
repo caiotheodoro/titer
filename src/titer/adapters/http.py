@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 MIN_INTERVAL_S = 1.0
+CLIENT_UA = "titer/0.1 (+https://github.com/caiotheodoro/titer)"
 
 
 class ProviderHTTPError(RuntimeError):
@@ -62,6 +63,12 @@ class HTTPTransport:
         req = urllib.request.Request(url, data=data, method=method.upper(),
                                      headers={"Content-Type": "application/json",
                                               "Accept": "application/json",
+                                              # urllib's default UA is blocked by
+                                              # Cloudflare (error 1010, "blocked
+                                              # based on your browser signature").
+                                              # We identify honestly as this client
+                                              # rather than impersonating a browser.
+                                              "User-Agent": CLIENT_UA,
                                               **self.headers})
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as r:

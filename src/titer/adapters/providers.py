@@ -14,6 +14,7 @@ MSA 2.4(j)'s prohibition on publishing benchmark analysis.
 """
 from __future__ import annotations
 
+import json
 import re
 import time
 from dataclasses import dataclass
@@ -56,6 +57,19 @@ class Ploid:
             Call(self.name, "person_verify", self.PERSON_ACU * self.ACU_USD),
         ]
 
+    @staticmethod
+    def render(task) -> str:
+        """Ploid /v1/search takes a people-search QUERY, not a question.
+
+        Handing it the task prompt verbatim returned zero results while a short
+        query returned results, so scoring the prompt form would have measured
+        our input shape rather than Ploid's index. Each provider gets the task
+        in the shape its own API documents; the FACTS given are identical
+        (person name plus the anchor employer) and the scored fact is still
+        withheld. See docs/DECISIONS.md D025.
+        """
+        return f"{task.person_name_raw} {task.anchor_issuer_name}"
+
     def query(self, action: str, prompt: str, **kw) -> tuple[list[RawAnswer], Spend]:
         if self.transport is None:
             raise NotConfigured("ploid adapter has no transport configured")
@@ -64,20 +78,32 @@ class Ploid:
                     "type": action.split("_", 1)[1],
                     "num_results": kw.get("num_results", 10)}
             data = self.transport("POST", "/v1/search", body)
-            return self._parse_search(data), Spend(self.SEARCH_USD, 0.5, "acu")
+            return self._parse_search(data), _ploid_spend(data, self.SEARCH_USD)
         if action == "person_verify":
             data = self.transport("POST", "/v1/person", {"person_id": kw["person_id"]})
-            return self._parse_person(data), Spend(self.PERSON_ACU * self.ACU_USD,
-                                                   self.PERSON_ACU, "acu")
+            return self._parse_person(data), _ploid_spend(
+                data, self.PERSON_ACU * self.ACU_USD)
         raise ValueError(f"unknown ploid action {action!r}")
 
     @staticmethod
     def _parse_search(data: dict) -> list[RawAnswer]:
+        # Live shape (2026-09-03): {"data": {"results": [...]}, "meta": {...}}.
+        # Reading `results` at the top level - as an earlier version did -
+        # yields nothing and scores every Ploid answer as a MISS, which is a
+        # fabricated finding about the provider rather than a measurement.
+        results = ((data.get("data") or {}).get("results")
+                   or data.get("results") or [])
         out = []
-        for i, r in enumerate(data.get("results", [])):
+        for i, r in enumerate(results):
             p = r.get("person", {}) or {}
+            # `person.title` is the LinkedIn HEADLINE, not a role title - it
+            # carries marketing prose. It is passed through unaltered and
+            # title_map/v1 classifies it; a headline that names no office
+            # becomes UNKNOWN and fails the title atom. That is the honest
+            # result for a tier that does not return a role, and inferring one
+            # from the headline would put a judged step in the scoring path.
             out.append(RawAnswer(
-                person_name=p.get("name"),
+                person_name=p.get("name") or _name_from_title(r.get("title")),
                 employer_name=p.get("company") or p.get("company_name"),
                 title_text=p.get("title"),
                 confidence=float(r.get("score", 0.0) or 0.0),
@@ -98,42 +124,94 @@ class Ploid:
         )]
 
 
+ANSWER_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "person_name": {"type": "string"},
+        "organisation": {"type": "string"},
+        "role": {"type": "string"},
+        "confidence": {"type": "number"},
+    },
+    "required": ["person_name", "organisation", "role", "confidence"],
+}
+
+
 @dataclass
 class Exa:
-    """Exa search. SELF-SERVE ONLY - see D019."""
+    """Exa. SELF-SERVE ONLY - see docs/DECISIONS.md D019.
+
+    Two actions, and the distinction matters for fairness:
+
+    * `answer` - POST /answer with an `outputSchema`, which returns structured
+      JSON plus a self-reported confidence. This is the people-research arm.
+    * `search` - POST /search returns only `id`, `title`, `url`. It is a WEB
+      SEARCH, not a people index. Scoring it against Ploid's people index would
+      manufacture a finding about Exa, so it is used as the free web floor and
+      labelled as such, never as Exa's people product.
+
+    Spend is read from the response's own `costDollars.total`, not from a list
+    price. `base.py` requires it: an estimated price makes the whole
+    value-of-information claim circular.
+    """
 
     transport: Transport | None = None
     api_key: str | None = None
     name: str = "exa"
 
-    SEARCH_USD = 0.007         # $7 per 1k requests, <=10 results
+    ANSWER_USD = 0.005    # observed 2026-09-03; the response reports the real figure
+    SEARCH_USD = 0.007
+
+    @staticmethod
+    def render(task) -> str:
+        """Exa /answer is an answer engine: it takes the question as written."""
+        return task.prompt() + " Give your confidence as a number between 0 and 1."
 
     def actions(self) -> list[Call]:
-        return [Call(self.name, "search", self.SEARCH_USD)]
+        return [Call(self.name, "answer", self.ANSWER_USD),
+                Call(self.name, "search", self.SEARCH_USD)]
 
     def query(self, action: str, prompt: str, **kw) -> tuple[list[RawAnswer], Spend]:
         if self.transport is None:
             raise NotConfigured("exa adapter has no transport configured")
-        if action != "search":
-            raise ValueError(f"unknown exa action {action!r}")
-        data = self.transport("POST", "/search",
-                              {"query": prompt, "numResults": kw.get("num_results", 10)})
-        out = []
-        for i, r in enumerate(data.get("results", [])):
-            # Exa returns a web-page `title` ("Jane Roe - CFO - Acme | LinkedIn"),
-            # not a person record. Reading it straight into `person_name` made
-            # every Exa answer normalize to token soup, miss the corpus, and
-            # score MISS - manufacturing exactly the fabricated finding about a
-            # provider that `NotConfigured` exists to prevent.
-            person, employer, role = _parse_page_title(r.get("title"))
-            out.append(RawAnswer(
-                person_name=person,
-                employer_name=r.get("company") or employer,
-                title_text=r.get("role") or role,
-                confidence=float(r.get("score", 0.0) or 0.0),
-                rank=i,
-            ))
-        return out, Spend(self.SEARCH_USD, 1.0, "request")
+        if action == "answer":
+            data = self.transport("POST", "/answer",
+                                  {"query": prompt, "outputSchema": ANSWER_SCHEMA})
+            return self._parse_answer(data), _spend_from(data, self.ANSWER_USD)
+        if action == "search":
+            data = self.transport("POST", "/search",
+                                  {"query": prompt, "numResults": kw.get("num_results", 10)})
+            out = []
+            for i, r in enumerate(data.get("results", [])):
+                person, employer, role = _parse_page_title(r.get("title"))
+                out.append(RawAnswer(person_name=person, employer_name=employer,
+                                     title_text=role, confidence=0.0, rank=i))
+            return out, _spend_from(data, self.SEARCH_USD)
+        raise ValueError(f"unknown exa action {action!r}")
+
+    @staticmethod
+    def _parse_answer(data: dict) -> list[RawAnswer]:
+        raw = data.get("answer")
+        if isinstance(raw, str):
+            try:
+                raw = json.loads(raw)
+            except (ValueError, TypeError):
+                # Prose rather than JSON. Refuse to parse it with a model - that
+                # would put a judged step in the measurement path. Treat it as
+                # no structured answer and let it score as a MISS.
+                return []
+        if not isinstance(raw, dict):
+            return []
+        conf = raw.get("confidence")
+        try:
+            conf = min(max(float(conf), 0.0), 1.0)
+        except (TypeError, ValueError):
+            conf = 0.0
+        return [RawAnswer(
+            person_name=raw.get("person_name") or None,
+            employer_name=raw.get("organisation") or None,
+            title_text=raw.get("role") or None,
+            confidence=conf, rank=0,
+        )]
 
 
 @dataclass
@@ -165,6 +243,37 @@ class WebFloor:
 
 
 _SITE_SUFFIX = re.compile(r"\s*[|\u2013-]\s*(LinkedIn|Bloomberg|Crunchbase|ZoomInfo)\s*$", re.I)
+
+
+def _ploid_spend(data: dict, fallback_usd: float) -> Spend:
+    """Ploid reports the real charge in `meta.credits_charged`, and it is 0 when
+    a search returns nothing. Reading it means an empty result is correctly
+    free, rather than being billed at a list price we invented."""
+    meta = (data or {}).get("meta") or {}
+    credits = meta.get("credits_charged")
+    if isinstance(credits, (int, float)):
+        return Spend(float(credits) * Ploid.ACU_USD, float(credits), "acu_reported")
+    return Spend(fallback_usd, 0.0, "usd_listprice_estimate")
+
+
+def _name_from_title(title: str | None) -> str | None:
+    """Ploid search results carry no `person.name`; the person's name leads the
+    result `title` ("Geoff Bailey, Chief Executive Officer at Turmec")."""
+    if not title:
+        return None
+    head = re.split(r"\s*[,|\u00a6]\s*|\s+-\s+", title.strip())[0]
+    return head or None
+
+
+def _spend_from(data: dict, fallback_usd: float) -> Spend:
+    """Read the provider's own reported cost. Falls back to the list price only
+    when the response carries none, and flags that in the unit name so a
+    fabricated figure is never mistaken for a measured one."""
+    cost = (data or {}).get("costDollars") or {}
+    total = cost.get("total")
+    if isinstance(total, (int, float)):
+        return Spend(float(total), 1.0, "usd_reported")
+    return Spend(fallback_usd, 1.0, "usd_listprice_estimate")
 
 
 def _parse_page_title(title: str | None) -> tuple[str | None, str | None, str | None]:

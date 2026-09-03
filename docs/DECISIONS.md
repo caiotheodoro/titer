@@ -776,3 +776,43 @@ as evidence that nothing failed. That is precisely the error this project was
 built to catch in other people's measurements, and we shipped four of them.
 
 `docs/RED-TEAM.md` A8 is now closed; the remaining LIVE attacks stand.
+
+---
+
+## D025 - Each provider receives the task in the shape its own API documents (2026-09-03)
+
+**Decision.** A `Task` is rendered per provider by `Provider.render(task)`. The
+facts disclosed are identical - person name plus the anchor employer - and the
+scored fact is withheld in every rendering.
+
+**Why.** Handing Ploid's `/v1/search` the task prompt verbatim returned **zero
+results**, while a short people-search query against the same index returned
+results. `/v1/search` is documented as taking a query, not a question; Exa's
+`/answer` is documented as an answer engine and takes the question as written.
+Scoring the prompt form against Ploid would have measured our input shape rather
+than their index, and produced a fabricated finding - the same failure
+`NotConfigured` exists to prevent.
+
+**The rule this establishes.** Every arm must be given its best fair shot at the
+same question with the same disclosed facts. A provider is never penalised for
+our choice of wire format. Renderings are code, reviewable, and identical across
+tasks.
+
+**Also settled here: spend is read, not assumed.**
+
+- Exa reports `costDollars.total` per call.
+- Ploid reports `meta.credits_charged`, and it is **0** when a search returns
+  nothing - so an empty result is correctly free rather than billed at a list
+  price we invented.
+
+`base.py` required this from the start: an estimated price makes the
+value-of-information claim circular. Where a response carries no cost field the
+fallback is tagged `usd_listprice_estimate`, so an assumed figure can never be
+mistaken for a measured one.
+
+**Not yet resolved.** Ploid's `person.title` is a LinkedIn *headline*, not a
+role title, so its search tier cannot answer the "in what role" half of the
+task. That is passed through to `title_map/v1` unaltered: a headline naming no
+office becomes UNKNOWN and fails the title atom. Inferring a role from the
+headline would put a judged step in the scoring path. Whether this understates
+Ploid is a question for `docs/COVERAGE.md` once there are numbers.

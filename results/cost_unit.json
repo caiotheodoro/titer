@@ -1,13 +1,15 @@
 {
-  "dry_run": true,
+  "dry_run": false,
   "providers": {
     "exa": {
       "list_price_usd": 0.007,
-      "note": "dry run: no call made. Re-run with --spend."
-    },
-    "ploid": {
-      "list_price_usd": 0.1,
-      "note": "dry run: no call made. Re-run with --spend."
+      "observed_spend_usd": 0.007,
+      "n_answers": 10,
+      "first": {
+        "name": "jane jobseeker",
+        "employer": null,
+        "confidence": 0.0
+      }
     }
   }
 }
