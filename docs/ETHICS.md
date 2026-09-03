@@ -167,3 +167,69 @@ Named now, so it cannot be argued away later:
 
 None of these is currently the case. If one becomes the case, the affected part
 is dropped and the drop is published.
+
+---
+
+## A. The scholarly population (added 2026-09-03, per D030)
+
+The expertise study measures a different population and raises one problem the
+employment study did not. Sections 1-8 above stay in force; this adds to them.
+
+### A-E1. We construct FALSE claims about real, named people
+
+This is the new hazard and it deserves naming before any code exists.
+
+Every task pairs an **attested** expertise claim with a **constructed-false**
+one: a topic in which a real, named researcher has provably never published.
+The instrument therefore generates, at scale, assertions of the form *"Dr X is
+not an expert in Y."*
+
+**That assertion is an artefact of a test, not a finding about a person**, and
+the difference is easy to lose once it is in a file. Three rules, enforced
+rather than intended:
+
+1. **No constructed-false claim is ever published against a named individual.**
+   The released corpus carries the attested side and the *counts* of the
+   constructed side. A reader can regenerate the negatives from the published
+   selection rule; we do not ship a list of people paired with things they
+   cannot do.
+2. **"Zero attested works in topic T" is not "not an expert in T."** Publication
+   record is what can be attested, not what is true. An engineer who never
+   publishes is invisible to this oracle. `CONTRACTS.md` A6 says so and
+   `docs/COVERAGE.md` publishes it as a gap.
+3. **The instrument scores a PROVIDER, never a person.** Every outcome class
+   describes what a provider asserted. No row in any output is a verdict about
+   the human named in it.
+
+### A-E2. Why this population is otherwise lower-risk than the last
+
+- **ORCID is opt-in by construction** and CC0; only public records are used.
+- **OpenAlex is open bibliographic metadata** - authorship, venues, topics,
+  institutions. It is the public scholarly record, which exists to be cited.
+- **A publication is a deliberate public act.** Unlike an SEC filing, which is
+  compelled, an author chose to put their name on the work.
+
+### A-E3. Unchanged, and load-bearing
+
+No contact fields. Not email, not phone, not institutional address, not a
+personal page. OpenAlex exposes author-level metadata that could be assembled
+into a contact route; it is stripped at ingest by the same
+`strip_contact_fields` path, and `make privacy-gate` fails the build on any
+email-shaped string in a tracked file - it has already caught two.
+
+### A-E4. Rectification
+
+Identical to section 6. A researcher may ask for removal from the pointer set:
+honoured within 7 days, no justification required, recorded as a count and never
+as an identity. Because the corpus is pointers into OpenAlex and ORCID, removal
+here does not remove the underlying record, and we say so rather than implying a
+power we lack.
+
+### A-E5. What would make this study unpublishable
+
+- If the constructed-false negatives could not be released as a *rule* and had
+  to ship as a list of named people paired with non-expertise.
+- If adjacency selection required a model, which would put a judged step into
+  the construction of a claim about a person.
+
+Neither is currently the case.

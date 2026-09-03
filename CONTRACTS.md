@@ -270,3 +270,102 @@ outside the band are removed from the RL mix and **kept in eval**.
 - Not a claim that the trained policy transfers to live traffic. It is trained
   on a fitted simulator and evaluated on held-out real calls; the gap is
   measured, published, and named as the central limitation.
+
+---
+
+# ADDENDUM — EXPERTISE (contracts/v1-expertise)
+
+Added 2026-09-03 per `docs/DECISIONS.md` D030. Everything above stays in force
+for the EDGAR population; this section governs the scholarly one. Frozen on the
+same terms: no change without a DECISIONS entry **and** measured evidence.
+
+## A1. Attestation tiers, restated for expertise
+
+| Tier | Meaning | Source |
+|---|---|---|
+| **A** | Authorship attested by a third party with a persistent identifier | OpenAlex work ↔ author, backed by a Crossref DOI |
+| **B** | Self-asserted to a registry | ORCID affiliations and self-added works |
+
+Note this **reverses D003's demotion of ORCID**, and only partly. ORCID is the
+identity spine - a stable, self-owned, CC0 identifier - while the *attestation*
+comes from the publication record, which the researcher does not control. A
+person cannot self-assert a DOI into existence.
+
+## A2. The attested expertise tuple
+
+```
+ExpertiseTuple = {
+  author_id:    str    # OpenAlex author identifier (disambiguated)
+  orcid:        str    # ORCID iD, when present
+  display_name: str
+  topic_id:     str    # OpenAlex topic
+  topic_label:  str
+  n_works:      int    # attested works by this author in this topic
+  first_year:   int
+  last_year:    int
+  institution:  str    # last attested affiliation, ROR-identified
+}
+```
+
+Published as pointers - OpenAlex IDs, ORCID iDs, topic IDs, DOIs and counts.
+Never as an assembled dossier. `docs/ETHICS.md` governs.
+
+## A3. Claim polarity, and how a false claim is CONSTRUCTED
+
+The reason this population is stronger than the employment one: **a false claim
+is constructible from the oracle rather than judged.**
+
+- **ATTESTED**: the author has `n_works >= MIN_WORKS` in the topic.
+- **CONSTRUCTED_FALSE**: the author has **zero** works in the topic, and the
+  topic is drawn from an **adjacent** field by the OpenAlex topic hierarchy -
+  a sibling under a shared ancestor, never hand-picked and never absurd.
+
+An implausible negative ("this cardiologist is not an expert in medieval
+poetry") measures nothing. Adjacency is mechanical: same domain, different
+field, sibling topic. The selection rule is code, versioned as
+`topic_adjacency/v1`, and no model participates.
+
+Tasks are balanced 50/50 by polarity. The balance is by construction, not by
+sampling luck.
+
+## A4. `MIN_WORKS` and the contamination bound
+
+`MIN_WORKS = 3`. One paper in a topic is a dabble and would make the ATTESTED
+side unfairly hard; a high threshold would only measure famous people.
+
+OpenAlex author disambiguation is imperfect and **its error rate is published by
+OpenAlex itself**. That rate is the contamination bound here, exactly as the
+same-human-two-CIK rate was for EDGAR (section 4.2), and expertise rates are
+reported raw and net of it. An author record that merges two humans manufactures
+both false ATTESTED and false CONSTRUCTED_FALSE claims, so the bound cuts both
+ways and is reported on both.
+
+## A5. The `expert_sourcing` cost profile
+
+Severity is a property of the error; cost is a property of the caller. For an
+expert-sourcing platform the asymmetry is extreme and is grounded in observed
+market facts rather than intuition:
+
+- A **miss** costs roughly one sourcing bounty. Observed range for a verified
+  expert hire: **$250-$15,000**.
+- A **fake expert admitted** - a `FALSE_MERGE` here - has cost this market a
+  security incident involving suspected state-actor infiltration, a breach with
+  class actions, and contaminated training data delivered to frontier labs.
+
+|  | `MISS` | `FALSE_MERGE` | `UNSURE_WRONG` | `ABSTAIN` | `STALE` |
+|---|---|---|---|---|---|
+| `expert_sourcing` | 1 | **150** | 30 | 0.5 | 2 |
+
+150 is deliberately the largest ratio in the registry, above `journalism`'s 100.
+It is a stated assumption, not a measurement, and - like every profile - the
+result that matters is **ranking stability across profiles**, not the number
+chosen here.
+
+## A6. What this addendum does not claim
+
+- Not a claim that any named person is or is not an expert. The instrument
+  measures a **provider's** verdict against an attestation record, never a
+  person's competence. See `docs/ETHICS.md` A-E1.
+- Not a claim that publication record equals expertise. It is what can be
+  attested. A brilliant engineer who never publishes is invisible here, and that
+  is a coverage gap, published as one.

@@ -35,6 +35,12 @@ RECRUITER     = _p(1.0,   2.0,    1.0,    0.5,    1.0)
 GTM_OUTBOUND  = _p(1.0,   5.0,    2.0,    0.5,    2.0)
 KYC_SANCTIONS = _p(3.0,  50.0,   10.0,    1.0,    5.0)
 JOURNALISM    = _p(1.0, 100.0,   20.0,    0.5,    3.0)
+# CONTRACTS addendum A5. The largest asymmetry in the registry, and the only one
+# grounded in observed market prices rather than intuition: a miss costs roughly
+# one sourcing bounty ($250-$15,000 observed for a verified expert hire), while a
+# fake expert admitted has cost this market a state-actor infiltration incident,
+# a breach with class actions, and contaminated data delivered to frontier labs.
+EXPERT_SOURCING = _p(1.0, 150.0, 30.0, 0.5, 2.0)
 
 #: The four reportable profiles. `PRIMARY` is fixed in the pre-registration.
 REPORTABLE: dict[str, Profile] = {
@@ -42,6 +48,7 @@ REPORTABLE: dict[str, Profile] = {
     "gtm_outbound": GTM_OUTBOUND,
     "kyc_sanctions": KYC_SANCTIONS,
     "journalism": JOURNALISM,
+    "expert_sourcing": EXPERT_SOURCING,
 }
 PRIMARY = "gtm_outbound"
 

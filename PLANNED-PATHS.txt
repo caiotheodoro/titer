@@ -17,3 +17,7 @@ scripts/seed_spread.py                  W6
 docs/disclosures/                       on first disclosable finding
 results/cost_unit.json                  W2
 results/intervals.json                  W3
+# --- expertise study (D030), waves W9-W12 ---
+src/titer/corpus/scholar.py             W9
+scripts/build_scholar_corpus.py         W9
+scripts/build_expert_tasks.py           W10

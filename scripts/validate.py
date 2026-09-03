@@ -33,6 +33,7 @@ SPINE = [
     "docs/DATASET_CARD.md", "docs/DECISIONS.md", "docs/ETHICS.md",
     "docs/EVALS_CARD.md", "docs/HANDOFF.md", "docs/LINEAGE.md",
     "docs/METHOD.md", "docs/MODEL_CARD.md", "docs/PRE-REGISTRATION.md",
+    "docs/PRE-REGISTRATION-EXPERTISE.md",
     "docs/RED-TEAM.md", "docs/REPRODUCTION.md", "docs/RETRACTIONS.md",
     "docs/RUBRIC.md", "docs/SURVEY.md", "docs/WAVES.md", "docs/methodology.md",
 ]
@@ -130,20 +131,31 @@ def gate_no_placeholders() -> None:
                 fail("placeholder", f"{rel}:{i} contains a placeholder token")
 
 
+PREREGS = ["docs/PRE-REGISTRATION.md", "docs/PRE-REGISTRATION-EXPERTISE.md"]
+
+
 def gate_prereg_frozen() -> None:
-    """The pre-registration hash is recorded once and never changes silently."""
-    prereg = ROOT / "docs/PRE-REGISTRATION.md"
-    lock = ROOT / "docs/PRE-REGISTRATION.sha256"
-    digest = hashlib.sha256(prereg.read_bytes()).hexdigest()
-    if not lock.is_file():
-        lock.write_text(digest + "\n")
-        print(f"  pre-registration frozen at {digest[:16]}...")
-        return
-    recorded = lock.read_text().strip()
-    if recorded != digest:
-        fail("prereg", "docs/PRE-REGISTRATION.md changed after freeze. It is never edited; "
-                       "supersede it with a dated DECISIONS entry carrying a reversal clause. "
-                       f"recorded={recorded[:16]}... actual={digest[:16]}...")
+    """Every pre-registration hash is recorded once and never changes silently.
+
+    Both are gated. A second study does not get a softer rule than the first,
+    and adding one must not create a document that is frozen in name only.
+    """
+    for rel in PREREGS:
+        prereg = ROOT / rel
+        if not prereg.is_file():
+            fail("prereg", f"{rel} is listed as a pre-registration but does not exist")
+            continue
+        lock = prereg.with_suffix(".sha256")
+        digest = hashlib.sha256(prereg.read_bytes()).hexdigest()
+        if not lock.is_file():
+            lock.write_text(digest + "\n")
+            print(f"  {rel} frozen at {digest[:16]}...")
+            continue
+        recorded = lock.read_text().strip()
+        if recorded != digest:
+            fail("prereg", f"{rel} changed after freeze. It is never edited; supersede it "
+                           "with a dated DECISIONS entry carrying a reversal clause. "
+                           f"recorded={recorded[:16]}... actual={digest[:16]}...")
 
 
 def gate_card_honest() -> None:

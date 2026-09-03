@@ -1030,3 +1030,125 @@ caught by reading returned rows rather than by reading a summary statistic, and
 every one would have produced a publishable-looking number. `docs/SURVEY.md`
 records the same provider at 42.4% and 78% in two published comparisons with no
 methodology; this is what that gap is made of.
+
+---
+
+## D029 - Temporal disambiguation: an untested hypothesis, with the experiment (2026-09-03)
+
+**Status: HYPOTHESIS. No measurement supports it. Recorded so it is falsifiable
+later rather than asserted now.**
+
+**The claim.** People-search indexes cannot be given a *biographical* constraint.
+Ploid's published filter set is `title`, `seniority`, `company`, `industry`,
+`location` - every field describes a person's **current state**. No query can
+express *"the Jane Chen who was at X in 2019."* Where a name collides, the
+caller therefore has no way to hand over the one piece of context that would
+disambiguate, and the index returns *a* Jane Chen rather than *the* one.
+
+**Why it is NOT the explanation for our results.** Four defects in our own
+harness were each independently sufficient to produce the Ploid outcomes we saw
+(R001, D028). Attributing those to a product gap would be exactly the error this
+repository exists to name. Concretely, the one clean observation runs the other
+way: `{"query": "George Reyes", "filters": {"company": "Google"}}` returned the
+correct person as the top result from `ploid_people_index`. When asked properly,
+it found him.
+
+**What is genuinely observed, and it is thin.** Under malformed queries the
+index returned *plausible wrong people* - "Mark Smith" at "Mark Smith Inc.",
+"Richard Walker" at "Richard Walker West Inc." - eponymous small-business owners
+rather than the filed officer. That is consistent with the hypothesis and also
+consistent with a bad query. It distinguishes nothing.
+
+**The experiment that would settle it.** A paired design over colliding-name
+tasks, where every arm gets the identical name and the *only* difference is
+whether a biographical constraint is available:
+
+| Arm | Input | Measures |
+|---|---|---|
+| A | name only | baseline ambiguity |
+| B | name + a **current-state** constraint the API accepts (`company`) | what today's filters buy |
+| C | name + a **historical** constraint expressed in free text | whether the index uses it at all |
+| D | name + historical constraint, oracle-supplied | ceiling |
+
+The claim is supported if C ≈ A and D > B: the index cannot exploit history even
+when it is handed it. It is falsified if C > A, which would mean the semantic
+query field already absorbs biographical context and no new filter is needed.
+
+Requires ~4 x n colliding-name tasks of provider credit. Not runnable at the
+current budget; the tasks are frozen and the harness is ready.
+
+**Until that runs, D029 is cited as a hypothesis and never as a finding.**
+
+---
+
+## D030 - The subject changes to expertise; the method does not (2026-09-03)
+
+**Decision.** `titer` measures **expertise verification** first and **identity
+disambiguation under a capability constraint** second. The SEC employment corpus
+is retained as a cross-domain second population. The name, the oracle discipline,
+the cost machinery and the environment are unchanged.
+
+### Why - market evidence, including the part that argues against us
+
+Expert sourcing for AI-data companies is large and compounding: Mercor at ~$2B
+gross annualized and doubling in six months; Micro1 5x in eight; Handshake 0 to
+~$1B in fifteen; frontier labs reported at ~$1B/yr each on human data; referral
+bounties of **$250-$15,000 per verified expert hire**, which is the implicit
+price ceiling for sourcing one.
+
+**The against-case, recorded as prominently as the for-case, because it is
+stronger than the pitch:**
+
+1. **The winners own attested supply and say so.** Handshake's moat is 500,000
+   PhDs verified through **university registrar integration** - `.edu` plus
+   registrar, so credentials are institution-attested rather than self-reported.
+   Mercor sources >60% of expert hires by referral. Micro1 built its own sourcing
+   agent. A 3B-profile index is the commodity these companies deliberately
+   de-commoditized.
+2. **The acute pain is verification, not discovery.** Suspected North Korean
+   operatives worked through Mercor on stolen credentials, in some cases
+   producing data for US labs; a March 2026 breach exfiltrated identity and
+   biometric dossiers and drew class actions; a vendor study flagged 38.5% of
+   19,368 AI interviews for cheating (that last from a party selling
+   anti-cheating tooling - directional, not authoritative). **Nobody in this
+   market says they cannot find PhDs.**
+3. **No public evidence that any of ten major buyers purchases third-party
+   people data.** Either a research gap or a missing budget line. Stated as
+   unknown; only customer conversations settle it.
+4. **A direct competitor is already executing this GTM.** HeroHunt.ai sells a
+   "1B-reach people-search API" and is content-marketing into this exact segment.
+5. **The published analyst sizing is unusable.** The "$3-8B market" totals are
+   *smaller than the combined revenue of the vendors inside them*. These numbers
+   must not appear in any deliverable.
+
+### The finding that redirects the instrument
+
+**Handshake's moat is this repository's Tier A / Tier B distinction operating as
+a business.** Attested-not-self-reported is worth ~$1B of annualized revenue to
+someone. That is the strongest external validation the method has had - and it
+says the subject should be expertise, where the attestation chain (OpenAlex
+authorship, Crossref DOIs, ORCID identity) is *stronger* than SEC filings, not
+weaker.
+
+Note the reversal of D003: ORCID was demoted there as ~98% self-asserted. That
+objection largely dissolves for expertise, because a researcher's **publication
+record is attested by publishers**, not by the researcher. ORCID becomes the
+identity spine; OpenAlex and DOIs carry the attestation.
+
+### Consequences
+
+- A new frozen `docs/PRE-REGISTRATION-EXPERTISE.md`, hash-published. **The
+  original pre-registration is never edited.** Its H1-H4 remain live for the
+  EDGAR arm - unfinished, not falsified.
+- Ploid enters as an **architectural argument, explicitly unmeasured**, grounded
+  in their own published filter set. Credits are exhausted and D029 is a
+  hypothesis.
+- The product argument is *not* "sell search to expert platforms" - they build
+  that. It is: the unserved need is institution-attested verification at API
+  speed, and Ploid already has the right architecture, missing the attestation
+  chain behind the word "verified" and a biographical input.
+
+**Alternatives rejected.** A strategy memo alone - produces no evidence, which is
+the only thing this project is good at. A second repository - duplicates the
+oracle, cost and calibration machinery. Dropping EDGAR - discards 4.2M attested
+rows and the cross-domain contrast.
