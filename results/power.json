@@ -29,35 +29,16 @@
     "H3 calibration bucket occupancy": 0.1
   },
   "achievable": {
-    "$0.01/task": {
-      "n": 499,
-      "half_width_at_p015": 0.0313493304562566,
-      "branch": "ranking"
-    },
-    "$0.02/task": {
-      "n": 249,
-      "half_width_at_p015": 0.04416618971685902,
-      "branch": "ranking"
-    },
-    "$0.05/task": {
-      "n": 99,
-      "half_width_at_p015": 0.07050892752118404,
-      "branch": "intervals_only"
-    },
-    "$0.10/task": {
-      "n": 49,
-      "half_width_at_p015": 0.09785641251753824,
-      "branch": "intervals_only"
-    },
     "$0.20/task": {
-      "n": 24,
-      "half_width_at_p015": 0.14587197160533055,
-      "branch": "cannot_separate"
-    },
-    "$0.50/task": {
-      "n": 10,
-      "half_width_at_p015": 0.22657768850449156,
+      "n": 25,
+      "half_width_at_p015": 0.1412508507525121,
       "branch": "cannot_separate"
     }
+  },
+  "selected_branch": {
+    "n": 25,
+    "half_width": 0.1412508507525121,
+    "branch": "cannot_separate",
+    "note": "This budget cannot separate the providers. Publish the intervals anyway, and publish the n each hypothesis would have required."
   }
 }

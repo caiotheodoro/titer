@@ -23,6 +23,20 @@ What to run, and what not to do. Read before touching anything.
 - **Do not trust a local green.** Verify from a fresh tree; a stale venv passes
   things it should not.
 
+## The rule R001 cost us
+
+**Before spending a budget on an arm, run one task through it and READ THE
+RETURNED ROWS VERBATIM.** A pilot that only counts outcomes cannot tell a bad
+query from a bad index - both look like a MISS. We spent $4.60 of a $5 grant
+producing a 0/21 result that turned out to measure our own wire format, and the
+rows had been saying so from the first call: the right names attached to
+eponymous small businesses is what a malformed query looks like, not what a
+missing person looks like.
+
+Corollary: check the provider's documented request shape against what the
+adapter actually sends. Ploid documents structured `filters`; we were putting
+the company in the free text.
+
 ## Budget ledger
 
 | Item | Value | Source |

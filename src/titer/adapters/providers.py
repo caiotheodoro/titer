@@ -44,7 +44,11 @@ class Ploid:
     api_key: str | None = None
     name: str = "ploid"
 
-    SEARCH_USD = 0.10          # per call returning up to 10 matches
+    # MEASURED 2026-09-03, not the list price. The pricing page says $0.10 per
+    # 10 matches; a live search reports meta.credits_charged = 1, which at the
+    # published $0.20/ACU is $0.20 - twice the list figure. Spend is read from
+    # the response, so this constant only predicts affordability.
+    SEARCH_USD = 0.20
     PERSON_ACU = 25
     ACU_USD = 0.20
 
@@ -58,25 +62,29 @@ class Ploid:
         ]
 
     @staticmethod
-    def render(task) -> str:
-        """Ploid /v1/search takes a people-search QUERY, not a question.
+    def render(task) -> dict:
+        """Structured request, not a string. See docs/RETRACTIONS.md R001.
 
-        Handing it the task prompt verbatim returned zero results while a short
-        query returned results, so scoring the prompt form would have measured
-        our input shape rather than Ploid's index. Each provider gets the task
-        in the shape its own API documents; the FACTS given are identical
-        (person name plus the anchor employer) and the scored fact is still
-        withheld. See docs/DECISIONS.md D025.
+        An earlier version packed the name and the employer into one free-text
+        `query`. Ploid documents structured `filters` - title, seniority,
+        company, industry, location - and a company does not belong in the free
+        text. That defect produced a 0/21 result that measured our wire format
+        rather than their index, and it cost the entire budget before it was
+        found.
+
+        The facts disclosed are unchanged: person name plus the anchor employer.
+        The scored fact - the employer at the target date - is still withheld.
         """
-        return f"{task.person_name_raw} {task.anchor_issuer_name}"
+        return {"query": _presented_name(task.person_name_raw),
+                "filters": {"company": task.anchor_issuer_name}}
 
-    def query(self, action: str, prompt: str, **kw) -> tuple[list[RawAnswer], Spend]:
+    def query(self, action: str, prompt, **kw) -> tuple[list[RawAnswer], Spend]:
         if self.transport is None:
             raise NotConfigured("ploid adapter has no transport configured")
         if action.startswith("search_"):
-            body = {"query": prompt, "category": "people",
-                    "type": action.split("_", 1)[1],
-                    "num_results": kw.get("num_results", 10)}
+            rendered = prompt if isinstance(prompt, dict) else {"query": prompt}
+            body = {"category": "people", "type": action.split("_", 1)[1],
+                    "num_results": kw.get("num_results", 10), **rendered}
             data = self.transport("POST", "/v1/search", body)
             return self._parse_search(data), _ploid_spend(data, self.SEARCH_USD)
         if action == "person_verify":
@@ -254,6 +262,12 @@ def _ploid_spend(data: dict, fallback_usd: float) -> Spend:
     if isinstance(credits, (int, float)):
         return Spend(float(credits) * Ploid.ACU_USD, float(credits), "acu_reported")
     return Spend(fallback_usd, 0.0, "usd_listprice_estimate")
+
+
+def _presented_name(raw: str | None) -> str:
+    """SEC files "REYES GEORGE"; a people index expects "George Reyes"."""
+    from titer.corpus.name_norm import normalize_presented
+    return " ".join(w.capitalize() for w in normalize_presented(raw).split())
 
 
 def _name_from_title(title: str | None) -> str | None:

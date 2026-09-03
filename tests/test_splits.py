@@ -69,10 +69,30 @@ def test_same_fact_filed_twice_never_straddles_a_split(quarter_zip):
         assert not (sigs & others)
 
 
-def test_near_duplicate_rate_is_measured_not_assumed(quarter_zip):
+def test_repeat_filings_and_near_duplicates_are_not_conflated(quarter_zip):
+    """They were, and on the real corpus the conflated number read 0.91 - an
+    active insider files dozens of Form 4s a year at one employer. That is not
+    near-duplication: signature() already collapses the same fact filed twice.
+    """
+    import dataclasses
+    from datetime import timedelta
+    from titer.corpus.splits import duplication_rates
+
     rows = _rows(quarter_zip)
-    assert near_duplicate_rate(rows) == 0.0
-    assert near_duplicate_rate(rows + rows) == 0.5
+    assert duplication_rates(rows) == {"repeat_filing_rate": 0.0,
+                                       "near_duplicate_rate": 0.0}
+
+    # Same fact filed again: a repeat, NOT a near-duplicate.
+    d = duplication_rates(rows + rows)
+    assert d["repeat_filing_rate"] == 0.5 and d["near_duplicate_rate"] == 0.0
+
+    # Same relationship re-attested at a later period: a near-duplicate.
+    later = [dataclasses.replace(r, accession=r.accession + "-b",
+                                 period=r.period + timedelta(days=200))
+             for r in rows]
+    d2 = duplication_rates(rows + later)
+    assert d2["near_duplicate_rate"] == 0.5 and d2["repeat_filing_rate"] == 0.0
+    assert near_duplicate_rate(rows + later) == 0.5
 
 
 def test_signature_bucketing_leaks_people_and_person_bucketing_does_not(population):

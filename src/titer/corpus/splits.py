@@ -93,20 +93,38 @@ def leak_rate(train: Sequence[AttestedTuple], held_out: Sequence[AttestedTuple],
     return sum(1 for r in held_out if key(r) in train_keys) / len(held_out)
 
 
-def near_duplicate_rate(rows: Sequence[AttestedTuple]) -> float:
-    """Same person at the same issuer in a different quarter.
+def duplication_rates(rows: Sequence[AttestedTuple]) -> dict[str, float]:
+    """Two different things, separated - they were previously conflated.
 
-    Published rather than assumed to be zero: a corpus spanning 20 years of
-    quarterly filings is full of the same executive filing again and again.
+    An earlier version counted any repeat of (person, issuer) and called the
+    result the near-duplicate rate. On the real corpus that reads 0.91, because
+    an active insider files dozens of Form 4s a year at one employer. That is
+    not near-duplication in any sense that matters: `signature()` already treats
+    the same attested fact filed twice as ONE task.
+
+    * `repeat_filing_rate` - rows beyond the first per (person, issuer, period).
+      The same fact filed again. Collapsed by signature; harmless.
+    * `near_duplicate_rate` - rows beyond the first per (person, issuer) at a
+      DIFFERENT period. The same relationship re-attested later. This is the one
+      worth watching, and the one the docstring always claimed to measure.
     """
     if not rows:
-        return 0.0
-    seen: set[tuple[str, str]] = set()
-    dup = 0
+        return {"repeat_filing_rate": 0.0, "near_duplicate_rate": 0.0}
+    seen_fact: set[tuple[str, str, str]] = set()
+    seen_rel: set[tuple[str, str]] = set()
+    repeat = near = 0
     for r in rows:
-        key = (r.person_cik, r.issuer_cik)
-        if key in seen:
-            dup += 1
-        else:
-            seen.add(key)
-    return dup / len(rows)
+        fact = (r.person_cik, r.issuer_cik, r.period.isoformat())
+        rel = (r.person_cik, r.issuer_cik)
+        if fact in seen_fact:
+            repeat += 1
+        elif rel in seen_rel:
+            near += 1
+        seen_fact.add(fact)
+        seen_rel.add(rel)
+    n = len(rows)
+    return {"repeat_filing_rate": repeat / n, "near_duplicate_rate": near / n}
+
+
+def near_duplicate_rate(rows: Sequence[AttestedTuple]) -> float:
+    return duplication_rates(rows)["near_duplicate_rate"]

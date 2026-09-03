@@ -119,7 +119,10 @@ def test_ploid_parses_search_and_reports_price():
     assert answers[0].employer_name == "ACME"
     assert answers[0].identity_verified is False
     assert answers[0].rank == 0
-    assert spend.usd == 0.10
+    # No cost field in this fixture, so the MEASURED list price is used and
+    # tagged. A live search reports credits_charged=1 = $0.20, twice the $0.10
+    # the pricing page advertises per 10 matches.
+    assert spend.usd == 0.20 and spend.unit_name == "usd_listprice_estimate"
 
 
 def test_ploid_person_verify_falls_back_to_list_price_and_says_so():
@@ -199,3 +202,57 @@ def test_unknown_action_is_rejected():
     for p in (Ploid(transport=lambda *a: {}), Exa(transport=lambda *a: {})):
         with pytest.raises(ValueError):
             p.query("nonsense", "q")
+
+
+# --- rendering: the defect that voided a whole arm (docs/RETRACTIONS.md R001) ---
+
+def _fake_task():
+    from datetime import date
+    from titer.corpus.tasks import Task
+    from titer.corpus.title_map import TitleClass
+    return Task(person_name_raw="REYES GEORGE", anchor_issuer_cik="1",
+                anchor_issuer_name="GOOGLE INC.", anchor_title_class=TitleClass.CFO,
+                anchor_date=date(2005, 1, 1), target_date=date(2020, 1, 1),
+                person_cik="9", truth_issuer_cik="2", truth_issuer_name="Gen Digital Inc.",
+                truth_title_class=TitleClass.CFO, truth_period=date(2020, 1, 1),
+                truth_filed=date(2020, 1, 3), truth_accession="acc",
+                collision_degree=1, strict_degree=1)
+
+
+def test_ploid_render_uses_the_documented_structured_filters():
+    """R001: packing the company into the free-text query measured our wire
+    format, not Ploid's index, and produced a 0/21 result that cost the budget
+    before it was caught. A company belongs in `filters`, which Ploid documents."""
+    r = Ploid.render(_fake_task())
+    assert isinstance(r, dict), "render must be structured, not a string"
+    assert r["filters"]["company"] == "GOOGLE INC."
+    assert "GOOGLE" not in r["query"], "the company must not be in the free text"
+
+
+def test_ploid_render_sends_a_human_readable_name():
+    """SEC files "REYES GEORGE"; a people index expects "George Reyes"."""
+    assert Ploid.render(_fake_task())["query"] == "George Reyes"
+
+
+def test_ploid_render_withholds_the_scored_fact():
+    r = Ploid.render(_fake_task())
+    blob = json.dumps(r)
+    assert "Gen Digital" not in blob and "2020-01-01" not in blob
+
+
+def test_exa_render_is_the_question_and_withholds_the_scored_fact():
+    """Exa /answer is an answer engine and documents a natural-language query,
+    so a question IS its structured shape."""
+    q = Exa.render(_fake_task())
+    assert isinstance(q, str) and "GOOGLE INC." in q
+    assert "Gen Digital" not in q
+
+
+def test_every_arm_discloses_the_same_facts():
+    """Fairness is a property of the renderings taken together: the same facts
+    to every arm, each in the shape its own API documents."""
+    t = _fake_task()
+    ploid, exa = json.dumps(Ploid.render(t)), Exa.render(t)
+    for blob in (ploid, exa):
+        assert "GOOGLE" in blob.upper()          # anchor employer disclosed
+        assert "Gen Digital" not in blob         # target employer withheld

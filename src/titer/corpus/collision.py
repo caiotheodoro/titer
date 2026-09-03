@@ -17,6 +17,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Iterable
 
+from titer.corpus.name_norm import normalize_presented
 from titer.corpus.schema import AttestedTuple
 
 
@@ -32,11 +33,27 @@ def band(d: int) -> str:
 
 @dataclass
 class CollisionIndex:
+    """Two indices, deliberately.
+
+    `ciks_by_name` is keyed on the STRICT normalization and is what resolution
+    uses. `ciks_by_presented` is keyed on the name a provider actually faces -
+    initials dropped - and is what difficulty uses. Mixing them would either
+    manufacture merges or hide the ambiguity being measured. See D027.
+    """
+
     ciks_by_name: dict[str, set[str]]
     issuers_by_cik: dict[str, set[str]]
+    ciks_by_presented: dict[str, set[str]] = None  # type: ignore[assignment]
 
     def degree(self, name_norm: str) -> int:
+        """Strict degree. Used for the contamination bound, not for difficulty."""
         return len(self.ciks_by_name.get(name_norm, ()))
+
+    def presented_degree(self, name_raw: str) -> int:
+        """The ambiguity a provider is handed. This is the difficulty axis."""
+        if not self.ciks_by_presented:
+            return 0
+        return len(self.ciks_by_presented.get(normalize_presented(name_raw), ()))
 
     def band_of(self, name_norm: str) -> str:
         return band(self.degree(name_norm))
@@ -76,10 +93,15 @@ class CollisionIndex:
 
 def build_index(rows: Iterable[AttestedTuple]) -> CollisionIndex:
     ciks_by_name: dict[str, set[str]] = defaultdict(set)
+    ciks_by_presented: dict[str, set[str]] = defaultdict(set)
     issuers_by_cik: dict[str, set[str]] = defaultdict(set)
     for r in rows:
         n = r.person_name_norm
         if n:
             ciks_by_name[n].add(r.person_cik)
+        pn = normalize_presented(r.person_name_raw)
+        if pn:
+            ciks_by_presented[pn].add(r.person_cik)
         issuers_by_cik[r.person_cik].add(r.issuer_cik)
-    return CollisionIndex(dict(ciks_by_name), dict(issuers_by_cik))
+    return CollisionIndex(dict(ciks_by_name), dict(issuers_by_cik),
+                          dict(ciks_by_presented))

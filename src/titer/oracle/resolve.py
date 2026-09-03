@@ -14,7 +14,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from titer.corpus.collision import CollisionIndex
-from titer.corpus.name_norm import normalize, normalize_company
+from titer.corpus.name_norm import (normalize_company,
+                                    normalize_presented)
 
 UNRESOLVABLE = None
 
@@ -56,8 +57,17 @@ def resolve(returned_name: str | None, returned_employer_cik: str | None,
     if not returned_name or not returned_name.strip():
         return Resolution(UNRESOLVABLE, "no_name_returned")
 
-    norm = normalize(returned_name)
-    candidates = index.ciks_by_name.get(norm, set())
+    # Keyed on the PRESENTED form, not the strict one. SEC files "SMITH MARK L"
+    # and providers return "Mark Smith"; a strict lookup matches neither to the
+    # other and returns name_not_in_corpus for every honest answer. Worse, it
+    # was not symmetric: an arm that happened to ECHO our SEC-format name
+    # resolved fine while one returning a normal human name did not, which
+    # advantaged the parrot. Measured in the W3 pilot: 4/6 Ploid answers
+    # unresolvable against 4/7 Exa answers resolving by unique_name largely
+    # because Exa repeated the name from the prompt.
+    norm = normalize_presented(returned_name)
+    candidates = index.ciks_by_presented.get(norm, set()) if index.ciks_by_presented \
+        else index.ciks_by_name.get(norm, set())
     if not candidates:
         return Resolution(UNRESOLVABLE, "name_not_in_corpus")
     if len(candidates) == 1:

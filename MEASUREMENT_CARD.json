@@ -1,21 +1,17 @@
 {
   "project": "titer",
   "contracts_version": "contracts/v1",
-  "wave": "W6 (code); W1-W7 results blocked",
+  "wave": "W3 partial; Ploid arm retracted",
   "generated": "2026-09-02",
   "verdict": "NOT_VERIFIED",
-  "rationale": "No measurement has been taken. The code through W6 exists and is tested, but no provider has been called and the corpus has not been built: SEC returns 403 to this network and no provider API key is configured. A card that always exits zero is decoration; this one names every unmet claim.",
+  "rationale": "The corpus is built and two arms measured, but no hypothesis is verified. The pre-registered power branch is cannot_separate (n=25 at the measured $0.20/task gives half-width 0.1413 against a 0.10 threshold frozen before any data). The Ploid arm is retracted outright - see docs/RETRACTIONS.md R001.",
   "unmet_claims": [
-    "H1 staleness half-life: not measured",
-    "H2 false-merge rate under name collision: not measured",
+    "H1 staleness half-life: not measured (median lag never reached 0.5)",
+    "H2 false-merge rate: 0 observed at n=24, interval too wide to claim anything",
     "H3 calibration of free signals: not measured",
-    "H4 value-of-information policy beats floors: not measured",
-    "same-human-two-CIK contamination bound: not measured",
-    "achieved n and PRE-REGISTRATION section 3 branch: not determined",
-    "flat-profile integrity probe: not run",
-    "leak probe: not run",
-    "environment health report: not emitted",
-    "across-seed spread: nothing trained"
+    "H4 value-of-information policy: no model trained",
+    "Ploid arm: RETRACTED, budget exhausted before the defect was found",
+    "no cross-provider ranking may be stated: branch is cannot_separate"
   ],
   "gates_passed": [
     "doc spine present",
@@ -44,5 +40,15 @@
     "python_loc": 5209,
     "tests_passing": 178,
     "gates": "make validate green; oracle_selfcheck and env_health pass"
+  },
+  "measured": {
+    "corpus_rows": 4206080,
+    "people": 230405,
+    "tasks": 46332,
+    "power_branch": "cannot_separate",
+    "ploid": "RETRACTED (R001): harness sent the company in the free-text query instead of the documented filters; 0/21 measured our wire format",
+    "exa": "n=24, 10 CORRECT, 1 STALE, 13 MISS; correct 0.4167 [0.2447, 0.6117]",
+    "webfloor": "n=24, 0 CORRECT; correct 0.0000 [0.0000, 0.1380]",
+    "false_merge_all_arms": "0 observed; interval [0, 0.138] - cannot rule out 14%"
   }
 }

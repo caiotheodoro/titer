@@ -1,0 +1,265 @@
+{
+  "window": "2026-09",
+  "as_of": "2026-09-03",
+  "seed": 11,
+  "requested_n": 24,
+  "dry_run": false,
+  "strategy": "stratified",
+  "strata": {
+    "unique": {
+      "available": 39189,
+      "sampled": 6
+    },
+    "low": {
+      "available": 5026,
+      "sampled": 6
+    },
+    "medium": {
+      "available": 1768,
+      "sampled": 6
+    },
+    "high": {
+      "available": 349,
+      "sampled": 6
+    }
+  },
+  "pooling_rule": "STRATIFIED: per-band rates only. A pooled marginal rate over this sample would misstate the population and must not be reported.",
+  "corpus": {
+    "rows_streamed": 4206080,
+    "people": 230405,
+    "tasks": 46332,
+    "retained_fraction": 0.20108938608103122,
+    "bands": {
+      "unique": 39189,
+      "low": 5026,
+      "medium": 1768,
+      "high": 349
+    },
+    "min_gap_days": 180
+  },
+  "arms": {
+    "ploid": {
+      "n": 21,
+      "spend_usd": 3.4,
+      "outcomes": {
+        "CORRECT": 0,
+        "FALSE_MERGE": 0,
+        "UNSURE_WRONG": 0,
+        "MISS": 21,
+        "ABSTAIN": 0,
+        "STALE": 0
+      },
+      "accuracy": 0.0,
+      "correct": "0.0000 [0.0000, 0.1546] n=21",
+      "false_merge": "0.0000 [0.0000, 0.1546] n=21",
+      "stale": "0.0000 [0.0000, 0.1546] n=21",
+      "expected_loss": {
+        "recruiter": 1.0,
+        "gtm_outbound": 1.0,
+        "kyc_sanctions": 3.0,
+        "journalism": 1.0
+      },
+      "mean_atoms": 0.023809523809523808,
+      "reflection_by_elapsed": [
+        [
+          "0-30d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "30-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-180d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "180-365d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "365-730d",
+          "0.0000 [0.0000, 0.7935] n=1"
+        ],
+        [
+          "730-infd",
+          "0.0000 [0.0000, 0.1611] n=20"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 3,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 1,
+        "employer_matches_no_candidate": 1,
+        "name_not_in_corpus": 11,
+        "no_name_returned": 4,
+        "colliding_name_no_employer": 4
+      }
+    },
+    "exa": {
+      "n": 24,
+      "spend_usd": 0.12,
+      "outcomes": {
+        "CORRECT": 10,
+        "FALSE_MERGE": 0,
+        "UNSURE_WRONG": 0,
+        "MISS": 13,
+        "ABSTAIN": 0,
+        "STALE": 1
+      },
+      "accuracy": 0.4166666666666667,
+      "correct": "0.4167 [0.2447, 0.6117] n=24",
+      "false_merge": "0.0000 [0.0000, 0.1380] n=24",
+      "stale": "0.0417 [0.0074, 0.2024] n=24",
+      "expected_loss": {
+        "recruiter": 0.5833333333333334,
+        "gtm_outbound": 0.625,
+        "kyc_sanctions": 1.8333333333333333,
+        "journalism": 0.6666666666666666
+      },
+      "mean_atoms": 0.3611111111111111,
+      "reflection_by_elapsed": [
+        [
+          "0-30d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "30-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-180d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "180-365d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "365-730d",
+          "0.0000 [0.0000, 0.7935] n=1"
+        ],
+        [
+          "730-infd",
+          "0.4348 [0.2563, 0.6319] n=23"
+        ]
+      ],
+      "median_reflection_lag_days": 2680,
+      "by_band": {
+        "unique": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 6,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 6,
+        "narrowed_by_employer": 8,
+        "colliding_name_no_employer": 9,
+        "narrowed_by_anchor": 1
+      }
+    },
+    "webfloor": {
+      "n": 24,
+      "spend_usd": 0.168,
+      "outcomes": {
+        "CORRECT": 0,
+        "FALSE_MERGE": 0,
+        "UNSURE_WRONG": 0,
+        "MISS": 24,
+        "ABSTAIN": 0,
+        "STALE": 0
+      },
+      "accuracy": 0.0,
+      "correct": "0.0000 [0.0000, 0.1380] n=24",
+      "false_merge": "0.0000 [0.0000, 0.1380] n=24",
+      "stale": "0.0000 [0.0000, 0.1380] n=24",
+      "expected_loss": {
+        "recruiter": 1.0,
+        "gtm_outbound": 1.0,
+        "kyc_sanctions": 3.0,
+        "journalism": 1.0
+      },
+      "mean_atoms": 0.020833333333333332,
+      "reflection_by_elapsed": [
+        [
+          "0-30d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "30-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-180d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "180-365d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "365-730d",
+          "0.0000 [0.0000, 0.7935] n=1"
+        ],
+        [
+          "730-infd",
+          "0.0000 [0.0000, 0.1431] n=23"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 6,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 6,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 1,
+        "colliding_name_no_employer": 2,
+        "name_not_in_corpus": 21
+      }
+    }
+  },
+  "matched_n": 21
+}

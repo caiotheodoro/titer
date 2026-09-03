@@ -31,7 +31,7 @@ from titer.corpus.build import build_quarter  # noqa: E402
 from titer.corpus.collision import band, build_index  # noqa: E402
 from titer.corpus.fetch import SecAccessError, discover_quarters, download  # noqa: E402
 from titer.corpus.schema import ExclusionCounts  # noqa: E402
-from titer.corpus.splits import near_duplicate_rate  # noqa: E402
+from titer.corpus.splits import duplication_rates  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
@@ -107,7 +107,7 @@ def main() -> int:
     degrees = Counter()
     with (RESULTS / "corpus_public.jsonl").open("w") as fh:
         for r in rows:
-            d = idx.degree(r.person_name_norm)
+            d = idx.presented_degree(r.person_name_raw)
             degrees[band(d)] += 1
             fh.write(json.dumps({
                 "accession": r.accession, "person_cik": r.person_cik,
@@ -116,6 +116,7 @@ def main() -> int:
                 "title_class": r.title_class.value,
                 "period": r.period.isoformat(), "filed": r.filed.isoformat(),
                 "collision_degree": d, "collision_band": band(d),
+                "strict_degree": idx.degree(r.person_name_norm),
                 "name_sha256": r.name_hash(args.salt),
             }) + "\n")
 
@@ -129,7 +130,7 @@ def main() -> int:
         "title_unknown_rate": counts.title_unknown / max(counts.kept, 1),
         "collision_bands": dict(degrees),
         "contamination_bound": idx.contamination_bound(),
-        "near_duplicate_rate": near_duplicate_rate(rows),
+        **duplication_rates(rows),
     }
     (RESULTS / "corpus_stats.json").write_text(json.dumps(stats, indent=2) + "\n")
     print(json.dumps(stats, indent=2))

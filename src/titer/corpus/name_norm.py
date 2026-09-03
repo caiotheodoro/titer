@@ -81,3 +81,30 @@ def normalize_company(name_raw: str | None) -> str:
     canon = _WS.sub(" ", _PUNCT.sub(" ", _TIGHT.sub("", name_raw))).strip().lower()
     tokens = [t for t in canon.split() if t and t not in _CORP_NOISE]
     return " ".join(tokens) if tokens else canon
+
+
+def normalize_presented(name_raw: str | None) -> str:
+    """The name a provider actually faces.
+
+    `normalize` keeps single-letter tokens, because dropping an initial merges
+    "John A Smith" into "John Smith" and would manufacture a collision that never
+    happened. That is right for RESOLUTION - it is the conservative direction.
+
+    It is wrong for DIFFICULTY. SEC filings carry middle initials; a recruiter
+    or a sales tool searching for a person usually does not. Measured over the
+    full corpus (2026-09-03): keeping initials, 1.24% of names collide and the
+    maximum degree is 7. Dropping them, 5.45% collide and the maximum degree is
+    28 - a 4.4x difference in the ambiguity a provider is actually handed.
+
+    So the two are separated on purpose, and both are published:
+
+      * `normalize`           -> resolution. Conservative. Never invents a merge.
+      * `normalize_presented` -> difficulty. Realistic. Never used to resolve.
+
+    See docs/DECISIONS.md D027.
+    """
+    if not name_raw:
+        return ""
+    canon = _WS.sub(" ", _PUNCT.sub(" ", _TIGHT.sub("", name_raw))).strip().lower()
+    tokens = [t for t in canon.split() if len(t) > 1 and t not in _SUFFIXES]
+    return " ".join(sorted(tokens))

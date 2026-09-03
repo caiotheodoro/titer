@@ -44,7 +44,8 @@ class Task:
     truth_period: date
     truth_filed: date
     truth_accession: str
-    collision_degree: int
+    collision_degree: int      # provider-facing: initials dropped (D027)
+    strict_degree: int = 1     # conservative: used for the contamination bound
 
     @property
     def task_id(self) -> str:
@@ -144,7 +145,8 @@ def build_tasks(rows: Iterable[AttestedTuple], index: CollisionIndex,
             truth_period=target.period,
             truth_filed=target.filed,
             truth_accession=target.accession,
-            collision_degree=index.degree(anchor.person_name_norm),
+            collision_degree=index.presented_degree(anchor.person_name_raw),
+            strict_degree=index.degree(anchor.person_name_norm),
         ))
     stats.tasks = len(tasks)
     return tasks, stats

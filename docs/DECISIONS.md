@@ -816,3 +816,146 @@ task. That is passed through to `title_map/v1` unaltered: a headline naming no
 office becomes UNKNOWN and fails the title atom. Inferring a role from the
 headline would put a judged step in the scoring path. Whether this understates
 Ploid is a question for `docs/COVERAGE.md` once there are numbers.
+
+---
+
+## D026 - Corpus coverage starts 2006q1, not 2003q3 (2026-09-03)
+
+**`CONTRACTS.md` section 2.1 rule 4 says "2003q3 or later". The data does not
+exist before 2006q1.** The rule stands unchanged - it is still the inclusion
+predicate, and it is still correct - but it is not the binding constraint.
+Availability is.
+
+**Measured.** The SEC landing page advertises **82 quarterly archives, 2006q1
+through 2026q2**. Mandatory electronic Section 16 filing began mid-2003, which
+is why the rule was written that way; SEC's *packaged* Insider Transactions Data
+Sets simply start later. Recovering 2003q3-2005q4 would mean parsing raw
+ownership XML out of the daily dissemination feed, roughly 3,000 additional
+requests against a burst-sensitive service, for about 12% more calendar
+coverage at the oldest and least relevant end.
+
+**Decision.** Corpus coverage is **2006q1-2026q2**. `docs/COVERAGE.md` states
+the gap in years, not as a footnote. The inclusion rule is not edited, because
+it is not wrong - and editing a frozen contract to match what happened to be
+available is exactly the move this repository exists to refuse.
+
+**Consequence for R1.** None material. Staleness is measured against elapsed
+days since a filing, and the freshest quarters carry that signal; the 2003-2005
+gap sits at the far tail where reflection probability is saturated anyway.
+
+**Consequence for R2.** Slightly fewer name collisions than the full record
+would show, so `d(name)` is a mild **under**-estimate. That biases the reported
+false-merge rate **down**, which is the safe direction for a critical finding
+and is stated as such.
+
+**A second thing this turned up, worth recording separately.** The newest
+quarter is served from a **different path prefix**:
+`/files/datastandardsinnovation/data/...` rather than
+`/files/structureddata/data/...`. A filename generator keyed on the old prefix
+would have silently dropped 2026q2 - the freshest quarter, and the one R1 most
+wants. `docs/HANDOFF.md` has said "scrape the links, never generate them" since
+W0 on general principle; this is the specific failure it was guarding against,
+and it had already occurred by the time we looked.
+
+---
+
+## D027 - Difficulty uses the provider-facing name; H2 moves to stratified sampling (2026-09-03)
+
+**This changes `CONTRACTS.md` section 8 and deviates from the sampling implied
+by `docs/PRE-REGISTRATION.md` section 1. Both are recorded here with the
+counterfactual, and neither frozen document is edited.**
+
+### What the built corpus showed
+
+The corpus is 4,206,080 rows over 230,405 people, 2006q1-2026q2. Measuring
+collision degree exactly as CONTRACTS 8 defines it - distinct `RPTOWNERCIK`
+sharing an *exactly-normalized* name - gives:
+
+| Band | Movers (task population) | Share |
+|---|---|---|
+| `unique` | 45,051 | 97.24% |
+| `low` (d=2-3) | 1,238 | 2.67% |
+| `medium` (d=4-9) | 43 | 0.09% |
+| `high` (d>=10) | **0** | **0.00%** |
+
+Maximum degree anywhere in the corpus: **7**. A random sample of 50 tasks would
+contain roughly **1.3** colliding-name tasks and **zero** hard ones. H2's central
+claim - that false merges increase in collision degree - would have been
+untestable, and we would have discovered that after spending the budget.
+
+### Why collisions are so rare, and why that is our artefact
+
+`name_norm/v1` keeps single-letter tokens, deliberately: dropping an initial
+merges "John A Smith" into "John Smith" and manufactures a collision that never
+happened. That is the right call for **resolution** - it is the conservative
+direction, and it is what stops us inventing a false merge.
+
+It is the wrong call for **difficulty**. SEC filings carry middle initials. A
+recruiter, a sales tool or a journalist searching for a person usually does not.
+Measured over the same corpus:
+
+| Normalization | Colliding names | People affected | Max degree |
+|---|---|---|---|
+| keeping initials (`normalize`) | 2,844 (1.24%) | 6,026 | 7 |
+| dropping initials (`normalize_presented`) | 11,589 (5.45%) | 31,079 | **28** |
+
+**A 4.4x difference in the ambiguity a provider is actually handed.** Our own
+normalization choice was hiding the phenomenon we exist to measure.
+
+### Decision
+
+Two normalizations, separated, both published:
+
+* **`normalize`** - resolution only. Conservative. Never invents a merge. It
+  continues to back the contamination bound in CONTRACTS 4.2.
+* **`normalize_presented`** - difficulty only. Never used to resolve anything.
+  This is now the `d` of CONTRACTS 8.
+
+Under the provider-facing name the task population becomes measurable:
+
+| Band | Movers | Share |
+|---|---|---|
+| `unique` | 39,184 | 84.57% |
+| `low` | 5,028 | 10.85% |
+| `medium` | 1,771 | 3.82% |
+| `high` | 349 | 0.75% |
+
+**7,148 colliding-name movers**, including 349 genuinely hard ones.
+
+### H2 moves to a stratified design
+
+Simple random sampling puts ~85% of a small budget into `unique` tasks, which
+carry no information about false merges. H2 therefore samples **by stratum**,
+with the strata reported separately and **never pooled into a marginal rate** -
+a pooled figure over a deliberately unrepresentative sample would misstate the
+population, which is the sin this project was built to name.
+
+R1 (staleness) continues to use simple random sampling: it is a claim about the
+population, and stratifying it would bias the reflection curve.
+
+**What would have been reported under the original plan.** A single false-merge
+rate over ~50 randomly drawn tasks, of which ~1 would have had a colliding name.
+The rate would have been dominated by `unique` tasks, would almost certainly
+have read 0.00 with a Wilson interval spanning most of [0, 0.07], and we would
+have published "no evidence of false merges" when the design simply could not
+have found any.
+
+### Also fixed here
+
+`near_duplicate_rate` conflated two different things and read **0.9135** on the
+real corpus - because an active insider files dozens of Form 4s a year at one
+employer. That is not near-duplication in any sense that matters: `signature()`
+already collapses the same attested fact filed twice into one task. It is now
+split into `repeat_filing_rate` (same fact re-filed; harmless) and
+`near_duplicate_rate` (same relationship re-attested at a later period; the one
+worth watching).
+
+`title_map/v1` gains the real filed strings measured falling to UNKNOWN:
+"Vice Chairman" and its variants, "SEVP", "CAO". Excluding Vice Chairman from
+`CHAIR` was right; dropping it out of the taxonomy altogether was not. "See
+Remarks" - 39k rows - correctly stays UNKNOWN: it is a pointer to prose, and
+guessing what the prose says would put a judged step in the corpus.
+
+Measured title coverage: **45.55% UNKNOWN, of which 42.40 points are titles the
+filer left blank** and only 3.14 points are non-empty strings the map missed.
+The gap is in the source, not the normalizer, and it is published either way.

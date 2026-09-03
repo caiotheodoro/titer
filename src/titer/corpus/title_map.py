@@ -82,8 +82,13 @@ _RULES: tuple[tuple[TitleClass, re.Pattern[str]], ...] = (
         r"(?<!vice )(?<!deputy )(?<!co )\b(chairman|chairwoman|chairperson|chair)\b"
         r"(?!\s*,?\s*\w+\s+committee)", re.I)),
     (TitleClass.OFFICER_OTHER, re.compile(
-        r"\b(chief\s+\w+\s+officer|officer|vice\s+president|v\s*p|evp|svp|"
-        r"secretary|controller|treasurer|principal\s+accounting|"
+        # Measured against the built corpus (2026-09-03): these are the real
+        # filed strings that were falling to UNKNOWN. "Vice Chairman" is an
+        # office, and excluding it from CHAIR (correctly) must not drop it out
+        # of the taxonomy altogether.
+        r"\b(chief\s+\w+\s+officer|officer|vice\s+president|v\s*p|evp|svp|sevp|"
+        r"vice\s+chair(man|woman|person)?|deputy\s+chair(man|woman|person)?|"
+        r"c\s*a\s*o|secretary|controller|treasurer|principal\s+accounting|"
         r"managing\s+director)\b", re.I)),
 )
 

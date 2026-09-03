@@ -42,3 +42,26 @@ def test_nicknames_are_not_unified():
     """Deliberate. Unifying Bob/Robert is a guess, and a guess here becomes a
     manufactured false merge in the published rate."""
     assert normalize("Bob Smith") != normalize("Robert Smith")
+
+
+def test_presented_name_drops_initials_and_strict_keeps_them():
+    """Two normalizations on purpose. Measured over the real corpus: keeping
+    initials gives 1.24% colliding names and max degree 7; dropping them gives
+    5.45% and max degree 28. The first is right for resolution (never invent a
+    merge), the second for difficulty (a provider is not handed the initial).
+    See docs/DECISIONS.md D027."""
+    from titer.corpus.name_norm import normalize_presented
+
+    assert normalize("John A Smith") != normalize("John Smith")
+    assert normalize_presented("John A Smith") == normalize_presented("John Smith")
+
+
+def test_presented_name_still_separates_different_people():
+    from titer.corpus.name_norm import normalize_presented
+    assert normalize_presented("John Smith") != normalize_presented("Jane Smith")
+    assert normalize_presented("John Smith") != normalize_presented("John Smyth")
+
+
+def test_presented_name_drops_suffixes_too():
+    from titer.corpus.name_norm import normalize_presented
+    assert normalize_presented("SMITH JOHN A JR") == normalize_presented("John Smith")

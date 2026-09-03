@@ -27,8 +27,13 @@ LANDING = (
     "insider-transactions-data-sets"
 )
 BASE = "https://www.sec.gov"
+# The path prefix is NOT fixed. As of 2026-09-03 the newest quarter (2026q2)
+# is served from /files/datastandardsinnovation/data/... while every earlier
+# quarter is under /files/structureddata/data/... A generator keyed on the old
+# prefix silently drops the most recent quarter - which is the freshest data and
+# the one R1 most wants. This is the scrape-do-not-generate rule earning itself.
 _LINK = re.compile(
-    r"/files/structureddata/data/insider-transactions-data-sets/"
+    r"/files/[\w-]+/data/insider-transactions-data-sets/"
     r"(\d{4})q([1-4])_form345\.zip",
     re.I,
 )
@@ -82,7 +87,11 @@ def _get(url: str, timeout: int = 60) -> bytes:
         time.sleep(wait)
     req = urllib.request.Request(url, headers={
         "User-Agent": user_agent(),
-        "Accept-Encoding": "gzip, deflate",
+        # No Accept-Encoding. urllib does not decompress transparently, and
+        # requesting gzip returned compressed bytes that the link regex then
+        # scanned as if they were HTML - finding nothing, and reporting it as
+        # "the page layout changed". Ask for what we can actually read.
+        "Accept-Encoding": "identity",
         "Host": url.split("/")[2],
     })
     try:
