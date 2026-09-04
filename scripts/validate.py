@@ -158,6 +158,44 @@ def gate_prereg_frozen() -> None:
                            f"recorded={recorded[:16]}... actual={digest[:16]}...")
 
 
+SUITE_RE = re.compile(r"(\d[\d,]*)\s+tests?\s+green", re.I)
+
+
+def gate_advertised_suite_size() -> None:
+    """A test count quoted in the docs must equal what pytest actually collects.
+
+    Ported from assay. The point is that ADDING A TEST REDDENS THE BUILD on
+    purpose: a suite size is a claim like any other, and a stale one is a claim
+    that quietly stopped being true. Without this, "238 tests green" could sit
+    in a README forever while the suite drifted.
+    """
+    quoted: list[tuple[str, int]] = []
+    for rel in SPINE + ["docs/BENCHMARK.md"]:
+        p = ROOT / rel
+        if p.suffix not in {".md", ".txt"} or not p.is_file():
+            continue
+        for m in SUITE_RE.finditer(p.read_text()):
+            quoted.append((rel, int(m.group(1).replace(",", ""))))
+    if not quoted:
+        return
+
+    out = subprocess.run(
+        ["uv", "run", "--extra", "dev", "pytest", "--collect-only", "-q", "tests"],
+        cwd=ROOT, capture_output=True, text=True, check=False)
+    m = re.search(r"(\d+)\s+tests? collected", out.stdout) or \
+        re.search(r"^(\d+)\s*$", out.stdout.strip().splitlines()[-1] if out.stdout.strip() else "")
+    if not m:
+        fail("suite-size", "could not read a collected-test count from pytest; "
+                           f"stdout tail: {out.stdout.strip()[-200:]!r}")
+        return
+    collected = int(m.group(1))
+    for rel, n in quoted:
+        if n != collected:
+            fail("suite-size",
+                 f"{rel} advertises {n} tests but pytest collects {collected}. "
+                 "A suite size is a claim; update the doc or explain the gap.")
+
+
 def gate_card_honest() -> None:
     """A card that always exits zero is decoration."""
     import json
@@ -170,7 +208,8 @@ def gate_card_honest() -> None:
 
 def main() -> int:
     for gate in (gate_spine, gate_privacy, gate_cited_paths,
-                 gate_no_placeholders, gate_prereg_frozen, gate_card_honest):
+                 gate_no_placeholders, gate_prereg_frozen, gate_card_honest,
+                 gate_advertised_suite_size):
         gate()
     if FAILURES:
         print(f"FAILED {len(FAILURES)} check(s):\n", file=sys.stderr)

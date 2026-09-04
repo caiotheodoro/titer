@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from titer.adapters.base import Call, RawAnswer, Spend  # noqa: E402
 from titer.corpus.collision import build_index  # noqa: E402
 from titer.corpus.schema import AttestedTuple, RoleClass  # noqa: E402
+from collections import Counter  # noqa: E402
 from titer.corpus.tasks import build_tasks  # noqa: E402
 from titer.corpus.title_map import TitleClass  # noqa: E402
 from titer.env.policies import abstain_always, never_verify, run_episode  # noqa: E402
@@ -102,12 +103,188 @@ class StochasticProvider:
         return [a], Spend(self.price, 1.0, "unit")
 
 
+def run_real(args) -> int:
+    """Fit sim/ from the real replay cache and report the environment's health.
+
+    Published whatever it says. If the solve-rate band is too thin for GRPO,
+    that is a finding about the environment, not a reason to quietly not report
+    it - and it is exactly the number `environments.md` says gates a training
+    run.
+    """
+    import json as _json
+    from datetime import date as _date
+
+    from titer.adapters.cache import CacheKey, ReplayCache
+    from titer.corpus.collision import CollisionIndex
+    from titer.corpus.schema import AttestedTuple as _AT
+    from titer.corpus.tasks import Task as _Task
+    from titer.oracle.outcome import Answer as _Answer
+    from titer.oracle.outcome import judge as _judge
+    from titer.oracle.resolve import resolve as _resolve
+    from titer.oracle.resolve import resolve_issuer as _resolve_issuer
+    from titer.sim.fit import Observation, fit
+
+    tasks_p = ROOT / "data" / "tasks.jsonl"
+    rindex_p = ROOT / "data" / "resolve_index.json"
+    if not tasks_p.exists() or not rindex_p.exists():
+        print("need data/tasks.jsonl and data/resolve_index.json "
+              "(scripts/build_tasks.py)", file=sys.stderr)
+        return 2
+
+    d = _json.loads(rindex_p.read_text())
+    index = CollisionIndex(
+        ciks_by_name={k: set(v) for k, v in d["ciks_by_name"].items()},
+        issuers_by_cik={k: set(v) for k, v in d["issuers_by_cik"].items()},
+        ciks_by_presented={k: set(v) for k, v in d.get("ciks_by_presented", {}).items()})
+    issuer_index = {k: set(v) for k, v in d["ciks_by_company"].items()}
+
+    tasks = {}
+    for line in tasks_p.open():
+        r = _json.loads(line)
+        tasks[r["person_cik"]] = r
+
+    cache = ReplayCache(ROOT / "data" / "replay.jsonl")
+    obs: list[Observation] = []
+    by_key = {e.key: e for e in cache}
+    for r in tasks.values():
+        t = _Task(
+            person_name_raw=r["person_name_raw"], anchor_issuer_cik=r["anchor_issuer_cik"],
+            anchor_issuer_name=r["anchor_issuer_name"],
+            anchor_title_class=TitleClass(r["anchor_title_class"]),
+            anchor_date=_date.fromisoformat(r["anchor_date"]),
+            target_date=_date.fromisoformat(r["target_date"]),
+            person_cik=r["person_cik"], truth_issuer_cik=r["truth_issuer_cik"],
+            truth_issuer_name=r["truth_issuer_name"],
+            truth_title_class=TitleClass(r["truth_title_class"]),
+            truth_period=_date.fromisoformat(r["truth_period"]),
+            truth_filed=_date.fromisoformat(r["truth_filed"]),
+            truth_accession=r["truth_accession"],
+            collision_degree=r["collision_degree"])
+        key = CacheKey("exa", "answer", f"{t.task_id}|{t.prompt() + ' Give your confidence as a number between 0 and 1.'}", "2026-09")
+        e = by_key.get(key.digest())
+        if e is None:
+            continue
+        got = ReplayCache.to_answers(e)
+        top = got[0] if got else None
+        emp = _resolve_issuer(top.employer_name if top else None, issuer_index)
+        res = _resolve(top.person_name if top else None, emp, index,
+                       anchor_issuer_cik=t.anchor_issuer_cik)
+        ans = _Answer(person_cik=res.person_cik,
+                      confidence=top.confidence if top else 0.0, employer_cik=emp)
+        truth = _AT(accession=t.truth_accession, person_cik=t.person_cik,
+                    person_name_raw=t.person_name_raw, issuer_cik=t.truth_issuer_cik,
+                    issuer_name_raw=t.truth_issuer_name, issuer_ticker="",
+                    role_class=frozenset({RoleClass.OFFICER}), title_raw="",
+                    title_class=t.truth_title_class, period=t.truth_period,
+                    filed=t.truth_filed)
+        obs.append(Observation("exa", "answer", t.collision_band,
+                               _judge(ans, truth), ans.confidence, e.spend_usd))
+
+    if not obs:
+        print("no cached observations matched the current task set - the prompt "
+              "or task construction changed since they were recorded, so the "
+              "cache keys no longer line up. Re-run a measurement or rebuild "
+              "tasks to match.", file=sys.stderr)
+        return 2
+
+    model = fit(obs, split="train")
+    hist = Counter(o.outcome.value for o in obs)
+    report = {
+        "mode": "real", "source": "data/replay.jsonl",
+        "observations": len(obs),
+        "outcome_distribution": dict(hist),
+        "fitted_cells": model.coverage(),
+        "fallback_cell": None if model.fallback is None else {
+            "n": model.fallback.n,
+            "p_correct": round(model.fallback.p_correct, 4),
+            "p_stale": round(model.fallback.p_stale, 4),
+            "p_wrong_person": round(model.fallback.p_wrong_person, 4),
+            "p_miss": round(model.fallback.p_miss, 4),
+        },
+    }
+    p_correct = model.fallback.p_correct if model.fallback else 0.0
+    report["solve_rate_proxy"] = round(p_correct, 4)
+    report["in_10_80_band"] = 0.10 <= p_correct <= 0.80
+    report["verdict"] = (
+        "TRAINABLE: the fitted solve rate sits in the 10-80% band, so GRPO has "
+        "advantages to compute." if report["in_10_80_band"] else
+        "NOT TRAINABLE AS FITTED: the solve rate is outside the 10-80% band, so "
+        "most groups would be all-win or all-lose and GRPO has nothing to "
+        "normalise against. Published as a property of the environment.")
+    # --- the floors, against the simulator fitted to real data ---
+    import random as _random
+    import statistics as _stats
+
+    from titer.env.policies import abstain_always, always_deep_verify, never_verify
+    from titer.env.policies import run_episode as _run
+    from titer.env.titer_env import TiterEnv
+    from titer.sim.fit import SimulatedProvider
+
+    task_objs = []
+    for r in list(tasks.values())[:300]:
+        task_objs.append(_Task(
+            person_name_raw=r["person_name_raw"], anchor_issuer_cik=r["anchor_issuer_cik"],
+            anchor_issuer_name=r["anchor_issuer_name"],
+            anchor_title_class=TitleClass(r["anchor_title_class"]),
+            anchor_date=_date.fromisoformat(r["anchor_date"]),
+            target_date=_date.fromisoformat(r["target_date"]),
+            person_cik=r["person_cik"], truth_issuer_cik=r["truth_issuer_cik"],
+            truth_issuer_name=r["truth_issuer_name"],
+            truth_title_class=TitleClass(r["truth_title_class"]),
+            truth_period=_date.fromisoformat(r["truth_period"]),
+            truth_filed=_date.fromisoformat(r["truth_filed"]),
+            truth_accession=r["truth_accession"],
+            collision_degree=r["collision_degree"]))
+
+    ref: dict = {}
+    price = model.fallback.mean_spend_usd or 0.005
+    floors = {}
+    for name, policy in (("never_verify", never_verify(("exa", "search"))),
+                         ("always_deep_verify", always_deep_verify([("exa", "search")] * 3)),
+                         ("abstain_always", abstain_always)):
+        prov = SimulatedProvider("exa", "search", model, ref, price, seed=args.seed)
+        env = TiterEnv(task_objs, {"exa": prov}, index, issuer_index,
+                       budget_usd=1.0, profile_name="gtm_outbound")
+        rewards, spends, outs = [], [], Counter()
+        for i, tk in enumerate(task_objs):
+            ref["task"] = tk
+            ref["decoy_employer"] = tk.anchor_issuer_name
+            rec = _run(env, policy, index=i)
+            rewards.append(rec.reward); spends.append(rec.spend_usd)
+            outs[rec.outcome.value] += 1
+        floors[name] = {"n": len(rewards),
+                        "mean_reward": round(_stats.fmean(rewards), 4),
+                        "mean_spend_usd": round(_stats.fmean(spends), 5),
+                        "outcomes": dict(outs)}
+    report["floors"] = floors
+    best = max(floors, key=lambda k: floors[k]["mean_reward"])
+    report["best_floor"] = best
+    report["floor_note"] = (
+        f"{best} has the highest mean reward on the simulator fitted to real "
+        "data. A trained policy has to beat it, and this is the number it must "
+        "beat - not a synthetic one.")
+
+    (ROOT / "results").mkdir(exist_ok=True)
+    (ROOT / "results" / "env_health_real.json").write_text(
+        _json.dumps(report, indent=2) + "\n")
+    print(_json.dumps(report, indent=2))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--k", type=int, default=16, help="rollouts per task")
     ap.add_argument("--tasks", type=int, default=60)
     ap.add_argument("--seed", type=int, default=11)
+    ap.add_argument("--real", action="store_true",
+                    help="fit the simulator from the REAL replay cache instead "
+                         "of the synthetic stand-in. The synthetic world exists "
+                         "to exercise the gates; it cannot tell you whether the "
+                         "environment is trainable on the data you actually have.")
     args = ap.parse_args()
+
+    if args.real:
+        return run_real(args)
 
     rows = synthetic_world()
     idx = build_index(rows)
