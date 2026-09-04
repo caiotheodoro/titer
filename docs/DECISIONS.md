@@ -1577,3 +1577,62 @@ longer "verify more cheaply", it is "answer only when you are likely right".
 against the old reward would have reported a large margin over `never_verify`,
 every point of it earned by asserting `date(1,1,1)` and `confidence=0.49`. It
 would have been this project's sixth artefact, and the first one published.
+
+---
+
+## D036 - The trained arm is a policy on the simulator, not an 8B fine-tune (2026-09-04)
+
+W6 says "SFT → GRPO, 8B and 4B". That is not what shipped, and the substitution
+is recorded rather than made quietly.
+
+**Why.** The fitted R4 environment exposes **three** discrete actions - query,
+answer(confidence), abstain. The declared `train` extra
+(torch/transformers/peft/trl/bitsandbytes, sized for a Qwen3-8B QLoRA) is
+enormously oversized for that action space, and every eval rollout of an LLM
+policy costs real provider calls. The simulator is fitted to real cached
+observations, so rollouts against it are **free**, which is the only reason
+≥4 seeds is affordable - and without ≥4 seeds there is no claim at all under the
+seed rule.
+
+**What shipped.** `src/titer/train/policy.py`: a linear-softmax policy over ten
+bounded observation features and thirteen actions, **130 parameters, stdlib
+only**. Confidence is discretised into buckets so the policy must *choose* it,
+which matters after D037 made confidence a scored quantity rather than a free
+knob.
+
+`collision_band` is deliberately not a feature. The simulator conditions on it;
+the observation does not expose it; a policy trained on it would be learning
+from something no live provider hands over.
+
+**The result.** Frozen test, 6 seeds, `gtm_outbound`:
+
+| | value |
+|---|---|
+| trained policy, mean | **0.0461** |
+| baseline (`abstain_always`) | −0.1000 |
+| margin | 0.1461 |
+| across-seed SD | **0.0122 (0.08× the margin)** |
+| verdict | **CLAIM** |
+
+It beats `abstain_always` under all five cost profiles. Absolute rewards are
+**not** comparable across profiles - the reward normalises by
+`max(profile.values())`, so a profile with a 150× false-merge cost compresses
+every term - but the sign and the ordering within each profile are.
+
+**What it learned, and what it did not.** It queries once, then **abstains on
+41.7%** of tasks, which lifts precision on the answered subset from the 37% base
+rate to **64%**. That is the valuable half and it is genuine selectivity.
+
+It states **confidence 1.0 on every answer it gives**, at 64% accuracy. That is
+the same failure E3 measured in the provider: confidence pinned at ceiling,
+carrying no information. A calibrated policy would state ≈0.64 and score better;
+this one leaves roughly 0.04 of reward on the table by not doing so.
+
+**So the honest headline is narrow.** The policy learned *when to answer*. It did
+not learn *how sure to say it is*, in an environment that now prices exactly
+that. Reporting only the margin would hide the more interesting half.
+
+**What this does not license.** No claim about any language model, about the 8B
+or 4B arms, or about a policy operating against a live provider. Every number
+here is measured against a simulator fitted to 485 cached observations, and the
+simulator's `high` collision band still has zero of them.

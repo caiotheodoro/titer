@@ -6,8 +6,8 @@
   "verdict": "PARTIALLY_VERIFIED",
   "rationale": "E1 and E3 are measured on verified negatives and survived attack. The employment study's H1 is mis-specified, H2's strata were empty by construction, and the Ploid arm is retracted. A card that always exits zero is decoration; this one names what is not established.",
   "code_state": {
-    "python_loc": 8698,
-    "tests_passing": 248,
+    "python_loc": 9342,
+    "tests_passing": 254,
     "gates": "make validate green (10 gates); oracle_selfcheck and env_health pass"
   },
   "spend_usd": {

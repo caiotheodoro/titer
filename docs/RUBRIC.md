@@ -20,10 +20,10 @@ unavailable because no results existed. They exist now.
 | 7 | Red team attacks own claims, LIVE ones kept | 5 | **5** | 17 attacks; 7 carried LIVE, 2 open, and A12 bounded by the control arm rather than closed. "One provider is not a benchmark" stays LIVE. |
 | 8 | Cost asymmetry modelled, ranking stability reported | 10 | **6** | Five profiles including `expert_sourcing` at 150×. **No ranking is reported at all**, only one provider survived, so stability across profiles is untestable. |
 | 9 | Environment health gate before any training | 10 | **8** | Run on real data: solve rate 0.37, in band. Loses 2 for the `high` collision band having **zero** observations. |
-| 10 | Across-seed spread published for every trained arm | 10 | **n/a** | Nothing trained. The gate exists (`src/titer/train/seeds.py`) and is tested against reconforge's real numbers. |
+| 10 | Across-seed spread published for every trained arm | 10 | **9** | Trained, 6 seeds, frozen split: mean **0.0461** against `abstain_always` **-0.1000**, margin 0.1461, across-seed **SD 0.0122 (0.08x the margin)** -> CLAIM. Loses 1: the policy is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036). |
 | 11 | Ethics enforced mechanically, not asserted | 5 | **5** | `make privacy-gate` inside `make validate`; it has caught three real violations, including in my own commits. |
 
-**Self-score: 78 of 90 available** (criterion 10 excluded; nothing trained).
+**Self-score: 87 of 100** now that criterion 10 is scored rather than `n/a`. The comparable figure against the earlier 90-point denominator is 78.
 
 ## Where it loses points, in one place
 
@@ -32,7 +32,10 @@ unavailable because no results existed. They exist now.
 - **No cross-provider ranking.** One provider survived; the pre-registered
   `cannot_separate` branch forbids ranking language and there is nothing to rank.
 - **The hardest collision band is empty** in the fitted environment.
-- **No trained policy.** R4 ships an environment, not a result about a model.
+- **The trained policy learned selectivity, not calibration.** It abstains
+  on 41.7% of tasks, lifting precision from 37% to 64%, then states
+  confidence 1.0 on every answer at 64% accuracy - the same failure E3
+  measured in the provider, reproduced in our own policy.
 
 ## Independent read: obtained 2026-09-04
 

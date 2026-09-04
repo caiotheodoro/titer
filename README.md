@@ -70,9 +70,28 @@ over three years, then falls to 0.29. Non-monotone, so no half-life exists and
 the pre-registered estimator was withdrawn. The fall is most likely *our oracle*
 ageing out rather than the index regressing.
 
-**The environment.** Fitted to 500 real observations, solve rate 0.37, inside the
-10–80% band. `never_verify` (reward 0.0455) beats `always_deep_verify` (0.0277):
-spending 3× more bought marginally fewer correct answers.
+**The environment, and a trained policy.** Fitted to 485 real observations, solve
+rate 0.37, inside the 10–80% band. `never_verify` (−0.2292) still beats
+`always_deep_verify` (−0.2574), so spending 3× more still bought marginally fewer
+correct answers. But both are beaten by **doing nothing**: at a 37% solve rate,
+answering is negative expected value and `abstain_always` (−0.1000) is the floor
+to beat. Those numbers are corrected; the ones published before were inflated by
+two reward defects ([D037](docs/DECISIONS.md)).
+
+A policy trained on the simulator clears it, over 6 seeds on a frozen split:
+
+| | value |
+|---|---|
+| trained policy | **0.0461** |
+| `abstain_always` | −0.1000 |
+| margin | 0.1461 |
+| across-seed SD | **0.0122**, 0.08× the margin |
+
+It **learned when to answer and not how sure to be**: it abstains on 41.7% of
+tasks, lifting precision from the 37% base rate to **64%**, then states
+confidence **1.0 on every answer it gives**. That is the same failure E3 measured
+in the provider, reproduced by our own policy in an environment that prices it.
+([D036](docs/DECISIONS.md))
 
 ## What does not survive
 
@@ -121,7 +140,9 @@ costs nothing and every table regenerates with no keys and no spend.
   who an expert platform actually hires.
 - **7.3% of the EDGAR population is usable** after four forced narrowings.
   ([COVERAGE](docs/COVERAGE.md))
-- **Nothing is trained.** R4 ships an environment, not a policy.
+- **The trained policy is a 130-parameter linear model on a simulator**, not
+  a language model and not a live-provider agent. The simulator's `high`
+  collision band still holds zero observations.
 - **The trivial floor failed.** It was never validly measured.
 
 ## Reproduce
@@ -135,7 +156,7 @@ uv run python scripts/env_health.py --real
 Every measurement regenerates from the replay cache without an API key.
 Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
-**248 tests green.** Total spend to produce all of the above: **$29.96**.
+**254 tests green.** Total spend to produce all of the above: **$29.96**.
 
 ## Layout
 
@@ -147,7 +168,7 @@ Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
 | [`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md) · [`-EXPERTISE`](docs/PRE-REGISTRATION-EXPERTISE.md) | Frozen before `src/`, hashes published. Never edited. |
 | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) | The two formal retractions. Committed at W0, before any measurement. |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 35 entries, each with the counterfactual. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 37 entries, each with the counterfactual. |
 | [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 7 carried LIVE, 2 open, 1 bounded by a control tier. |
 | [`docs/BENCHMARK.md`](docs/BENCHMARK.md) · [`RUBRIC`](docs/RUBRIC.md) · [`COVERAGE`](docs/COVERAGE.md) | Results, the independent read (74/90 against a 78/90 self-score), and what this cannot see. |
 | [`docs/MARKET.md`](docs/MARKET.md) | Where an attestation layer would sell, with the case against it. |

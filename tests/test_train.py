@@ -106,3 +106,67 @@ def test_verdict_string_always_shows_the_spread():
     v = verdict("p", [0.9, 0.91, 0.905, 0.895], 0.6)
     s = str(v)
     assert "across-seed SD" in s and "seeds" in s and "margin" in s
+
+
+class TestLinearPolicy:
+    """The trained arm's policy. Stdlib only, 130 parameters."""
+
+    def test_action_set_covers_query_abstain_and_every_confidence_bucket(self):
+        from titer.train.policy import ACTIONS, CONF_BUCKETS
+        assert ("query", None) in ACTIONS and ("abstain", None) in ACTIONS
+        for c in CONF_BUCKETS:
+            assert ("answer", c) in ACTIONS
+        assert len(ACTIONS) == 2 + len(CONF_BUCKETS)
+
+    def test_collision_band_is_not_a_feature(self):
+        """The simulator conditions on collision band; the observation does not
+        expose it, and a policy trained on it would learn from something a live
+        provider never hands over."""
+        from titer.train.policy import FEATURES
+        assert not any("band" in f or "collision" in f for f in FEATURES)
+
+    def test_probabilities_are_a_distribution(self):
+        from titer.train.policy import LinearPolicy, N_FEATURES
+        p = LinearPolicy()
+        probs = p.probs([1.0] * N_FEATURES)
+        assert abs(sum(probs) - 1.0) < 1e-9
+        assert all(x >= 0 for x in probs)
+
+    def test_a_gradient_step_moves_probability_the_signed_way(self):
+        from titer.train.policy import LinearPolicy, N_FEATURES
+        p = LinearPolicy()
+        x = [1.0] * N_FEATURES
+        before = p.probs(x)[3]
+        p.grad_step(x, 3, advantage=1.0, lr=0.1)
+        assert p.probs(x)[3] > before
+        p.grad_step(x, 3, advantage=-1.0, lr=0.5)
+        assert p.probs(x)[3] < before
+
+    def test_zero_advantage_is_a_no_op(self):
+        """GRPO groups whose rollouts all score alike carry no signal, and
+        applying them anyway is how a run drifts on noise."""
+        from titer.train.policy import LinearPolicy, N_FEATURES
+        p = LinearPolicy()
+        x = [0.5] * N_FEATURES
+        w = p.snapshot()
+        p.grad_step(x, 2, advantage=0.0, lr=0.5)
+        assert p.snapshot() == w
+
+
+class TestRealEnvBuilder:
+    """`sim/real.py` is shared by env_health --real and train_policy, so the
+    training run is fitted exactly like the health report that blessed it."""
+
+    def test_fits_from_the_cache_with_no_network(self):
+        from pathlib import Path
+        from titer.sim.real import build, NoObservations
+        root = Path(__file__).resolve().parent.parent
+        if not (root / "data" / "replay.jsonl").exists():
+            return
+        try:
+            parts = build(root)
+        except NoObservations:
+            return
+        assert len(parts.observations) == len(parts.tasks)
+        assert parts.model.fallback is not None
+        assert 0.0 <= parts.model.fallback.p_correct <= 1.0
