@@ -86,8 +86,19 @@ def _declared(filename: str) -> set[str]:
 
 
 def planned() -> set[str]:
-    """Paths promised by a later wave, plus paths in sibling repositories."""
-    return _declared("PLANNED-PATHS.txt") | _declared("EXTERNAL-PATHS.txt")
+    """Cited paths that are legitimately absent from a clean checkout.
+
+    Three kinds, declared separately so the reason stays visible:
+      PLANNED-PATHS    - promised by a later wave
+      EXTERNAL-PATHS   - live in a sibling repository
+      GITIGNORED-PATHS - generated locally and never committed
+
+    The third was added after CI failed on a clean clone while the same gate
+    passed locally, because the author's machine had the generated files. A
+    gate that only passes where its author sits is not a gate.
+    """
+    return (_declared("PLANNED-PATHS.txt") | _declared("EXTERNAL-PATHS.txt")
+            | _declared("GITIGNORED-PATHS.txt"))
 
 
 def gate_cited_paths() -> None:
@@ -240,7 +251,14 @@ def gate_card_fresh() -> None:
     cs = card.get("code_state") or {}
 
     collected = _collected_tests()
-    if collected is not None and cs.get("tests_passing") != collected:
+    if collected is None:
+        # Silently skipping here would make this gate a no-op in exactly the
+        # environment it most needs to work. Every other gate in this file
+        # fails loudly when it cannot do its job.
+        fail("card-fresh", "could not collect a test count, so the card's "
+                           "tests_passing is unchecked. Refusing to pass a gate "
+                           "that did not run.")
+    elif cs.get("tests_passing") != collected:
         fail("card-fresh", f"card says tests_passing={cs.get('tests_passing')} but "
                            f"pytest collects {collected}. Run scripts/refresh_card.py.")
 

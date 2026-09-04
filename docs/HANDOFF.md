@@ -49,6 +49,26 @@ Corollary: check the provider's documented request shape against what the
 adapter actually sends. Ploid documents structured `filters`; we were putting
 the company in the free text.
 
+## The cited-path gate and clean clones
+
+`scripts/validate.py` checks that every cited path resolves. It passed locally
+and failed in CI on the first run, because `data/replay.jsonl` and
+`docs/private/` exist on the machine that wrote the docs and are gitignored
+everywhere else.
+
+**A gate that only passes where its author sits is not a gate.** Cited paths
+absent from a clean checkout are now declared in one of three files, so the
+reason stays visible and a typo still fails:
+
+| File | Meaning |
+|---|---|
+| `PLANNED-PATHS.txt` | promised by a later wave |
+| `EXTERNAL-PATHS.txt` | lives in a sibling repository |
+| `GITIGNORED-PATHS.txt` | generated locally, never committed |
+
+Before trusting a green `validate`, run it against a fresh `git clone` of the
+repo, not the working tree.
+
 ## Collections
 
 House style across the six collections: **the title carries the claim** in two

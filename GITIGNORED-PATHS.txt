@@ -1,0 +1,21 @@
+# Paths that are cited in the docs and are DELIBERATELY ABSENT from git.
+# Generated locally, never committed: corpora, caches, private material.
+#
+# They need declaring for the same reason PLANNED-PATHS.txt exists - so a typo
+# in a cited path still fails the build - but they must never be expected to
+# exist in a clean checkout.
+#
+# CI found these. The cited-path gate had been passing locally for the wrong
+# reason: the files existed on the machine that wrote the docs. A gate that
+# only passes where the author sits is not a gate.
+data/replay.jsonl
+data/corpus.jsonl
+data/scholar.jsonl
+data/tasks.jsonl
+data/expert_tasks.jsonl
+data/expert_tasks_v2.jsonl
+data/expert_tasks_control.jsonl
+data/resolve_index.json
+data/raw/
+docs/private/
+build/
