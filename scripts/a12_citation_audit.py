@@ -62,6 +62,10 @@ def main() -> int:
                     help="titles checked per affirmation")
     ap.add_argument("--attested-sample", type=int, default=250)
     ap.add_argument("--out", default="a12_citation_audit.json")
+    ap.add_argument("--report-only", action="store_true",
+                    help="emit the report from the checkpoint without calling "
+                         "OpenAlex. A partial audit reported AS partial is "
+                         "worth more than a crash.")
     ap.add_argument("--interval", type=float, default=0.6,
                     help="extra seconds between affirmations. OpenAlex's polite "
                          "pool 429s under a burst; this is not a retry loop.")
@@ -116,7 +120,7 @@ def main() -> int:
     skip = sum(b["n"] for b in done.values())
 
     for i, (st, aid, cites) in enumerate(work, 1):
-        if i <= skip:
+        if args.report_only or i <= skip:
             continue
         backed = False
         existed = False
@@ -165,7 +169,7 @@ def main() -> int:
         report["strata"][st] = {
             **b,
             "backed_rate": round(rate, 4),
-            "backed_wilson": wilson(b["backed"], b["n"]),
+            "backed_wilson": str(wilson(b["backed"], b["n"])),
         }
     (ROOT / "results" / args.out).write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report["strata"], indent=2))

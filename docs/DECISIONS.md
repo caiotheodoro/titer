@@ -1853,3 +1853,104 @@ cannot return `unique_name`. Most outcomes are therefore `MISS` rather than a
 wrong identity: the provider mostly fails to name anyone resolvable rather than
 naming the wrong one. A surface that answered more confidently could behave
 differently, and that is not measured here.
+
+---
+
+## D042 - H2 completed with the d=1 baseline, and a correction to D041 (2026-09-04)
+
+D041 recorded H2 as falsified on three colliding bands. The `unique` band ran
+afterwards and changes the picture in two ways, one of which **corrects a
+sentence in D041**.
+
+### The correction
+
+D041 said *"net of the measured same-human-two-CIK bound, every interval
+collapses to zero."* That was true of the three bands it had. It is **not true
+of `unique`**, and it could not be: the contamination bound applies to
+*colliding* names, where one human may hold two registrations. A unique name has
+no such ambiguity, so nothing is subtracted and its interval stands on its own.
+
+Corrected, with all four bands, `exa_D_full_context`, n=80 each:
+
+| Band | `FALSE_MERGE` | raw Wilson | net of contamination |
+|---|---|---|---|
+| **`unique` (d=1)** | **3/80 = 0.0375** | 0.0375 [0.0128, 0.1045] | **[0.0128, 0.1045]** |
+| `low` (2-3) | 0/80 | 0.0000 [0.0000, 0.0458] | [0, 0] |
+| `medium` (4-9) | 1/80 | 0.0125 [0.0022, 0.0675] | [0, 0] |
+| `high` (>=10) | 0/80 | 0.0000 [0.0000, 0.0458] | [0, 0] |
+
+So one falsification condition fires rather than two. **H2 is still falsified**,
+because "flat in `d`" is sufficient on its own and the pre-registration says so.
+
+### The finding that replaces it, which is better
+
+The rate is not flat. It is **inverted**: 0.0375, 0.0000, 0.0125, 0.0000. False
+merges are **most likely where names do not collide at all**, and effectively
+absent where they do.
+
+H2 predicted the opposite, and the mechanism is visible in the resolution
+column. On a colliding name the provider mostly cannot name anyone our resolver
+can pin - the outcome is `MISS`, not a wrong identity. **It never gets the
+chance to be confidently wrong.** Name collision does not make this provider
+merge the wrong person more often; it makes it stop answering.
+
+That is a more useful statement for anyone buying such a surface than the one
+H2 proposed. It also means the danger sits where nobody stratifies for it: the
+easy, unique-name cases where an answer comes back and looks clean.
+
+### Why this correction exists at all
+
+D041 was written from three bands while the fourth was still running, and it
+generalised one clause past its evidence. The entry is append-only, so it is
+corrected here rather than edited, which is the whole point of the log.
+
+---
+
+## D043 - A12, partial: false affirmations are mostly ungrounded (2026-09-04)
+
+A12's residual asks whether the surviving false-affirmation rate is *error* or
+*prompt interpretation* - whether the provider reasonably read "has expertise in
+T" as "works near T". The control tier bounded it from below. This bounds it
+from a different direction, using citations that were already on disk.
+
+**Method, and what it can and cannot say.** For each affirmation, up to three
+cited titles are resolved against OpenAlex, asking whether any is a work that
+author actually wrote. No model reads the evidence string. "Backed" means the
+provider pointed at a real work by that person - **not** that the work is on the
+claimed topic, which is a weaker bar than it sounds.
+
+**Result, 225 of 399 affirmations audited:**
+
+| Stratum | n | cites a real work by that author |
+|---|---|---|
+| `ATTESTED` | 150 | **0.5733 [0.4933, 0.6497]** |
+| `FALSE_far` | 33 | 0.1515 [0.0665, 0.3092] |
+| `FALSE_near` | 42 | 0.1429 [0.0672, 0.2784] |
+
+The attested interval does not overlap either false interval.
+
+**Why this bears on A12.** If the mechanism were loose-but-reasonable reading,
+a false affirmation should still be *grounded* - the provider would cite real
+work by that person, merely on an adjacent topic. Instead a false affirmation is
+roughly **four times less likely** to cite any verifiable work by them at all.
+That is harder to read as interpretation and easier to read as the answer being
+unsupported.
+
+**Four things keep this from closing A12.**
+
+1. **It is 225 of 399.** `ATTESTED` is complete at 150/150; `FALSE_near` is
+   42/126, `FALSE_far` 33/102, and the `CONTROL` arm is **0/21**. The OpenAlex
+   account budget ran out mid-run, twice, on two different keys.
+2. **The audited subset is not random.** Affirmations are processed in task-dict
+   order, not shuffled, so the false strata are the first encountered rather
+   than a random sample of them. The direction is large and the intervals are
+   clean, but this is not a randomised estimate and must not be quoted as one.
+3. **"No resolvable title" conflates two things** - a citation that is a Google
+   Scholar profile or a staff page rather than a paper, and a resolver miss on a
+   real paper. Both count against "backed".
+4. **"Backed" does not mean "correct".** A cited work by the right author on the
+   wrong topic still counts as backed, so the false strata's 14-15% is an upper
+   bound on how grounded those affirmations are.
+
+**A12 therefore stays LIVE, bounded from two sides.** The remaining 174
+affirmations, including every `CONTROL` one, need a quota reset and cost $0.

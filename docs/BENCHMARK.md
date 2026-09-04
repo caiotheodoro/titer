@@ -129,6 +129,7 @@ within-task comparison, seed 23, $3.60.
 
 | Band | A: name alone | C: + past employer, free text | D: + full anchor context |
 |---|---|---|---|
+| `unique` (degree 1) | 0.2375 [0.1576, 0.3414] | 0.3500 [0.2545, 0.4592] | 0.4625 [0.3575, 0.5710] |
 | `low` (degree 2-3) | 0.0500 [0.0196, 0.1216] | **0.2000** [0.1270, 0.3005] | 0.3375 [0.2435, 0.4464] |
 | `medium` (4-9) | **0.0000** [0.0000, 0.0458] | **0.1875** [0.1171, 0.2866] | 0.2750 [0.1892, 0.3814] |
 | `high` (>=10) | **0.0000** [0.0000, 0.0458] | **0.2875** [0.1999, 0.3946] | 0.3000 [0.2106, 0.4077] |
@@ -206,19 +207,30 @@ not the money: a random draw put 251 of 299 observations into one collision band
 allocation, so H2 resolved for **$0** from observations collected for another
 hypothesis.
 
-`exa_D_full_context`, held constant across bands:
+`exa_D_full_context`, held constant across bands, n=80 each:
 
 | Band | `FALSE_MERGE` | raw Wilson | net of the 12.76% contamination bound |
 |---|---|---|---|
-| `low` (d 2-3) | 0/80 | 0.0000 [0.0000, 0.0458] | **[0, 0]** |
+| **`unique` (d=1)** | **3/80** | 0.0375 [0.0128, 0.1045] | **[0.0128, 0.1045]** |
+| `low` (2-3) | 0/80 | 0.0000 [0.0000, 0.0458] | **[0, 0]** |
 | `medium` (4-9) | 1/80 | 0.0125 [0.0022, 0.0675] | **[0, 0]** |
 | `high` (>=10) | 0/80 | 0.0000 [0.0000, 0.0458] | **[0, 0]** |
 
-**Both falsification conditions fire.** The rate is flat in `d`, which is
-sufficient on its own; and net of the measured same-human-two-CIK bound every
-interval collapses to zero, because a single false merge in eighty colliding
-names is entirely absorbed by the chance that one person holds two filer
-registrations.
+The contamination bound applies only to colliding names, where one human may
+hold two registrations; a unique name has no such ambiguity, so nothing is
+subtracted from its interval.
+
+**H2 is falsified on "flat in `d`", which the pre-registration makes sufficient
+on its own.** But the rate is not flat - it is **inverted**: 0.0375, 0.0000,
+0.0125, 0.0000. False merges are most likely where names **do not collide**, and
+effectively absent where they do.
+
+The mechanism is in the resolution column. On a colliding name the provider
+mostly cannot name anyone the resolver can pin, so the outcome is `MISS` rather
+than a wrong identity: **it never gets the chance to be confidently wrong.**
+Collision does not make this surface merge the wrong person more often, it makes
+it stop answering. The danger sits where nobody stratifies for it - the easy,
+unique-name cases where an answer comes back and looks clean.
 
 H2 was the hypothesis most likely to yield an alarming, quotable number about a
 commercial product. It is not true here, and the pre-registration commits to

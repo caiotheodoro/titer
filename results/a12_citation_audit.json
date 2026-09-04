@@ -1,9 +1,34 @@
 {
   "generated": "2026-09-04",
-  "citations_checked_per_affirmation": 2,
+  "citations_checked_per_affirmation": 3,
   "spend_usd": 0.0,
-  "audited": 0,
-  "requested": 329,
+  "audited": 225,
+  "requested": 399,
   "method": "For each affirmation, up to N cited titles are resolved against OpenAlex. 'backed' means at least one cited title is a work OpenAlex says this author wrote. No model reads the evidence string.",
-  "strata": {}
+  "strata": {
+    "ATTESTED": {
+      "n": 150,
+      "backed": 86,
+      "title_exists_but_not_theirs": 15,
+      "no_resolvable_title": 49,
+      "backed_rate": 0.5733,
+      "backed_wilson": "0.5733 [0.4933, 0.6497] n=150"
+    },
+    "FALSE_far": {
+      "n": 33,
+      "backed": 5,
+      "title_exists_but_not_theirs": 4,
+      "no_resolvable_title": 24,
+      "backed_rate": 0.1515,
+      "backed_wilson": "0.1515 [0.0665, 0.3092] n=33"
+    },
+    "FALSE_near": {
+      "n": 42,
+      "backed": 6,
+      "title_exists_but_not_theirs": 11,
+      "no_resolvable_title": 25,
+      "backed_rate": 0.1429,
+      "backed_wilson": "0.1429 [0.0672, 0.2784] n=42"
+    }
+  }
 }

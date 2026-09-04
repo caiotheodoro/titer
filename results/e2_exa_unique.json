@@ -1,0 +1,262 @@
+{
+  "window": "2026-09",
+  "as_of": "2026-09-04",
+  "seed": 23,
+  "live_calls": {
+    "exa": 240
+  },
+  "max_calls": 240,
+  "requested_n": 80,
+  "dry_run": false,
+  "strategy": "random",
+  "strata": null,
+  "pooling_rule": "RANDOM: marginal rates are population estimates.",
+  "corpus": {
+    "rows_streamed": 4206080,
+    "people": 230405,
+    "tasks": 22596,
+    "retained_fraction": 0.09807078839434909,
+    "bands": {
+      "unique": 19464,
+      "medium": 755,
+      "low": 2222,
+      "high": 155
+    },
+    "min_gap_days": 180,
+    "require_last_employer": true,
+    "excluded_entity_filers": 419,
+    "max_age_years": 10.0
+  },
+  "arms": {
+    "exa_A_name_only": {
+      "n": 80,
+      "spend_usd": 0.4,
+      "outcomes": {
+        "CORRECT": 19,
+        "FALSE_MERGE": 3,
+        "UNSURE_WRONG": 1,
+        "MISS": 56,
+        "ABSTAIN": 0,
+        "STALE": 1
+      },
+      "accuracy": 0.2375,
+      "correct": "0.2375 [0.1576, 0.3414] n=80",
+      "false_merge": "0.0375 [0.0128, 0.1045] n=80",
+      "stale": "0.0125 [0.0022, 0.0675] n=80",
+      "expected_loss": {
+        "recruiter": 0.8,
+        "gtm_outbound": 0.9375,
+        "kyc_sanctions": 4.1625,
+        "journalism": 4.7375,
+        "expert_sourcing": 6.725
+      },
+      "mean_atoms": 0.4104166666666667,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "0.0000 [0.0000, 0.6576] n=2"
+        ],
+        [
+          "90-365d",
+          "0.4615 [0.2321, 0.7086] n=13"
+        ],
+        [
+          "365-1095d",
+          "0.5000 [0.2152, 0.7848] n=8"
+        ],
+        [
+          "1095-2555d",
+          "0.2500 [0.1119, 0.4687] n=20"
+        ],
+        [
+          "2555-infd",
+          "0.1081 [0.0429, 0.2471] n=37"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 80,
+          "false_merge": 3
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 67,
+        "name_not_in_corpus": 13
+      }
+    },
+    "exa_C_anchor_freetext": {
+      "n": 80,
+      "spend_usd": 0.4,
+      "outcomes": {
+        "CORRECT": 28,
+        "FALSE_MERGE": 3,
+        "UNSURE_WRONG": 0,
+        "MISS": 42,
+        "ABSTAIN": 0,
+        "STALE": 7
+      },
+      "accuracy": 0.35,
+      "correct": "0.3500 [0.2545, 0.4592] n=80",
+      "false_merge": "0.0375 [0.0128, 0.1045] n=80",
+      "stale": "0.0875 [0.0430, 0.1698] n=80",
+      "expected_loss": {
+        "recruiter": 0.6875,
+        "gtm_outbound": 0.8875,
+        "kyc_sanctions": 3.8875,
+        "journalism": 4.5375,
+        "expert_sourcing": 6.325
+      },
+      "mean_atoms": 0.4541666666666667,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "0.0000 [0.0000, 0.6576] n=2"
+        ],
+        [
+          "90-365d",
+          "0.5385 [0.2914, 0.7679] n=13"
+        ],
+        [
+          "365-1095d",
+          "0.6250 [0.3057, 0.8632] n=8"
+        ],
+        [
+          "1095-2555d",
+          "0.4000 [0.2188, 0.6134] n=20"
+        ],
+        [
+          "2555-infd",
+          "0.2162 [0.1139, 0.3720] n=37"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 80,
+          "false_merge": 3
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 73,
+        "name_not_in_corpus": 7
+      }
+    },
+    "exa_D_full_context": {
+      "n": 80,
+      "spend_usd": 0.4,
+      "outcomes": {
+        "CORRECT": 37,
+        "FALSE_MERGE": 3,
+        "UNSURE_WRONG": 0,
+        "MISS": 35,
+        "ABSTAIN": 0,
+        "STALE": 5
+      },
+      "accuracy": 0.4625,
+      "correct": "0.4625 [0.3575, 0.5710] n=80",
+      "false_merge": "0.0375 [0.0128, 0.1045] n=80",
+      "stale": "0.0625 [0.0270, 0.1381] n=80",
+      "expected_loss": {
+        "recruiter": 0.575,
+        "gtm_outbound": 0.75,
+        "kyc_sanctions": 3.5,
+        "journalism": 4.375,
+        "expert_sourcing": 6.1875
+      },
+      "mean_atoms": 0.45625,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "0.0000 [0.0000, 0.6576] n=2"
+        ],
+        [
+          "90-365d",
+          "0.6923 [0.4237, 0.8732] n=13"
+        ],
+        [
+          "365-1095d",
+          "0.6250 [0.3057, 0.8632] n=8"
+        ],
+        [
+          "1095-2555d",
+          "0.5000 [0.2993, 0.7007] n=20"
+        ],
+        [
+          "2555-infd",
+          "0.3514 [0.2183, 0.5124] n=37"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 80,
+          "false_merge": 3
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 72,
+        "name_not_in_corpus": 8
+      }
+    }
+  },
+  "matched_n": 80,
+  "paired_task_ids": 80,
+  "e2_paired": {
+    "exa_A_name_only - exa_C_anchor_freetext": {
+      "mean_a": 0.2375,
+      "mean_b": 0.35,
+      "diff": "-0.1125 [-0.2000, -0.0250] n=80",
+      "separates": true
+    },
+    "exa_A_name_only - exa_D_full_context": {
+      "mean_a": 0.2375,
+      "mean_b": 0.4625,
+      "diff": "-0.2250 [-0.3375, -0.1250] n=80",
+      "separates": true
+    },
+    "exa_C_anchor_freetext - exa_D_full_context": {
+      "mean_a": 0.35,
+      "mean_b": 0.4625,
+      "diff": "-0.1125 [-0.2000, -0.0250] n=80",
+      "separates": true
+    }
+  },
+  "e2_note": "D029: supported if C ~= A and D > B (the index cannot exploit history even when handed it); falsified if C > A. Per-stratum only - D027's pooling ban applies, and D032 makes any colliding sample case-control, so no rate here is a population rate."
+}

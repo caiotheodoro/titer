@@ -93,10 +93,37 @@ def matches_sec(returned: str | None, truth_cik: str, issuer_index) -> bool:
     return resolve_issuer(returned, issuer_index) == truth_cik
 
 
-def matches_scholar(returned: str | None, truth: str, ua: str) -> bool:
-    """Resolve both to OpenAlex institution ids, allowing lineage containment."""
-    from titer.corpus.scholar import same_institution
-    return same_institution(returned, truth, ua)
+_INST_CACHE: dict = {}
+
+
+def matches_scholar(returned: str | None, truth: str, ua: str) -> bool | None:
+    """Resolve both to OpenAlex institution ids, allowing lineage containment.
+
+    Returns None when OpenAlex cannot be reached, so a quota wall costs the
+    SCORE and never the Exa spend: the provider responses are already cached
+    and re-score for free. An earlier version raised, and the whole run died on
+    its first scholar row.
+
+    Institution lookups are memoised - the same handful of large institutions
+    recur constantly across a scholar sample.
+    """
+    from titer.corpus.scholar import OpenAlexError, resolve_institution
+
+    def look(name):
+        if name not in _INST_CACHE:
+            _INST_CACHE[name] = resolve_institution(name, ua)
+        return _INST_CACHE[name]
+
+    try:
+        rid, rlin = look(returned)
+        if rid is None:
+            return False
+        tid, tlin = look(truth)
+        if tid is None:
+            return False
+        return rid == tid or tid in rlin or rid in tlin
+    except OpenAlexError:
+        return None
 
 
 def main() -> int:
@@ -152,12 +179,13 @@ def main() -> int:
         got = ReplayCache.to_answers(entry)
         top = got[0] if got else None
         emp = top.employer_name if top else None
+        correct = (matches_sec(emp, t["truth_cik"], issuer_index)
+                   if t["population"] == "sec"
+                   else matches_scholar(emp, t["truth"], ua))
         recs.append({"population": t["population"], "task_id": t["task_id"],
                      "returned": emp, "truth": t["truth"],
                      "named_someone": bool(emp),
-                     "correct": (matches_sec(emp, t["truth_cik"], issuer_index)
-                                 if t["population"] == "sec"
-                                 else matches_scholar(emp, t["truth"], ua)),
+                     "correct": correct,
                      "confidence": top.confidence if top else 0.0,
                      "spend_usd": entry.spend_usd})
         if i % 50 == 0:
@@ -182,12 +210,15 @@ def main() -> int:
         rs = [r for r in recs if r["population"] == pop]
         if not rs:
             continue
-        n = len(rs)
+        scored = [r for r in rs if r["correct"] is not None]
+        n, ns = len(rs), len(scored)
         report["populations"][pop] = {
-            "n": n,
+            "n_returned": n,
+            "n_scored": ns,
+            "unscored_openalex_unavailable": n - ns,
             "named_someone": str(wilson(sum(r["named_someone"] for r in rs), n)),
-            "correct": str(wilson(sum(r["correct"] for r in rs), n)),
-            "correct_rate": round(sum(r["correct"] for r in rs) / n, 4),
+            "correct": str(wilson(sum(r["correct"] for r in scored), ns)) if ns else None,
+            "correct_rate": round(sum(r["correct"] for r in scored) / ns, 4) if ns else None,
         }
     # Unpaired: the two populations are different people, so the difference is
     # a between-population contrast, not a within-task one. No paired bootstrap.

@@ -7,7 +7,21 @@
   "why_this_resolves_it": "H2 was blocked because a random draw left three of four collision bands nearly empty (D027). E2 drew n=80 in every band by construction, which is the design H2 always needed.",
   "bands": {
     "unique": {
-      "note": "not run"
+      "n": 80,
+      "false_merge": 3,
+      "rate": 0.0375,
+      "wilson": "0.0375 [0.0128, 0.1045] n=80",
+      "net_of_contamination": [
+        0.0128,
+        0.1045
+      ],
+      "expected_loss": {
+        "recruiter": 0.575,
+        "gtm_outbound": 0.75,
+        "kyc_sanctions": 3.5,
+        "journalism": 4.375,
+        "expert_sourcing": 6.1875
+      }
     },
     "low": {
       "n": 80,
@@ -63,16 +77,18 @@
   },
   "verdict": {
     "bands_with_any_false_merge": [
+      "unique",
       "medium"
     ],
     "rates_in_band_order": [
+      0.0375,
       0.0,
       0.0125,
       0.0
     ],
     "increasing_in_d": false,
-    "every_interval_includes_zero": true,
+    "every_interval_includes_zero": false,
     "falsified": true,
-    "reason": "H2 is FALSIFIED: every band's Wilson interval includes zero, so the rate is indistinguishable from zero at the achieved n; and the rate is not increasing in d. The pre-registration commits to publishing this as prominently as a positive result."
+    "reason": "H2 is FALSIFIED: the rate is not increasing in d. The pre-registration commits to publishing this as prominently as a positive result."
   }
 }

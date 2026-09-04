@@ -175,13 +175,26 @@ label is the circularity D022 bans.
 
 `scripts/a12_citation_audit.py` does this and spends $0.
 
-**It has not produced a number yet.** OpenAlex's account budget was exhausted
-mid-run (both authenticated and unauthenticated requests returned
-`$0 remaining ... resets at midnight UTC`), which cost the first attempt 175
-audited affirmations because it only wrote results at the end. It now
-checkpoints every 25 and stops cleanly on a rate wall. **A12 therefore stays
-LIVE, with the residual still open and the tooling waiting on a quota reset
-rather than on money.**
+**It has produced a partial number, and it points one way** (D043). Of 225
+affirmations audited before the OpenAlex budget ran out a second time:
+
+| Stratum | n | cites a real work by that author |
+|---|---|---|
+| `ATTESTED` | 150 | **0.5733 [0.4933, 0.6497]** |
+| `FALSE_far` | 33 | 0.1515 [0.0665, 0.3092] |
+| `FALSE_near` | 42 | 0.1429 [0.0672, 0.2784] |
+
+The attested interval overlaps neither false interval. If the mechanism were
+loose-but-reasonable reading, a false affirmation should still be **grounded** -
+real work by that person, merely on an adjacent topic. It is roughly four times
+less likely to cite any verifiable work by them at all.
+
+**This does not close A12**, for four reasons stated in D043: it is 225 of 399
+with the `CONTROL` arm entirely unaudited; the subset is processed in dict order
+rather than sampled at random; "no resolvable title" conflates a profile-page
+citation with a resolver miss; and "backed" allows a real work on the *wrong*
+topic. **A12 stays LIVE, now bounded from two sides**, and the remaining 174
+affirmations cost $0 once the quota resets.
 
 ## A13. "The negatives are still constructed by you." · MITIGATED, not eliminated
 
