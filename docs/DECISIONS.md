@@ -1474,3 +1474,106 @@ the record.
 found by reading returned rows; not one was visible in a summary statistic. The
 instrument is now materially better and the vendor remains unmeasured, which is
 an honest description of where four budgets went.
+
+---
+
+## D037 - Five defects found before training, three of them reward hacks (2026-09-04)
+
+W5's rule is "no health report, no training run". The health report existed and
+was green. Reading the environment before writing a training loop found **five
+defects**, three of which would have let a trained policy beat the published
+floors without learning anything about the task, and one of which would have
+fabricated the A12 result at zero cost.
+
+Each was verified to fail before its fix, then to pass after.
+
+### C1 - The window atom was free reward
+
+`atoms()` scores the employment window from `answer.employment_start`, which
+arrived in the **policy's own action dict**. Answering `date(1,1,1)` with no end
+date satisfies `start <= period` and `end is None` for every task, on every
+outcome, because atoms are scored regardless of outcome. That is roughly
+**+0.33 reward per episode for nothing**, which alone beats the published
+`never_verify` floor of 0.0455 by an order of magnitude.
+
+The comment directly above the offending line forbids exactly this for
+`title_class`: *"A policy that hands us a pre-classified enum would be doing our
+normalization for us, which is a leak."* Same leak, inconsistently applied.
+
+**Now:** dates come from the provider's returned candidate. No match means no
+dates and the atom fails, which `atoms()` already documented as correct.
+
+### C2 - Confidence was a free knob
+
+`judge()` reads confidence only in the wrong-person branch: `FALSE_MERGE` at
+`conf >= 0.5`, `UNSURE_WRONG` below. Under `gtm_outbound` that is 5.0 against
+2.0, so stating **0.49 saved 3.0 of penalty every time the policy was wrong and
+cost nothing when it was right.** Strictly dominant. Every calibration claim in
+this repository would have died with it.
+
+**Now:** a Brier term, `BRIER_W * (confidence - correct)^2`. It is outcome-only
+- it reads the terminal outcome and the stated confidence and rewards no
+intermediate behaviour - so the "no shaping" rule is intact. This amends
+`CONTRACTS.md` §6 on evidence, which §6 permits.
+
+The gate is not "hedging must be bad": on a known-wrong answer hedging *should*
+win, and that is the rule working. The gate is that **truthful confidence must be
+optimal**. Swept over constant-confidence policies, the reward argmax now sits at
+**0.4** against an empirical accuracy of **0.3773**. With the term disabled the
+argmax is **0.0** and the probe fails, which is how it was verified.
+
+### C3 - The turn cap did not bind in the refusal branches
+
+`insufficient_budget` and `budget_exceeded` returned `done=False` without
+checking the cap, which was only checked after a successful charge. A policy
+that keeps requesting what it cannot afford ran **37 turns against a cap of 32**
+and would never terminate. The three floors never hit it; an exploring policy
+hits it immediately.
+
+### C4 - The expertise runner's cache key omitted the prompt
+
+`CacheKey("exa", "expertise", task_id, window)`. `full_run.py` has always keyed
+on `f"{task_id}|{rendered}"`; the runner that produced E1 did not. A new prompt
+variant over the same tasks in the same month would have returned a **cached hit
+for every task**: `adapter.query` never reached, `--spend` apparently working,
+$0 spent, and the OLD answers written under the NEW variant's filename. No
+error, no warning.
+
+This is the class of defect the README leads with, sitting in the runner that
+produced the headline. It would have made the A12 experiment report a fabricated
+result for free.
+
+**Now:** the prompt is in the key, and a variant uses a distinct action. The
+2,388 already-measured entries keep replaying free through an explicit legacy
+fallback that is applied **only** to the original action, so a variant can never
+inherit the original's answers. Verified: E1 v2 replays byte-identically.
+
+### C5 - `env_health --real` gated nothing
+
+`run_real` always returned 0. It was a reporter wearing a gate's name, and it
+probed for neither C1 nor C2. It now gates on the 10-80% band, on having enough
+real observations, and on both reward-hack probes.
+
+### The floors were wrong, and the ordering changed
+
+Re-measured under the fixed reward:
+
+| Floor | Published | Corrected |
+|---|---|---|
+| `never_verify` | 0.0455 | **-0.2292** |
+| `always_deep_verify` | 0.0277 | **-0.2574** |
+| `abstain_always` | -0.1000 | **-0.1000** |
+
+`never_verify` still beats `always_deep_verify`, so **"spending 3x more bought
+marginally fewer correct answers" survives**. But both active floors are now
+beaten by **doing nothing**. Under `gtm_outbound` at a 37% solve rate, answering
+is negative expected value, and the floor a trained policy must beat is
+`abstain_always` at -0.1.
+
+That is a better-posed training problem than the one before it: the task is no
+longer "verify more cheaply", it is "answer only when you are likely right".
+
+**Counterfactual.** Without reading the environment first, a policy trained
+against the old reward would have reported a large margin over `never_verify`,
+every point of it earned by asserting `date(1,1,1)` and `confidence=0.49`. It
+would have been this project's sixth artefact, and the first one published.

@@ -1,47 +1,47 @@
 {
   "mode": "real",
   "source": "data/replay.jsonl",
-  "observations": 500,
+  "observations": 485,
   "outcome_distribution": {
-    "STALE": 75,
-    "CORRECT": 185,
-    "MISS": 236,
+    "STALE": 68,
+    "CORRECT": 183,
+    "MISS": 230,
     "FALSE_MERGE": 4
   },
   "fitted_cells": {
-    "exa/answer/unique": 440,
+    "exa/answer/unique": 428,
     "exa/answer/medium": 16,
-    "exa/answer/low": 44
+    "exa/answer/low": 41
   },
   "fallback_cell": {
-    "n": 500,
-    "p_correct": 0.37,
-    "p_stale": 0.15,
-    "p_wrong_person": 0.008,
-    "p_miss": 0.472
+    "n": 485,
+    "p_correct": 0.3773,
+    "p_stale": 0.1402,
+    "p_wrong_person": 0.0082,
+    "p_miss": 0.4742
   },
-  "solve_rate_proxy": 0.37,
+  "solve_rate_proxy": 0.3773,
   "in_10_80_band": true,
   "verdict": "TRAINABLE: the fitted solve rate sits in the 10-80% band, so GRPO has advantages to compute.",
   "floors": {
     "never_verify": {
       "n": 300,
-      "mean_reward": 0.0455,
+      "mean_reward": -0.2292,
       "mean_spend_usd": 0.005,
       "outcomes": {
-        "STALE": 43,
+        "STALE": 41,
         "MISS": 155,
-        "CORRECT": 102
+        "CORRECT": 104
       }
     },
     "always_deep_verify": {
       "n": 300,
-      "mean_reward": 0.0277,
+      "mean_reward": -0.2574,
       "mean_spend_usd": 0.015,
       "outcomes": {
-        "STALE": 53,
-        "MISS": 152,
-        "CORRECT": 95
+        "STALE": 48,
+        "MISS": 154,
+        "CORRECT": 98
       }
     },
     "abstain_always": {
@@ -53,6 +53,27 @@
       }
     }
   },
-  "best_floor": "never_verify",
-  "floor_note": "never_verify has the highest mean reward on the simulator fitted to real data. A trained policy has to beat it, and this is the number it must beat - not a synthetic one."
+  "best_floor": "abstain_always",
+  "floor_note": "abstain_always has the highest mean reward on the simulator fitted to real data. A trained policy has to beat it, and this is the number it must beat - not a synthetic one.",
+  "hack_probes": {
+    "sentinel_date_earns_window_atom": false,
+    "confidence_reward_curve": {
+      "0.0": -0.0964,
+      "0.1": -0.0655,
+      "0.2": -0.0447,
+      "0.3": -0.0339,
+      "0.4": -0.033,
+      "0.5": -0.0422,
+      "0.6": -0.0614,
+      "0.7": -0.0905,
+      "0.8": -0.1297,
+      "0.9": -0.1789,
+      "1.0": -0.238
+    },
+    "argmax_confidence": 0.4,
+    "empirical_accuracy": 0.3773,
+    "confidence_is_a_free_knob": false
+  },
+  "pass": true,
+  "failures": []
 }

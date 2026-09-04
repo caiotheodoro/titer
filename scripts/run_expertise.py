@@ -43,6 +43,12 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--budget-usd", type=float, default=8.0)
     ap.add_argument("--out", default="expertise_e1.json")
+    ap.add_argument("--action", default="expertise",
+                    help="adapter action; a new prompt variant uses a new one "
+                         "so it cannot collide with a measured run")
+    ap.add_argument("--max-calls", type=int, default=None,
+                    help="hard cap on LIVE calls. --budget-usd alone caps "
+                         "dollars, not credits.")
     ap.add_argument("--tasks", default="expert_tasks.jsonl")
     args = ap.parse_args()
 
@@ -65,15 +71,32 @@ def main() -> int:
     ledger = Ledger(args.budget_usd)
     window = datetime.now().strftime("%Y-%m")
     recs: list[dict] = []
+    live = 0
 
     for i, t in enumerate(sample, 1):
-        key = CacheKey("exa", "expertise", t["task_id"], window)
+        # The PROMPT is part of the key. Without it a new variant over the
+        # same tasks in the same month hits the cache for every task, never
+        # reaches adapter.query, spends $0, and reports the old answers under
+        # the new variant's name. full_run.py has always keyed this way;
+        # this runner did not, and it is the one that produced E1. See D037.
+        key = CacheKey("exa", args.action, f"{t['task_id']}|{t['prompt']}", window)
         entry = cache.get(key)
+        if entry is None and args.action == "expertise":
+            # The 2,388 already-measured entries were written under the old
+            # task_id-only key. Falling back to it keeps the published promise
+            # that every measurement regenerates from the cache with no key
+            # and no spend. The fallback is deliberately NOT applied to a new
+            # action: a variant must never inherit the original's answers,
+            # which is the whole point of C4.
+            entry = cache.get(CacheKey("exa", "expertise", t["task_id"], window))
         if entry is None:
             if not args.spend:
                 continue
+            if args.max_calls is not None and live >= args.max_calls:
+                print(f"  call cap {args.max_calls} reached at {i}", file=sys.stderr)
+                break
             try:
-                ans, sp = adapter.query("expertise", t["prompt"])
+                ans, sp = adapter.query(args.action, t["prompt"])
             except (ProviderHTTPError, Exception) as e:  # noqa: BLE001
                 print(f"  [{i}] {type(e).__name__}: {str(e)[:110]}", file=sys.stderr)
                 continue
@@ -84,6 +107,7 @@ def main() -> int:
                 break
             entry = cache.put(key, [], sp, 0.0, datetime.now().isoformat(),
                               raw=adapter.last_raw)
+            live += 1
         ans = Exa._parse_expertise(entry.raw or {})
         recs.append({"task_id": t["task_id"], "stratum": strat(t),
                      "polarity": t["polarity"], "tier": t["negative_tier"],

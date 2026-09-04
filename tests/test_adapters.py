@@ -371,3 +371,26 @@ def test_reparse_returns_none_when_no_raw_was_stored(tmp_path):
     key = CacheKey("ploid", "search_fast", "req", "w")
     cache.put(key, [], Spend(0.0), 1.0, "t")
     assert ReplayCache.reparse(cache.get(key), Ploid._parse_search) is None
+
+
+def test_expertise_cache_key_separates_prompt_variants():
+    """A changed prompt must miss the cache. D037 C4.
+
+    `run_expertise.py` keyed on `CacheKey("exa","expertise", task_id, window)`
+    with the prompt absent, while `full_run.py` keys on
+    `f"{task_id}|{rendered}"`. A new prompt variant over the same tasks in the
+    same month therefore returned a cached HIT for every task: `adapter.query`
+    was never reached, `--spend` appeared to work, it spent $0, and it wrote
+    the OLD answers under the NEW variant's filename. No error, no warning.
+
+    This is the class of defect the README leads with, sitting in the runner
+    that produced the headline result.
+    """
+    from titer.adapters.cache import CacheKey
+    base = CacheKey("exa", "expertise", "abc123|Does X have expertise in T?", "2026-09")
+    variant = CacheKey("exa", "expertise",
+                       "abc123|Does X have expertise in T? Cite a specific work.",
+                       "2026-09")
+    assert base.digest() != variant.digest(), (
+        "two different prompts for one task_id collide in the cache; the "
+        "variant would silently replay the original's answers")

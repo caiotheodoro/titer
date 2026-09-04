@@ -264,10 +264,90 @@ def run_real(args) -> int:
         "data. A trained policy has to beat it, and this is the number it must "
         "beat - not a synthetic one.")
 
+    # --- gates. This used to `return 0` unconditionally: it was a reporter
+    # wearing a gate's name, and W5 says "no health report, no training run".
+    # A reporter cannot refuse anything. See D037 C5.
+    rfails: list[str] = []
+    if not report["in_10_80_band"]:
+        rfails.append(f"fitted solve rate {p_correct:.4f} is outside the "
+                      f"10-80% band; GRPO has no advantages to compute")
+    if report["observations"] < 100:
+        rfails.append(f"only {report['observations']} real observations; "
+                      f"the fitted cells are not worth training against")
+
+    # Reward-hack probes against the REAL fitted environment. Both of these
+    # paid before D037, and neither was probed anywhere.
+    probe_task = task_objs[0]
+    hp: dict = {}
+
+    prov = SimulatedProvider("exa", "search", model, ref, price, seed=args.seed)
+    penv = TiterEnv(task_objs, {"exa": prov}, index, issuer_index,
+                    budget_usd=1.0, profile_name="gtm_outbound")
+    ref["task"] = probe_task
+    ref["decoy_employer"] = probe_task.anchor_issuer_name
+    penv.reset(0)
+    penv.step({"type": "query", "provider": "exa", "action": "search"})
+    r = penv.step({"type": "answer", "person_name": "nobody at all",
+                   "employer_name": None, "confidence": 0.0,
+                   "employment_start": _date(1, 1, 1), "employment_end": None})
+    hp["sentinel_date_earns_window_atom"] = bool(penv.record.atoms.window)
+    if hp["sentinel_date_earns_window_atom"]:
+        rfails.append("a policy-asserted sentinel date still earns the window "
+                      "atom; that is ~+0.33 reward per episode for nothing")
+
+    # A proper scoring rule cannot make hedging bad on a KNOWN-wrong answer -
+    # that is the rule working. The property that matters is that TRUTHFUL
+    # confidence is optimal: swept over constant-confidence policies, the
+    # argmax must sit at the empirical accuracy, not at 0 and not at 1. Before
+    # D037 the reward was flat in confidence for every correct answer and
+    # strictly decreasing in it for every wrong one, so the argmax was pinned
+    # at 0 and "state nothing, ever" was optimal.
+    def _mean_reward_at(conf, n=120):
+        e = TiterEnv(task_objs, {"exa": SimulatedProvider(
+            "exa", "search", model, ref, price, seed=args.seed)},
+            index, issuer_index, budget_usd=1.0, profile_name="gtm_outbound")
+        tot = []
+        for i, tk in enumerate(task_objs[:n]):
+            ref["task"] = tk
+            ref["decoy_employer"] = tk.anchor_issuer_name
+            e.reset(i)
+            e.step({"type": "query", "provider": "exa", "action": "search"})
+            c = e.state().candidates
+            top = c[0] if c else {}
+            res = e.step({"type": "answer", "person_name": top.get("name"),
+                          "employer_name": top.get("employer"),
+                          "title_text": top.get("title"), "confidence": conf})
+            tot.append(res.reward)
+        return _stats.fmean(tot)
+
+    grid = [round(x / 10, 2) for x in range(11)]
+    curve = {c: round(_mean_reward_at(c), 4) for c in grid}
+    best_conf = max(curve, key=curve.get)
+    hp["confidence_reward_curve"] = curve
+    hp["argmax_confidence"] = best_conf
+    hp["empirical_accuracy"] = round(p_correct, 4)
+    # The argmax must track accuracy rather than sit pinned at an endpoint.
+    hp["confidence_is_a_free_knob"] = best_conf in (0.0, 1.0)
+    if hp["confidence_is_a_free_knob"]:
+        rfails.append(
+            f"the reward-maximizing constant confidence is {best_conf}, an "
+            f"endpoint: confidence is a free knob and every calibration claim "
+            f"downstream is void")
+    report["hack_probes"] = hp
+    report["pass"] = not rfails
+    report["failures"] = rfails
+
     (ROOT / "results").mkdir(exist_ok=True)
     (ROOT / "results" / "env_health_real.json").write_text(
         _json.dumps(report, indent=2) + "\n")
     print(_json.dumps(report, indent=2))
+    if rfails:
+        print("\nENV HEALTH (real) FAILED - do not start a training run",
+              file=sys.stderr)
+        for f in rfails:
+            print("  " + f, file=sys.stderr)
+        return 1
+    print("\nenv_health --real: gates pass")
     return 0
 
 
@@ -298,19 +378,46 @@ def main() -> int:
     fails: list[str] = []
 
     # --- 1. verifier integrity ------------------------------------------
+    # Gold must be REACHED, not asserted. D037 moved the employment dates from
+    # the policy's action dict to the provider's returned candidate, because
+    # read from the action dict they were a free atom on every episode. So a
+    # gold probe that steps `answer` without ever querying now has no dates and
+    # cannot earn the window atom: it scored 0.5000 and failed its own gate.
+    # The probe therefore queries a provider that returns the gold row, then
+    # commits to it. That is a stricter test than before - it exercises the
+    # query path, the resolver and the scorer, not just the scorer.
+    class _GoldProvider:
+        def __init__(self, ref):
+            self._ref = ref
+
+        def actions(self):
+            return [Call("sim", "search", 0.0)]
+
+        def query(self, action, prompt, **kw):
+            t = self._ref["task"]
+            return [RawAnswer(person_name=t.person_name_raw,
+                              employer_name=t.truth_issuer_name,
+                              title_text=t.truth_title_class.value,
+                              employment_start=t.truth_period - timedelta(days=1),
+                              employment_end=None,
+                              confidence=1.0, rank=0)], Spend(0.0, 1.0, "usd")
+
+    gold_env = TiterEnv(tasks, {"sim": _GoldProvider(ref)}, idx, iidx,
+                        budget_usd=1.0)
     gold_rewards, noop_rewards = [], []
     for i, t in enumerate(tasks):
         ref["task"] = t
-        env.reset(i)
-        # A gold answer must answer EVERY atom the task scores, including the
-        # employment window. Omitting the dates used to shrink the denominator
-        # instead of failing the atom (D024 C2); now it fails it, so a gold
-        # answer that stays silent is no longer gold.
-        r = env.step({"type": "answer", "person_name": t.person_name_raw,
-                      "employer_name": t.truth_issuer_name,
-                      "title_text": t.truth_title_class.value,
-                      "employment_start": t.truth_period - timedelta(days=1),
-                      "confidence": 0.95})
+        gold_env.reset(i)
+        gold_env.step({"type": "query", "provider": "sim", "action": "search"})
+        r = gold_env.step({"type": "answer", "person_name": t.person_name_raw,
+                           "employer_name": t.truth_issuer_name,
+                           "title_text": t.truth_title_class.value,
+                           # Gold is right by construction, so it states 1.0.
+                           # Anything less is under-confidence and the D037
+                           # Brier term prices it, which would fail the gate
+                           # below for a calibration reason rather than a
+                           # verifier-health one.
+                           "confidence": 1.0})
         gold_rewards.append(r.reward)
         env.reset(i)
         r = env.step({"type": "answer", "person_name": None, "employer_name": None,

@@ -34,7 +34,15 @@ from titer.oracle.outcome import Answer, Atoms, Outcome, atoms, judge
 from titer.oracle.resolve import resolve, resolve_issuer
 
 TURN_CAP = 32   # keel protocol
-LAMBDA = 0.30   # weight on spend, applied only among successes
+LAMBDA = 0.30
+#: Weight on the proper scoring rule over stated confidence. Without it,
+#: confidence entered the reward only through judge()'s wrong-person branch
+#: (FALSE_MERGE at conf >= 0.5, UNSURE_WRONG below), so stating 0.49 saved
+#: penalty when wrong and cost nothing when right - strictly dominant, and it
+#: voids the calibration result. A Brier term makes truthful reporting optimal.
+#: Outcome-only: it reads the terminal outcome and the stated confidence, and
+#: rewards no intermediate behaviour. See docs/DECISIONS.md D037.
+BRIER_W = 0.50   # weight on spend, applied only among successes
 
 
 @dataclass
@@ -85,6 +93,7 @@ class TiterEnv:
         self.measured_on = measured_on or date.today()
         self._i = -1
         self.task: Task | None = None
+        self._stated_confidence = 0.0
 
     # --- gym surface -----------------------------------------------------
     def reset(self, index: int | None = None) -> Observation:
@@ -143,6 +152,11 @@ class TiterEnv:
                      if c.action == action["action"])
         if not self.ledger.can_afford(price):
             # Not an error and not a penalty: the budget is part of the MDP.
+            # The cap still binds, or a policy that keeps asking for what it
+            # cannot afford never terminates and hangs the rollout (D037).
+            if self.turns >= self.turn_cap:
+                return self._finish(Answer(abstained=True),
+                                    raw={"forced": "turn_cap"})
             return StepResult(self._observe(), 0.0, False,
                               {"refused": "insufficient_budget", "price_usd": price})
         answers, spend = provider.query(action["action"], self.task.prompt(),
@@ -150,12 +164,28 @@ class TiterEnv:
         try:
             self.ledger.charge(spend)
         except BudgetExceeded:
+            if self.turns >= self.turn_cap:
+                return self._finish(Answer(abstained=True),
+                                    raw={"forced": "turn_cap"})
             return StepResult(self._observe(), 0.0, False, {"refused": "budget_exceeded"})
         self.candidates.extend(answers)
         out = self._observe()
         if self.turns >= self.turn_cap:
             return self._finish(Answer(abstained=True), raw={"forced": "turn_cap"})
         return StepResult(out, 0.0, False, {"spend_usd": spend.usd, "n": len(answers)})
+
+    def _candidate_behind(self, name, employer):
+        """The returned row the policy is committing to, or None.
+
+        No match means no dates, which fails the window atom. `atoms` already
+        documents that as correct: "No dates supplied means the atom fails,
+        not that it vanishes."
+        """
+        for c in self.candidates:
+            if c.person_name == name and (employer is None
+                                          or c.employer_name == employer):
+                return c
+        return None
 
     def _finish(self, partial: Answer, raw: dict) -> StepResult:
         task = self.task
@@ -174,16 +204,31 @@ class TiterEnv:
             # a model's. A policy that hands us a pre-classified enum would be
             # doing our normalization for us, which is a leak.
             title_text = raw.get("title_text")
+            # Employment dates are EVIDENCE, taken from the candidate the
+            # policy committed to - never from the policy's own action dict.
+            # Read straight from `raw` they were a free atom: answering
+            # employment_start=date(1,1,1) with no end date satisfies
+            # `start <= period` and `end is None` for every task, on every
+            # outcome, because atoms are scored regardless of outcome. That is
+            # ~+0.33 reward per episode for nothing, which alone beats
+            # never_verify's 0.0455 by an order of magnitude. The three floors
+            # never exploited it because they supply no dates at all, so the
+            # gap only opens once something optimises. Same leak the title
+            # comment above forbids, inconsistently applied. See D037.
+            cand = self._candidate_behind(name, employer_name)
             ans = Answer(
                 person_cik=res.person_cik,
                 confidence=float(raw.get("confidence", 0.0)),
                 employer_cik=employer_cik,
                 title_class=classify(title_text) if title_text else None,
-                employment_start=raw.get("employment_start"),
-                employment_end=raw.get("employment_end"),
+                employment_start=getattr(cand, "employment_start", None),
+                employment_end=getattr(cand, "employment_end", None),
             )
 
         truth = self._truth_tuple(task)
+        # An abstention states no confidence, so it scores 0 on the Brier term
+        # and the abstain floor is unaffected by D037's fix.
+        self._stated_confidence = 0.0 if ans.abstained else float(ans.confidence)
         outcome = judge(ans, truth)
         # The identity atom is scored only when the name alone pinned the
         # person. If a collision had to be broken by the returned employer,
@@ -233,7 +278,9 @@ class TiterEnv:
         so the trained objective is the reported loss rather than a proxy for it.
         """
         norm = max(self.profile.values()) or 1.0
-        return got.total - self.profile[outcome] / norm - (
+        hit = 1.0 if outcome is Outcome.CORRECT else 0.0
+        brier = BRIER_W * (self._stated_confidence - hit) ** 2
+        return got.total - brier - self.profile[outcome] / norm - (
             LAMBDA * (self.ledger.spent.usd / self.budget_usd)
             if outcome is Outcome.CORRECT else 0.0
         )

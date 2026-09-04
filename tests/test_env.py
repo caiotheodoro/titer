@@ -76,7 +76,12 @@ def test_gold_answer_scores_the_maximum(world):
     assert rec.atoms.identity is True
     assert rec.atoms.title is True and rec.atoms.window is True
     assert rec.atoms.total == 1.0
-    assert rec.reward == pytest.approx(1.0 - 0.30 * 0.10 / 1.0)
+    # 0.95 stated on an answer that is right by construction is slight
+    # under-confidence, and the D037 proper scoring rule prices it: a Brier
+    # term of 0.50 * (0.95 - 1.0)**2. A gold probe that wants the true maximum
+    # states 1.0.
+    assert rec.reward == pytest.approx(1.0 - 0.30 * 0.10 / 1.0
+                                       - 0.50 * (0.95 - 1.0) ** 2)
 
 
 def test_noop_answer_is_a_miss_and_is_priced_by_the_profile(world):
@@ -261,3 +266,135 @@ def test_identity_atom_is_scored_when_the_name_is_unique(world):
     assert rec.resolution_reason == "unique_name"
     assert rec.atoms.identity_scored is True and rec.atoms.identity is True
     assert rec.atoms.total == 1.0
+
+
+# --- reward-hack probes (D037). Each of these FAILED before the fix. ---------
+
+def _truth_row():
+    return _row("1", "REYES GEORGE", "9", "ISSUER 9", date(2019, 5, 1),
+                title=TitleClass.CFO)
+
+
+class TestRewardHacks:
+    """Three exploits an optimizer finds and the three floors never do.
+
+    `never_verify` hardcodes confidence 0.9 and supplies no dates, so the
+    published floors do not exploit any of these. A trained policy would, and
+    would "beat" them without learning anything about the task.
+    """
+
+    def test_policy_asserted_dates_cannot_earn_the_window_atom(self, world):
+        """The window atom must be evidence, not an assertion.
+
+        `employment_start` used to be read from the policy's own action dict.
+        Answering date(1,1,1) with no end date satisfies `start <= period` and
+        `end is None` for EVERY task, on every outcome, because atoms are
+        scored regardless of outcome. ~+0.33 reward per episode, free, which
+        alone beats never_verify's 0.0455 by an order of magnitude. The three
+        floors never exploited it because they supply no dates at all.
+        """
+        from datetime import date as _date
+        rows, idx, issuer_index, tasks = world
+        task = tasks[0]
+
+        class _Provider:
+            def actions(self):
+                return [Call("p", "search", 0.0)]
+
+            def query(self, action, prompt, **kw):
+                # A provider that returns NO dates, which is the common case:
+                # the fitted SimulatedProvider never emits them either.
+                return [RawAnswer(person_name=task.person_name_raw,
+                                  employer_name=task.truth_issuer_name,
+                                  title_text="Chief Executive Officer",
+                                  confidence=0.9, rank=0)], Spend(0.0, 1.0, "usd")
+
+        env = TiterEnv(tasks, {"p": _Provider()}, idx, issuer_index,
+                       budget_usd=1.0)
+        env.reset(0)
+        env.step({"type": "query", "provider": "p", "action": "search"})
+        r = env.step({"type": "answer",
+                      "person_name": task.person_name_raw,
+                      "employer_name": task.truth_issuer_name,
+                      "title_text": "Chief Executive Officer",
+                      "confidence": 0.9,
+                      "employment_start": _date(1, 1, 1),
+                      "employment_end": None})
+        assert r.done
+        assert not env.record.atoms.window, (
+            "a policy-asserted sentinel date earned the window atom; dates "
+            "must come from the provider's returned candidate only")
+
+    def test_hedging_under_tau_is_not_free(self, world):
+        """Stating 0.49 must cost something when the answer is right.
+
+        judge() reads confidence only in the wrong-person branch: FALSE_MERGE
+        if conf >= 0.5 else UNSURE_WRONG, which under gtm_outbound is 5.0 vs
+        2.0. So an optimizer sets 0.49, saves 3.0 of penalty every time it is
+        wrong, and paid NOTHING for it when right, because confidence entered
+        the reward nowhere else. Strictly dominant, and it voids every
+        calibration claim the project makes.
+
+        The fix is a proper scoring rule, so truthful confidence is optimal.
+        Hedging when you are usually wrong stays rational - that is
+        calibration working - but it is no longer free.
+        """
+        rows, idx, issuer_index, tasks = world
+        task = tasks[0]
+
+        class _Provider:
+            def actions(self):
+                return [Call("p", "search", 0.0)]
+
+            def query(self, action, prompt, **kw):
+                return [RawAnswer(person_name=task.person_name_raw,
+                                  employer_name=task.truth_issuer_name,
+                                  title_text="Chief Executive Officer",
+                                  confidence=0.9, rank=0)], Spend(0.0, 1.0, "usd")
+
+        def reward_at(conf):
+            env = TiterEnv(tasks, {"p": _Provider()}, idx, issuer_index,
+                           budget_usd=1.0)
+            env.reset(0)
+            env.step({"type": "query", "provider": "p", "action": "search"})
+            r = env.step({"type": "answer",
+                          "person_name": task.person_name_raw,
+                          "employer_name": task.truth_issuer_name,
+                          "title_text": "Chief Executive Officer",
+                          "confidence": conf})
+            assert env.record.outcome is Outcome.CORRECT, env.record.outcome
+            return r.reward
+
+        assert reward_at(0.90) > reward_at(0.49), (
+            "hedging at 0.49 costs nothing when the answer is right, so it "
+            "strictly dominates; an optimizer sits there forever")
+
+    def test_unaffordable_actions_cannot_spin_past_the_turn_cap(self, world):
+        """The turn cap must bind in the refusal branches too.
+
+        `insufficient_budget` and `budget_exceeded` return done=False without
+        checking the cap, which is only checked after a successful charge. A
+        policy that keeps requesting something it cannot afford increments
+        turns forever and the rollout never terminates.
+        """
+        from titer.env.titer_env import TiterEnv, TURN_CAP
+
+        class _Broke:
+            def actions(self):
+                from titer.adapters.base import Call
+                return [Call("p", "search", 999.0)]
+
+            def query(self, *a, **k):
+                raise AssertionError("must never be reached: unaffordable")
+
+        rows, idx, issuer_index, tasks = world
+        env = TiterEnv(tasks, {"p": _Broke()}, idx, issuer_index,
+                       budget_usd=0.01)
+        env.reset(0)
+        for _ in range(TURN_CAP + 5):
+            r = env.step({"type": "query", "provider": "p", "action": "search"})
+            if r.done:
+                break
+        assert r.done, (
+            f"env ran past the turn cap ({env.turns} turns) refusing an "
+            f"unaffordable action; an exploring policy hangs the run forever")

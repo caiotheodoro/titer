@@ -26,7 +26,7 @@
   "train_vs_eval_protocol_diff": "none at W5: no policy is trained yet",
   "hack_probes": {
     "abstain_always_mean": -0.1,
-    "honest_mean": -0.4824722222222223,
+    "honest_mean": -0.8808055555555556,
     "gold_min": 1.0,
     "abstain_beats_this_policy": true,
     "note": "abstain_beats_this_policy is a diagnostic about the provider, not a gate; only abstain >= gold fails the build",
