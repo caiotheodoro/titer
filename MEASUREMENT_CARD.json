@@ -12,9 +12,9 @@
   },
   "spend_usd": {
     "ploid": 15.6,
-    "exa": 21.065,
+    "exa": 23.465,
     "webfloor": 2.282,
-    "total": 38.95
+    "total": 41.35
   },
   "verified": {
     "E1_false_affirmation": "Exa affirms verified-false expertise claims at 0.1680 [0.1268,0.2193] (NEAR, adjacent subfield), 0.1320 [0.0956,0.1796] (FAR, adjacent field) and 0.0840 [0.0556,0.1250] (CONTROL, different domain), n=250 each, while confirming attested expertise at 0.9600 [0.9279,0.9781]. Negatives verified against /works before asking. Survived a post-hoc and a confirmatory test.",
@@ -32,7 +32,7 @@
     "Part of the 8-17% may be prompt interpretation rather than error - adjacent negatives cannot be removed (RED-TEAM A12).",
     "E1 difficulty axis (D031): PARTIALLY SUPPORTED - NEAR separates from CONTROL, FAR does not. D031's two tiers were too close together to resolve it.",
     "E2: RUN, and it FALSIFIED D029 on an answer engine - a free-text capability constraint does disambiguate (C > A in all three colliding bands, paired intervals excluding zero). D029 survives only in scope: it was a claim about indexes with structured filters.",
-    "E4 cross-domain coverage: NOT MEASURABLE at this budget (D038). A normalised string match cannot separate 'wrong person' from 'right institution, named as a sub-unit'; it needs an institution resolver over OpenAlex IDs, and the two oracles differ in strength.",
+    "E4 cross-domain coverage: HALF MEASURED. D038's blocker is resolved - OpenAlex institution lineage makes sub-unit containment a set membership rather than a string judgement. 500 responses collected ($2.50, cached). The SEC arm is scored at 0.1800 [0.1373, 0.2324] n=250; the scholar arm is 249/250 UNSCORED because the OpenAlex budget is exhausted. E4 IS the comparison, so no coverage claim is made from one arm. Re-scoring costs $0 once quota resets.",
     "H1 staleness: mis-specified - non-monotone, so no half-life exists (D033).",
     "H2: RUN and FALSIFIED (D041, corrected by D042). FALSE_MERGE is not increasing in collision degree - it is INVERTED: 0.0375 / 0.0000 / 0.0125 / 0.0000 across unique/low/medium/high, n=80 each. False merges are most likely where names do NOT collide, because on a colliding name the provider mostly cannot name anyone resolvable and the outcome is MISS rather than a wrong identity. Never a budget problem: the W3 random draw left three of four bands empty (D027) and E2's stratified draw resolved it for $0.",
     "Ploid: unmeasured after FIVE budgets (R001, D028, D035, D040). Seven harness defects, then a fifth arm too small to claim: 0 of 12 on both renderings. No accuracy number is claimed. What it would cost to know is published instead: n=49 per arm for a +/-0.10 half-width, $9.80 per arm at the measured $0.20 per search.",
