@@ -1,1 +1,20 @@
-{}
+{
+ "ATTESTED": {
+  "n": 150,
+  "backed": 86,
+  "title_exists_but_not_theirs": 15,
+  "no_resolvable_title": 49
+ },
+ "FALSE_far": {
+  "n": 13,
+  "backed": 2,
+  "title_exists_but_not_theirs": 2,
+  "no_resolvable_title": 9
+ },
+ "FALSE_near": {
+  "n": 12,
+  "backed": 1,
+  "title_exists_but_not_theirs": 5,
+  "no_resolvable_title": 6
+ }
+}

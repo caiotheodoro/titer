@@ -249,3 +249,34 @@ def test_exhausted_premium_key_falls_back_to_the_polite_pool():
     assert "Insufficient budget" in body
     assert "_auth_headers()" in body.split("Insufficient budget")[1], (
         "the 429 branch must check for a key and retry once unauthenticated")
+
+
+class TestInstitutionResolver:
+    """D038's blocker: a string match cannot see institutional hierarchy.
+
+    Truth `Manipal Academy of Higher Education` against a returned `Kasturba
+    Medical College, Manipal University` scored WRONG, and the college is
+    inside the academy. OpenAlex publishes `lineage`, an explicit ancestor
+    list, so containment becomes set membership rather than a judgement.
+    """
+
+    def test_resolver_tries_comma_clauses_not_just_the_whole_string(self):
+        import titer.corpus.scholar as sch
+        src = open(sch.__file__).read()
+        body = src[src.index("def resolve_institution"):src.index("def same_institution")]
+        assert 'split(",")' in body, (
+            "recall matters as much as precision: an unresolvable name scores "
+            "wrong, so a weak resolver measures itself")
+
+    def test_containment_is_checked_in_both_directions(self):
+        import titer.corpus.scholar as sch
+        src = open(sch.__file__).read()
+        body = src[src.index("def same_institution"):]
+        body = body[:body.index("\ndef ")]
+        assert "tid in rlin" in body and "rid in tlin" in body
+
+    def test_same_institution_needs_both_sides_resolved(self):
+        """An unresolved name must be False, never a silent True."""
+        from titer.corpus.scholar import same_institution
+        assert same_institution(None, "University of Bern", "ua") is False
+        assert same_institution("", "University of Bern", "ua") is False

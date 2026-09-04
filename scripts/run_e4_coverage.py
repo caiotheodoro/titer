@@ -15,17 +15,32 @@ Name-only is the one rendering both populations can receive unchanged. Anything
 richer would need an anchor, and the scholar corpus carries no affiliation
 history to anchor on, so a richer prompt would not be the same instrument.
 
-**The oracles are not equally strong, and that is a limit, not a detail.** SEC
-truth is a filing an officer signed. Scholar truth is OpenAlex
-`last_known_institutions`, derived from publication affiliations, which lags a
-move and can be stale. A gap in this measurement is therefore a gap in
-(index coverage x oracle freshness), and it cannot be split without a second
-scholarly oracle. Reported both ways round rather than resolved.
+**Scoring resolves to an ID, never a string** (D038). Each population is
+resolved against the registry IT attests: an SEC employer to a CIK via
+`resolve_issuer`, a scholar affiliation to an OpenAlex institution id, with that
+registry's own hierarchy allowed. The method is symmetric even though the
+registries differ. A normalised string match was tried first and rejected: truth
+`Manipal Academy of Higher Education` against a returned `Kasturba Medical
+College, Manipal University` scored WRONG, and the college is inside the
+academy.
+
+**Two asymmetries remain, and neither is fixed by the scorer.**
+
+1. **The oracles differ in strength.** SEC truth is a filing an officer signed.
+   Scholar truth is OpenAlex `last_known_institutions`, derived from publication
+   affiliations, which lags a move. A gap is (index coverage x oracle
+   freshness) and cannot be split without a second scholarly oracle.
+2. **Only one registry publishes hierarchy.** OpenAlex gives an explicit
+   `lineage`, so a scholar named at a sub-unit of the right body counts correct.
+   EDGAR publishes no parent/subsidiary lineage, so an executive named at a
+   subsidiary of the right issuer counts WRONG. That asymmetry favours the
+   scholar arm, and it is stated rather than corrected.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import sys
 from datetime import datetime
@@ -38,7 +53,7 @@ from titer.adapters.base import BudgetExceeded, Ledger
 from titer.adapters.cache import CacheKey, ReplayCache
 from titer.adapters.http import ProviderHTTPError, exa_transport
 from titer.adapters.providers import Exa
-from titer.corpus.name_norm import normalize_company, presented_query_name
+from titer.corpus.name_norm import presented_query_name
 from titer.metrics.intervals import wilson
 
 QUESTION = ("What organisation are they at most recently, and in what role? "
@@ -65,18 +80,23 @@ def sec_tasks(n: int, rng: random.Random) -> list[dict]:
     for r in rng.sample(rows, min(n, len(rows))):
         out.append({"population": "sec", "task_id": f"sec-{r['person_cik']}",
                     "name": presented_query_name(r["person_name_raw"]),
-                    "truth": r["truth_issuer_name"]})
+                    "truth": r["truth_issuer_name"],
+                    "truth_cik": r["truth_issuer_cik"]})
     return out
 
 
-def matches(returned: str | None, truth: str) -> bool:
-    """Deterministic normalised organisation match. No model, no fuzzy score."""
+def matches_sec(returned: str | None, truth_cik: str, issuer_index) -> bool:
+    """Resolve the returned employer to a CIK and compare. No model, no fuzz."""
+    from titer.oracle.resolve import resolve_issuer
     if not returned:
         return False
-    a, b = normalize_company(returned), normalize_company(truth)
-    if not a or not b:
-        return False
-    return a == b or a in b or b in a
+    return resolve_issuer(returned, issuer_index) == truth_cik
+
+
+def matches_scholar(returned: str | None, truth: str, ua: str) -> bool:
+    """Resolve both to OpenAlex institution ids, allowing lineage containment."""
+    from titer.corpus.scholar import same_institution
+    return same_institution(returned, truth, ua)
 
 
 def main() -> int:
@@ -88,6 +108,12 @@ def main() -> int:
     ap.add_argument("--max-calls", type=int, default=520)
     ap.add_argument("--out", default="e4_coverage.json")
     args = ap.parse_args()
+
+    from titer.corpus.scholar import user_agent
+    from titer.oracle.resolve import build_issuer_index  # noqa: F401
+    ua = user_agent(os.environ.get("TITER_OPENALEX_MAILTO", "titer-audit"))
+    idx = json.loads((ROOT / "data" / "resolve_index.json").read_text())
+    issuer_index = {k: set(v) for k, v in idx["ciks_by_company"].items()}
 
     rng = random.Random(args.seed)
     tasks = sec_tasks(args.n, rng) + scholar_tasks(args.n, rng)
@@ -129,7 +155,9 @@ def main() -> int:
         recs.append({"population": t["population"], "task_id": t["task_id"],
                      "returned": emp, "truth": t["truth"],
                      "named_someone": bool(emp),
-                     "correct": matches(emp, t["truth"]),
+                     "correct": (matches_sec(emp, t["truth_cik"], issuer_index)
+                                 if t["population"] == "sec"
+                                 else matches_scholar(emp, t["truth"], ua)),
                      "confidence": top.confidence if top else 0.0,
                      "spend_usd": entry.spend_usd})
         if i % 50 == 0:
@@ -138,6 +166,10 @@ def main() -> int:
 
     report = {"generated": datetime.now().date().isoformat(),
               "instrument": "name-only; identical string for both populations",
+              "scoring": ("resolved to an ID, not a string: SEC employer -> CIK; "
+                          "scholar affiliation -> OpenAlex institution id with "
+                          "lineage containment. Only OpenAlex publishes "
+                          "hierarchy, which favours the scholar arm."),
               "n_requested_per_population": args.n,
               "live_calls": live,
               "spend_usd": round(sum(r["spend_usd"] for r in recs), 4),

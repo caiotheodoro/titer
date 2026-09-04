@@ -368,6 +368,52 @@ def work_exists(title: str, ua: str) -> int:
     return d["meta"]["count"]
 
 
+def resolve_institution(name: str | None, ua: str) -> tuple[str | None, list[str]]:
+    """An institution name -> its OpenAlex id and its lineage of ancestors.
+
+    This is what D038 said E4 needed and could not have. A normalised string
+    match cannot tell "wrong person" from "right institution, named as a
+    sub-unit": truth `Manipal Academy of Higher Education` against a returned
+    `Kasturba Medical College, Manipal University` scored WRONG, and the college
+    is inside the academy. OpenAlex carries `lineage`, an explicit ancestor
+    list, so containment is a set membership rather than a judgement call.
+    Verified: Kasturba's lineage is [Manipal Academy, Kasturba], so the pair
+    resolves as a match.
+
+    Recall matters as much as precision here - an unresolvable name scores
+    wrong, so a weak resolver would measure itself. The full string is tried
+    first, then the comma-clauses, which took recall from 6/8 to 7/8 on a hand
+    -checked probe (the miss, "The Mohegan Tribe", is genuinely not an
+    institution).
+    """
+    if not name:
+        return None, []
+    cands = [name]
+    if "," in name:
+        parts = [p.strip() for p in name.split(",") if p.strip()]
+        cands += [parts[0], parts[-1]]
+    for c in cands:
+        c = re.sub(r"[^\w\s&-]", " ", c).strip()
+        if len(c) < 3:
+            continue
+        d = _get(f"{API}/institutions?search={quote(c)}&per-page=1", ua)
+        hits = d.get("results") or []
+        if hits:
+            return hits[0]["id"], list(hits[0].get("lineage") or [])
+    return None, []
+
+
+def same_institution(returned: str | None, truth: str | None, ua: str) -> bool:
+    """True when both resolve to one institution, or one contains the other."""
+    rid, rlin = resolve_institution(returned, ua)
+    if rid is None:
+        return False
+    tid, tlin = resolve_institution(truth, ua)
+    if tid is None:
+        return False
+    return rid == tid or tid in rlin or rid in tlin
+
+
 def adjacent_false_topic(author: Author, topics: dict[str, Topic],
                          rng: random.Random, difficulty: str = NEAR,
                          verify=None, max_verify: int = 8

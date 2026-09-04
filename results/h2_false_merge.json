@@ -1,0 +1,78 @@
+{
+  "generated": "2026-09-04",
+  "arm": "exa_D_full_context",
+  "spend_usd": 0.0,
+  "source": "the E2 stratified draw; no new calls",
+  "contamination_bound": 0.1276,
+  "why_this_resolves_it": "H2 was blocked because a random draw left three of four collision bands nearly empty (D027). E2 drew n=80 in every band by construction, which is the design H2 always needed.",
+  "bands": {
+    "unique": {
+      "note": "not run"
+    },
+    "low": {
+      "n": 80,
+      "false_merge": 0,
+      "rate": 0.0,
+      "wilson": "0.0000 [0.0000, 0.0458] n=80",
+      "net_of_contamination": [
+        0.0,
+        0.0
+      ],
+      "expected_loss": {
+        "recruiter": 0.6625,
+        "gtm_outbound": 0.725,
+        "kyc_sanctions": 2.1125,
+        "journalism": 0.7875,
+        "expert_sourcing": 0.725
+      }
+    },
+    "medium": {
+      "n": 80,
+      "false_merge": 1,
+      "rate": 0.0125,
+      "wilson": "0.0125 [0.0022, 0.0675] n=80",
+      "net_of_contamination": [
+        0.0,
+        0.0
+      ],
+      "expected_loss": {
+        "recruiter": 0.7375,
+        "gtm_outbound": 0.8625,
+        "kyc_sanctions": 2.9375,
+        "journalism": 2.1375,
+        "expert_sourcing": 2.675
+      }
+    },
+    "high": {
+      "n": 80,
+      "false_merge": 0,
+      "rate": 0.0,
+      "wilson": "0.0000 [0.0000, 0.0458] n=80",
+      "net_of_contamination": [
+        0.0,
+        0.0
+      ],
+      "expected_loss": {
+        "recruiter": 0.7,
+        "gtm_outbound": 0.7625,
+        "kyc_sanctions": 2.225,
+        "journalism": 0.825,
+        "expert_sourcing": 0.7625
+      }
+    }
+  },
+  "verdict": {
+    "bands_with_any_false_merge": [
+      "medium"
+    ],
+    "rates_in_band_order": [
+      0.0,
+      0.0125,
+      0.0
+    ],
+    "increasing_in_d": false,
+    "every_interval_includes_zero": true,
+    "falsified": true,
+    "reason": "H2 is FALSIFIED: every band's Wilson interval includes zero, so the rate is indistinguishable from zero at the achieved n; and the rate is not increasing in d. The pre-registration commits to publishing this as prominently as a positive result."
+  }
+}

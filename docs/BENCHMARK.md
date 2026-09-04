@@ -197,6 +197,40 @@ budget bought 12.
 
 **Five budgets, no Ploid accuracy number.** That remains the honest state.
 
+## H2: false merges are NOT measurable here, and the strata were never the budget
+
+`MEASUREMENT_CARD.json` carried *"H2 false merge under name collision: strata
+empty by construction"* for the life of the project. The cause was the sampling,
+not the money: a random draw put 251 of 299 observations into one collision band
+(D027). E2 drew **n=80 in every band** because a within-task design needs equal
+allocation, so H2 resolved for **$0** from observations collected for another
+hypothesis.
+
+`exa_D_full_context`, held constant across bands:
+
+| Band | `FALSE_MERGE` | raw Wilson | net of the 12.76% contamination bound |
+|---|---|---|---|
+| `low` (d 2-3) | 0/80 | 0.0000 [0.0000, 0.0458] | **[0, 0]** |
+| `medium` (4-9) | 1/80 | 0.0125 [0.0022, 0.0675] | **[0, 0]** |
+| `high` (>=10) | 0/80 | 0.0000 [0.0000, 0.0458] | **[0, 0]** |
+
+**Both falsification conditions fire.** The rate is flat in `d`, which is
+sufficient on its own; and net of the measured same-human-two-CIK bound every
+interval collapses to zero, because a single false merge in eighty colliding
+names is entirely absorbed by the chance that one person holds two filer
+registrations.
+
+H2 was the hypothesis most likely to yield an alarming, quotable number about a
+commercial product. It is not true here, and the pre-registration commits to
+saying so as prominently as the opposite.
+
+**The caveat that limits its reach.** The identity atom is scored only when the
+name alone pinned the person (D024), and on colliding names `resolve`
+structurally cannot return `unique_name`. Most outcomes are `MISS`: the provider
+mostly fails to name anyone resolvable rather than naming the wrong one. A
+surface that answered more confidently could behave differently, and that is not
+measured here.
+
 ## What does NOT hold
 
 ### The web floor is not measured. It is a parser artefact.

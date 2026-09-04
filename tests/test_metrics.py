@@ -171,3 +171,20 @@ def test_flat_reflection_is_visibly_flat():
 def test_no_nan_anywhere():
     for i in (wilson(0, 10), wilson(10, 10), wilson(5, 10)):
         assert not any(math.isnan(v) for v in (i.point, i.lo, i.hi))
+
+
+def test_h2_reads_net_of_the_contamination_bound():
+    """H2's falsification is defined NET of the same-human-two-CIK bound.
+
+    A FALSE_MERGE on a colliding name may be one person under two filer
+    registrations (CONTRACTS 4.2), so the raw interval overstates provider
+    error. Testing the raw interval instead of the net one would have reported
+    H2 as 'not indistinguishable from zero' on a single observation in 80.
+    """
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+    import h2_false_merge as h2
+    src = open(h2.__file__).read()
+    assert "net_lo <= 0.0" in src, "the zero test must use the NET lower bound"
+    assert 0.0 < h2.contamination() < 1.0

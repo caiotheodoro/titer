@@ -1799,3 +1799,57 @@ arm for a ±0.10 half-width, $9.80 per arm; this budget bought 12.
 
 **Five budgets, no Ploid accuracy number.** Unchanged, and stated rather than
 softened.
+
+---
+
+## D041 - H2 is falsified, and it cost nothing (2026-09-04)
+
+`MEASUREMENT_CARD.json` carried "H2 false merge under name collision: strata
+empty by construction" for the whole life of the project. That was true of the
+W3 draw and it was never a budget problem.
+
+**The cause was the sampling, not the money.** D027 recorded that simple random
+sampling put 251 of 299 observations into a single collision band, so three of
+four bands held almost nothing and no gradient in `d` could exist. E2 drew
+**n=80 in every band by construction**, because a within-task design needs equal
+allocation. Those observations resolve H2 for **$0**, from data collected to
+answer a different question.
+
+**Claim (H2).** `FALSE_MERGE` under name collision is (a) non-zero, (b)
+increasing in collision degree `d`, and (c) large enough to dominate expected
+loss under `kyc_sanctions` and `journalism`.
+
+**Falsified if** the rate net of the contamination bound is indistinguishable
+from zero at the achieved `n`, **or** is flat in `d`.
+
+**Result**, `exa_D_full_context` held constant across bands, n=80 each:
+
+| Band | `FALSE_MERGE` | raw Wilson | net of contamination |
+|---|---|---|---|
+| `low` (d 2-3) | 0/80 | 0.0000 [0.0000, 0.0458] | **[0, 0]** |
+| `medium` (4-9) | 1/80 | 0.0125 [0.0022, 0.0675] | **[0, 0]** |
+| `high` (>=10) | 0/80 | 0.0000 [0.0000, 0.0458] | **[0, 0]** |
+
+**Both falsification conditions fire at once.** The rates are 0.0000, 0.0125,
+0.0000 - not increasing in `d`, and flat is enough on its own. And net of the
+measured same-human-two-CIK bound of **12.76%** (CONTRACTS 4.2), every interval
+collapses to zero: a single false merge in eighty colliding names is entirely
+absorbed by the possibility that one person holds two filer registrations.
+
+**So (a), (b) and (c) all fail.** The provider does not confidently return a
+wrong identity at a measurable rate on this population, and expected loss under
+`kyc_sanctions` is driven by `MISS`, not by `FALSE_MERGE`.
+
+**Why this is worth publishing rather than filing away.** H2 was the hypothesis
+most likely to produce an alarming, quotable number about a commercial product -
+"confidently wrong about who someone is, more often as names get more common".
+It is the kind of claim that travels. It is not true here, and the
+pre-registration commits to publishing that as prominently as the positive
+result would have been.
+
+**One caveat that limits the reach.** The identity atom is scored only when the
+name alone pinned the person (D024), and on colliding names `resolve` structurally
+cannot return `unique_name`. Most outcomes are therefore `MISS` rather than a
+wrong identity: the provider mostly fails to name anyone resolvable rather than
+naming the wrong one. A surface that answered more confidently could behave
+differently, and that is not measured here.
