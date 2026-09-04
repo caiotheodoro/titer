@@ -184,5 +184,58 @@ to any arm measured under the D028 prompt.
 | `exa` `/answer` | measured, n=299 |
 | `webfloor` | run, but the number is a parser artefact - not a valid floor |
 | `ploid` | RETRACTED, unmeasured |
-| `never_verify`, `always_deep_verify`, `abstain_always` | not run - require the R4 environment |
+| `never_verify`, `always_deep_verify`, `abstain_always` | **measured** on the simulator fitted to 485 real observations |
+| trained policy | **measured**, 6 seeds, frozen split |
 | untrained Qwen3-8B, GPT-5.6-mini | not run |
+
+### R4: the floors, corrected
+
+Three reward defects were found before training (D037). Two of them inflated the
+active floors, so the numbers published before this were wrong:
+
+| Floor | Published | Corrected | mean spend |
+|---|---|---|---|
+| `never_verify` | 0.0455 | **-0.2292** | $0.005 |
+| `always_deep_verify` | 0.0277 | **-0.2574** | $0.015 |
+| `abstain_always` | -0.1000 | **-0.1000** | $0.000 |
+
+`never_verify` still beats `always_deep_verify`, so **"spending 3x more bought
+marginally fewer correct answers" survives the correction**. What does not
+survive is the ordering against doing nothing: at a 37% solve rate under
+`gtm_outbound`, answering is negative expected value and **`abstain_always` is
+the floor to beat**.
+
+### R4: the trained policy
+
+A 130-parameter linear-softmax policy, SFT warm start on rejection-sampled
+passing trajectories, tasks filtered to the 10-80% solve band, then GRPO with
+group-relative advantage. Checkpoint selected on hill-climb, never on the frozen
+split. Rollouts are free against the fitted simulator, which is what makes six
+seeds affordable.
+
+| | value |
+|---|---|
+| trained policy, mean over 6 seeds | **0.0461** |
+| baseline `abstain_always` | -0.1000 |
+| margin | 0.1461 |
+| across-seed SD | **0.0122**, 0.08x the margin |
+| verdict | **CLAIM** |
+
+Per-seed frozen-test scores: 0.0411, 0.0411, 0.0411, 0.0711, 0.0411, 0.0411.
+
+It beats `abstain_always` under all five cost profiles. **Absolute rewards are
+not comparable across profiles** - the reward normalises by
+`max(profile.values())`, so a profile carrying a 150x false-merge cost compresses
+every term - but the sign and the within-profile ordering are.
+
+**What it learned, and what it did not.** It queries once, then **abstains on
+41.7%** of tasks, lifting precision on the answered subset from the 37% base rate
+to **64%**. That is genuine selectivity.
+
+It then states **confidence 1.0 on every answer it gives**, at 64% accuracy.
+That is the same failure E3 measured in the provider - confidence pinned at
+ceiling, carrying no information - now reproduced by our own policy in an
+environment that prices exactly that. A calibrated policy would state about 0.64
+and score better; this one leaves roughly 0.04 of reward on the table.
+
+Reporting only the margin would have hidden the more interesting half.
