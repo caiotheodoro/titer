@@ -6,8 +6,8 @@
   "verdict": "PARTIALLY_VERIFIED",
   "rationale": "E1 and E3 are measured on verified negatives and survived attack. The employment study's H1 is mis-specified, H2's strata were empty by construction, and the Ploid arm is retracted. A card that always exits zero is decoration; this one names what is not established.",
   "code_state": {
-    "python_loc": 9929,
-    "tests_passing": 255,
+    "python_loc": 9993,
+    "tests_passing": 259,
     "gates": "make validate green (10 gates); oracle_selfcheck and env_health pass"
   },
   "spend_usd": {
@@ -17,8 +17,9 @@
     "exa_A_name_only": 1.205,
     "exa_C_anchor_freetext": 1.205,
     "exa_D_full_context": 1.205,
-    "ploid_B_company_filter": 0.4,
-    "total": 34.05
+    "ploid_B_company_filter": 1.6,
+    "ploid_A_name_only": 1.0,
+    "total": 36.25
   },
   "verified": {
     "E1_false_affirmation": "Exa affirms verified-false expertise claims at 0.1680 [0.1268,0.2193] (NEAR, adjacent subfield), 0.1320 [0.0956,0.1796] (FAR, adjacent field) and 0.0840 [0.0556,0.1250] (CONTROL, different domain), n=250 each, while confirming attested expertise at 0.9600 [0.9279,0.9781]. Negatives verified against /works before asking. Survived a post-hoc and a confirmatory test.",
@@ -35,13 +36,13 @@
     "One provider. Every surviving number describes Exa; nothing supports a claim about the category.",
     "Part of the 8-17% may be prompt interpretation rather than error - adjacent negatives cannot be removed (RED-TEAM A12).",
     "E1 difficulty axis (D031): PARTIALLY SUPPORTED - NEAR separates from CONTROL, FAR does not. D031's two tiers were too close together to resolve it.",
-    "E2 disambiguation under a capability constraint: not run, needs credit.",
-    "E4 cross-domain coverage: not run.",
+    "E2: RUN, and it FALSIFIED D029 on an answer engine - a free-text capability constraint does disambiguate (C > A in all three colliding bands, paired intervals excluding zero). D029 survives only in scope: it was a claim about indexes with structured filters.",
+    "E4 cross-domain coverage: NOT MEASURABLE at this budget (D038). A normalised string match cannot separate 'wrong person' from 'right institution, named as a sub-unit'; it needs an institution resolver over OpenAlex IDs, and the two oracles differ in strength.",
     "H1 staleness: mis-specified - non-monotone, so no half-life exists (D033).",
     "H2 false merge under name collision: strata empty by construction.",
-    "Ploid: RETRACTED after three runs, unmeasured.",
+    "Ploid: unmeasured after FOUR budgets and seven harness defects (R001, D028, D035). No accuracy number is claimed. What it would cost to know is published instead: n=49 for a +/-0.10 half-width, $9.80 at the measured $0.20 per search.",
     "Trivial floor: withdrawn as a parser artefact, never validly measured.",
-    "R4 value-of-information policy: environment shipped, no model trained."
+    "R4: a policy IS trained and clears the seed gate (0.0461 vs -0.1000, SD 0.0122 = 0.08x the margin, 6 seeds). It is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036), and it learned selectivity but not calibration - it states confidence 1.0 on every answer at 64% accuracy."
   ],
   "artifacts": {
     "code": "https://github.com/caiotheodoro/titer",

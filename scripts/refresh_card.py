@@ -117,13 +117,13 @@ def main() -> int:
             "Part of the 8-17% may be prompt interpretation rather than error - "
             "adjacent negatives cannot be removed (RED-TEAM A12).",
             "E1 difficulty axis (D031): PARTIALLY SUPPORTED - NEAR separates from CONTROL, FAR does not. D031's two tiers were too close ""together to resolve it.",
-            "E2 disambiguation under a capability constraint: not run, needs credit.",
-            "E4 cross-domain coverage: not run.",
+            "E2: RUN, and it FALSIFIED D029 on an answer engine - a free-text capability constraint does disambiguate (C > A in all three colliding bands, paired intervals excluding zero). D029 survives only in scope: it was a claim about indexes with structured filters.",
+            "E4 cross-domain coverage: NOT MEASURABLE at this budget (D038). A normalised string match cannot separate 'wrong person' from 'right institution, named as a sub-unit'; it needs an institution resolver over OpenAlex IDs, and the two oracles differ in strength.",
             "H1 staleness: mis-specified - non-monotone, so no half-life exists (D033).",
             "H2 false merge under name collision: strata empty by construction.",
-            "Ploid: RETRACTED after three runs, unmeasured.",
+            "Ploid: unmeasured after FOUR budgets and seven harness defects (R001, D028, D035). No accuracy number is claimed. What it would cost to know is published instead: n=49 for a +/-0.10 half-width, $9.80 at the measured $0.20 per search.",
             "Trivial floor: withdrawn as a parser artefact, never validly measured.",
-            "R4 value-of-information policy: environment shipped, no model trained.",
+            "R4: a policy IS trained and clears the seed gate (0.0461 vs -0.1000, SD 0.0122 = 0.08x the margin, 6 seeds). It is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036), and it learned selectivity but not calibration - it states confidence 1.0 on every answer at 64% accuracy.",
         ],
         "artifacts": {
             "code": "https://github.com/caiotheodoro/titer",

@@ -99,6 +99,7 @@ def build_arms(spend: bool, wanted: set[str], e2: bool = False):
             exa_full_context,
             exa_name_only,
             ploid_company_filter,
+            ploid_name_only,
         )
         if "exa" in wanted:
             try:
@@ -111,9 +112,10 @@ def build_arms(spend: bool, wanted: set[str], e2: bool = False):
                 print(f"  exa unavailable: {e}", file=sys.stderr)
         if "ploid" in wanted:
             try:
-                arms["ploid_B_company_filter"] = (
-                    Ploid(transport=ploid_transport() if spend else None),
-                    "search_fast", ploid_company_filter, "ploid")
+                for nm, fn in (("ploid_A_name_only", ploid_name_only),
+                               ("ploid_B_company_filter", ploid_company_filter)):
+                    arms[nm] = (Ploid(transport=ploid_transport() if spend else None),
+                                "search_fast", fn, "ploid")
             except RuntimeError as e:
                 print(f"  ploid unavailable: {e}", file=sys.stderr)
         return arms

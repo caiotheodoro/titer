@@ -394,3 +394,65 @@ def test_expertise_cache_key_separates_prompt_variants():
     assert base.digest() != variant.digest(), (
         "two different prompts for one task_id collide in the cache; the "
         "variant would silently replay the original's answers")
+
+
+class TestE2Arms:
+    """The four E2 renderings, and that the harness actually builds them.
+
+    An earlier patch to `build_arms` silently did not apply - the string it
+    replaced was never there - and the run spent $1.60 measuring one arm of a
+    two-arm within-provider contrast. Nothing failed; the arm was simply
+    absent from the dict. These pin the arm sets so that is a red test rather
+    than a wasted budget.
+    """
+
+    def _task(self):
+        from datetime import date
+
+        class T:
+            person_name_raw = "SMITH JOHN"
+            anchor_issuer_name = "ALPHA CORP INC"
+            anchor_date = date(2019, 5, 1)
+            truth_issuer_name = "BETA CORP"
+
+            class anchor_title_class:
+                value = "CEO"
+        return T()
+
+    def test_every_arm_withholds_the_scored_fact(self):
+        from titer.adapters.e2 import (exa_anchor_freetext, exa_full_context,
+                                       exa_name_only, ploid_company_filter,
+                                       ploid_name_only)
+        t = self._task()
+        for fn in (exa_name_only, exa_anchor_freetext, exa_full_context,
+                   ploid_company_filter, ploid_name_only):
+            assert "BETA" not in json.dumps(fn(t)).upper(), fn.__name__
+
+    def test_arms_differ_in_disclosure_which_is_the_experiment(self):
+        from titer.adapters.e2 import (exa_anchor_freetext, exa_full_context,
+                                       exa_name_only)
+        t = self._task()
+        a, c, d = exa_name_only(t), exa_anchor_freetext(t), exa_full_context(t)
+        assert "ALPHA" not in a.upper()          # A carries no anchor at all
+        assert "ALPHA" in c.upper()              # C names the past employer
+        assert "2019-05-01" in d and "CEO" in d  # D adds the attested date/role
+        assert "2019" not in c                   # ...which C must not have
+
+    def test_ploid_arms_are_a_within_provider_pair(self):
+        from titer.adapters.e2 import ploid_company_filter, ploid_name_only
+        t = self._task()
+        assert "filters" not in ploid_name_only(t)
+        assert ploid_company_filter(t)["filters"]["company"]
+
+    def test_build_arms_constructs_every_arm_it_advertises(self):
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+        from full_run import build_arms
+        assert sorted(build_arms(False, {"ploid"}, e2=True)) == [
+            "ploid_A_name_only", "ploid_B_company_filter"]
+        assert sorted(build_arms(False, {"exa"}, e2=True)) == [
+            "exa_A_name_only", "exa_C_anchor_freetext", "exa_D_full_context"]
+        # the default (non-E2) arm set is unchanged
+        assert sorted(build_arms(False, {"exa", "ploid", "webfloor"})) == [
+            "exa", "ploid", "webfloor"]

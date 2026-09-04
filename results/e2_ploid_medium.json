@@ -1,0 +1,104 @@
+{
+  "window": "2026-09",
+  "as_of": "2026-09-04",
+  "seed": 23,
+  "live_calls": {
+    "ploid": 12
+  },
+  "max_calls": 24,
+  "requested_n": 12,
+  "dry_run": false,
+  "strategy": "random",
+  "strata": null,
+  "pooling_rule": "RANDOM: marginal rates are population estimates.",
+  "corpus": {
+    "rows_streamed": 4206080,
+    "people": 230405,
+    "tasks": 22596,
+    "retained_fraction": 0.09807078839434909,
+    "bands": {
+      "unique": 19464,
+      "medium": 755,
+      "low": 2222,
+      "high": 155
+    },
+    "min_gap_days": 180,
+    "require_last_employer": true,
+    "excluded_entity_filers": 419,
+    "max_age_years": 10.0
+  },
+  "arms": {
+    "ploid_B_company_filter": {
+      "n": 12,
+      "spend_usd": 1.6,
+      "outcomes": {
+        "CORRECT": 0,
+        "FALSE_MERGE": 1,
+        "UNSURE_WRONG": 0,
+        "MISS": 9,
+        "ABSTAIN": 0,
+        "STALE": 2
+      },
+      "accuracy": 0.0,
+      "correct": "0.0000 [0.0000, 0.2425] n=12",
+      "false_merge": "0.0833 [0.0149, 0.3539] n=12",
+      "stale": "0.1667 [0.0470, 0.4480] n=12",
+      "expected_loss": {
+        "recruiter": 1.0833333333333333,
+        "gtm_outbound": 1.5,
+        "kyc_sanctions": 7.25,
+        "journalism": 9.583333333333334,
+        "expert_sourcing": 13.583333333333334
+      },
+      "mean_atoms": 0.0,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-365d",
+          "0.0000 [0.0000, 0.7935] n=1"
+        ],
+        [
+          "365-1095d",
+          "0.0000 [0.0000, 0.6576] n=2"
+        ],
+        [
+          "1095-2555d",
+          "0.0000 [0.0000, 0.6576] n=2"
+        ],
+        [
+          "2555-infd",
+          "0.0000 [0.0000, 0.3543] n=7"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 12,
+          "false_merge": 1
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "unique_name": 1,
+        "narrowed_by_anchor": 2,
+        "no_name_returned": 4,
+        "name_not_in_corpus": 5
+      }
+    }
+  },
+  "matched_n": 12
+}
