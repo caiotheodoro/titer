@@ -13,7 +13,7 @@ unavailable because no results existed. They exist now.
 |---|---|---|---|---|
 | 1 | Ground truth is a program, not an opinion | 15 | **15** | SEC filings and OpenAlex/DOI authorship. No model assigns any label, and a test greps the modules to keep it that way. |
 | 2 | Every reported number carries an interval | 10 | **10** | Every rate in `BENCHMARK.md` is a Wilson or bootstrap interval. |
-| 3 | Trivial floor reported and beaten | 10 | **4** | The web floor was run and **withdrawn as a parser artefact**, it measured title-only resolution, not free web search. The R4 floors (`never_verify`, `always_deep_verify`, `abstain_always`) *are* reported on real-fitted data. Partial credit is the honest score. |
+| 3 | Trivial floor reported and beaten | 10 | **4** | The web floor was run and **withdrawn as a parser artefact**, it measured title-only resolution, not free web search. The R4 floors *are* reported on real-fitted data and, since round 7, **beaten** by a trained policy under the seed gate. The vendor-task floor is still withdrawn, so partial credit remains the honest score and the independent read's 3 stands. |
 | 4 | Pre-registration frozen before `src/`, publicly hashed | 10 | **10** | Two, both hash-published, both gated, the gate verified to fire. |
 | 5 | Unflattering findings lead | 10 | **10** | The README leads with five artefacts. `RETRACTIONS.md` carries two entries; `MEASUREMENT_CARD.json` names eight unmet claims. |
 | 6 | Coverage stated in someone else's vocabulary | 5 | **5** | PeopleSearchBench's four scenarios; the expertise gaps in a buyer's terms. |
@@ -69,6 +69,6 @@ read had not caught. A third, `gate_no_placeholders`, was later widened to
 
 That is the honest description of this work. It measured one provider at
 n=1,000 across four strata and produced one surviving number; a second
-provider consumed four budgets and produced seven harness defects and no
+provider consumed five budgets and produced seven harness defects and no
 measurement. What it
 demonstrates well is a process for not publishing the other five.

@@ -134,7 +134,7 @@ def main() -> int:
             "E4 cross-domain coverage: NOT MEASURABLE at this budget (D038). A normalised string match cannot separate 'wrong person' from 'right institution, named as a sub-unit'; it needs an institution resolver over OpenAlex IDs, and the two oracles differ in strength.",
             "H1 staleness: mis-specified - non-monotone, so no half-life exists (D033).",
             "H2 false merge under name collision: strata empty by construction.",
-            "Ploid: unmeasured after FOUR budgets and seven harness defects (R001, D028, D035). No accuracy number is claimed. What it would cost to know is published instead: n=49 for a +/-0.10 half-width, $9.80 at the measured $0.20 per search.",
+            "Ploid: unmeasured after FIVE budgets (R001, D028, D035, D040). Seven harness defects, then a fifth arm too small to claim: 0 of 12 on both renderings. No accuracy number is claimed. What it would cost to know is published instead: n=49 per arm for a +/-0.10 half-width, $9.80 per arm at the measured $0.20 per search.",
             "Trivial floor: withdrawn as a parser artefact, never validly measured.",
             "R4: a policy IS trained and clears the seed gate (0.0461 vs -0.1000, SD 0.0122 = 0.08x the margin, 6 seeds). It is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036), and it learned selectivity but not calibration - it states confidence 1.0 on every answer at 64% accuracy.",
         ],
