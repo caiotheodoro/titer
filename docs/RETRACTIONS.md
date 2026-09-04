@@ -1,10 +1,11 @@
 # RETRACTIONS
 
-Exists from W0, empty, on purpose.
+Committed at W0, before any measurement existed, and empty by design. It did not
+stay empty: two entries follow.
 
 If a published number in this repository is later found to be wrong, the
 correction is recorded here **and** placed next to the original claim in the
-README — not in a footnote, not silently edited away.
+README, not in a footnote and not silently edited away.
 
 The house rule, learned expensively elsewhere: keep the unflattering number in
 the README. A sibling repository still leads with a headline and retracts it in
@@ -14,7 +15,7 @@ more useful finding, which was that the retraction happened at all.
 Format for an entry:
 
 ```
-## R00n — <the claim being retracted> (<date>)
+## R00n: <the claim being retracted> (<date>)
 
 **Originally published:** <the exact claim, quoted>
 **Where:** <file and section>

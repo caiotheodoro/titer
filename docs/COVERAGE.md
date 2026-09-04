@@ -1,4 +1,4 @@
-# COVERAGE — what this instrument cannot see
+# COVERAGE: what this instrument cannot see
 
 Written in someone else's vocabulary on purpose. Stating a coverage gap in
 categories we invented would let us define the gap out of existence.
@@ -47,17 +47,17 @@ titer is not a replacement for PeopleSearchBench and should not be cited as one.
 Two providers plus a floor is a thin comparison set. It is thin for legal
 reasons, and those reasons are published:
 
-- **Apollo** — excluded. Its Terms prohibit disclosing benchmark results without
+- **Apollo**: excluded. Its Terms prohibit disclosing benchmark results without
   prior written consent. Consent has been requested; until it arrives, Apollo is
   absent and its absence says nothing about its quality.
-- **People Data Labs** — excluded. Its subscription agreement sweeps
+- **People Data Labs**: excluded. Its subscription agreement sweeps
   "information derived from the Services" into confidentiality, and requires
   deletion of all data within 30 days of termination, which is incompatible with
   a retained reproducible corpus.
-- **Clay** — excluded on comparability, not law. It orchestrates 75+ enrichment
+- **Clay**: excluded on comparability, not law. It orchestrates 75+ enrichment
   tools rather than serving a proprietary index, so measuring it would answer a
   different question.
-- **Exa** — included, self-serve only. If an Order Form is ever signed, MSA
+- **Exa**: included, self-serve only. If an Order Form is ever signed, MSA
   §2.4(j) retroactively prohibits publishing this analysis.
 
 A reader should treat the provider set as "who could be measured lawfully at

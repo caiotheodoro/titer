@@ -20,7 +20,8 @@ provider's claim about a person is attested by a public record.
 
 Six headline numbers; five were artefacts of the measurer, caught by reading
 returned rows rather than summary statistics. The surviving one: a provider
-affirms expertise claims about topics a person has never published in roughly
-one time in six, at 0.987 stated confidence.
+affirms expertise claims about topics a person has never published in one time
+in six, and one time in twelve when the topic is from a wholly different
+domain, at 0.987 stated confidence against 0.889 accuracy.
 
 Code: https://github.com/caiotheodoro/titer

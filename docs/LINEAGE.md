@@ -26,7 +26,7 @@ Taken from the sibling Space rather than reinvented: the short token names
 (`--accent`, `--border`, `--text-2/3`), the 960px column, the 36px graph-paper
 `body` grid fading at 45%, the mono `.kicker` with an accent `<b>`, `h1 .dot`,
 `.standfirst`, `h2` demoted to an uppercase hairline rule, `.pill` / `.pill.esc`,
-the `data-fade` / `data-delay` ladder and — importantly — the
+the `data-fade` / `data-delay` ladder and the
 `prefers-reduced-motion` guard, which the CV itself lacks.
 
 Taken from the CV directly: the `AboutStats` stat-tile block and the `.label` +
@@ -53,7 +53,7 @@ mistaken for evidence that the thing is absent.
   human-verified ground truth, public repository, no confidence intervals,
   companies rather than people. The stratified-cohort construction is a good
   model and is echoed in the `d`-band stratification here.
-- **Vendor-published comparisons.** Not prior art in any useful sense — the same
+- **Vendor-published comparisons.** Not prior art in any useful sense. The same
   provider appears at 42.4% in one and 78% in another, both published by
   competitors, with no methodology and no intervals. They are the reason the
   power rule in `docs/PRE-REGISTRATION.md` §3 is pre-committed.
@@ -67,10 +67,10 @@ mistaken for evidence that the thing is absent.
 
 ## Data provenance
 
-- **SEC Insider Transactions Data Sets** — US Government public domain. Forms
+- **SEC Insider Transactions Data Sets**: US Government public domain. Forms
   3/4/5, quarterly TSVs, coverage from 2006 in the packaged sets; corpus start
   is 2003q3 because mandatory electronic Section 16 filing began mid-2003.
-- **ORCID Public Data File** — CC0 1.0, annual October release, hosted on
+- **ORCID Public Data File**: CC0 1.0, annual October release, hosted on
   Figshare. Tier B only.
-- **Companies House** — Open Government Licence v3.0. Not used unless Product
+- **Companies House**: Open Government Licence v3.0. Not used unless Product
   216 access is granted.

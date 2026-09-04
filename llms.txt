@@ -1,37 +1,50 @@
 # titer
 
-> An instrument for measuring how often commercial people-search indexes
-> confidently resolve the wrong human, and what it is worth paying to find out.
-> Ground truth is an SEC filing, not a model's judgement.
+> An instrument for measuring how often commercial people-search and expertise
+> indexes confidently affirm something false, and what it is worth paying to find
+> out. Ground truth is an SEC filing or a publisher DOI, not a model's judgement.
 
 Status: published. E1 and E3 measured on verified negatives; two formal
 retractions; five of six headline numbers were artefacts of this instrument.
 `MEASUREMENT_CARD.json` reads PARTIALLY_VERIFIED and is generated, not written.
 
+Headline: Exa confirms attested expertise at 0.9600 [0.9279, 0.9781] and affirms
+claims about topics the person has never published in at 0.1680 (adjacent
+subfield), 0.1320 (adjacent field) and 0.0840 (different domain), n=250 each. It
+states 0.987 confidence against 0.889 accuracy. One provider only; nothing here
+supports a claim about the category.
+
 ## Core
 
-- [CONTRACTS](CONTRACTS.md): frozen definitions — attestation tiers, the attested
+- [CONTRACTS](CONTRACTS.md): frozen definitions. Attestation tiers, the attested
   tuple, closed taxonomies, outcome classes, cost profiles, reward, splits.
-- [PRE-REGISTRATION](docs/PRE-REGISTRATION.md): hypotheses H1-H4 with
-  falsification conditions, estimators, and the pre-committed power rule. Never
-  edited; superseded only by dated DECISIONS entries.
+- [PRE-REGISTRATION](docs/PRE-REGISTRATION.md) and
+  [PRE-REGISTRATION-EXPERTISE](docs/PRE-REGISTRATION-EXPERTISE.md): hypotheses
+  with falsification conditions, estimators, and the pre-committed power rule.
+  Hash-published before their studies ran, byte-identical since. Never edited;
+  superseded only by dated DECISIONS entries.
 - [METHOD](docs/METHOD.md): why a filing and not a judge; why cost and not
   accuracy; where a model is allowed to act.
 - [ARCHITECTURE](docs/ARCHITECTURE.md): modules and seams.
-- [DECISIONS](docs/DECISIONS.md): append-only decision log, D001-D020.
+- [DECISIONS](docs/DECISIONS.md): append-only decision log, D001-D034.
 
 ## Honesty surface
 
+- [RETRACTIONS](docs/RETRACTIONS.md): two formal retractions. R001 voids the
+  entire Ploid arm; R002 voids the raw expertise rates.
 - [COVERAGE](docs/COVERAGE.md): what this cannot see, in PeopleSearchBench's
-  vocabulary rather than ours.
-- [RED-TEAM](docs/RED-TEAM.md): 11 attacks on our own claims; 4 carried as LIVE.
-- [RETRACTIONS](docs/RETRACTIONS.md): empty, on purpose.
-- [RUBRIC](docs/RUBRIC.md): self-score, with the unavailable points named.
+  vocabulary rather than ours. 7.3% of the EDGAR population is usable.
+- [RED-TEAM](docs/RED-TEAM.md): 17 attacks on our own claims; 7 carried LIVE,
+  2 open, 1 bounded by a control tier.
+- [RUBRIC](docs/RUBRIC.md): independent read 74/90 against a 78/90 self-score,
+  with the three downgrades named and not argued with.
 - [ETHICS](docs/ETHICS.md): pointers not records; no contact fields ever;
   rectification within 7 days.
 
 ## Operations
 
-- [WAVES](docs/WAVES.md), [HANDOFF](docs/HANDOFF.md),
-  [REPRODUCTION](docs/REPRODUCTION.md), [SURVEY](docs/SURVEY.md),
-  [LINEAGE](docs/LINEAGE.md), [BENCHMARK](docs/BENCHMARK.md)
+- [BENCHMARK](docs/BENCHMARK.md): every measured number with its interval.
+- [REPRODUCTION](docs/REPRODUCTION.md): commands that run today, and the two
+  footguns that silently corrupt results.
+- [WAVES](docs/WAVES.md), [HANDOFF](docs/HANDOFF.md), [SURVEY](docs/SURVEY.md),
+  [LINEAGE](docs/LINEAGE.md)

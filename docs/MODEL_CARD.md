@@ -1,4 +1,4 @@
-# MODEL CARD — titer value-of-information policy
+# MODEL CARD: titer value-of-information policy
 
 **Status: not trained.** Scheduled for W6.
 
@@ -14,7 +14,7 @@ not accuracy.
 | Arm | Base | Method |
 |---|---|---|
 | headline | Qwen3-8B | 4-bit QLoRA, LoRA on all layers incl. MLP, SFT then GRPO/RLVR |
-| ablation | Qwen3-4B | same recipe — "how small can the spender be" |
+| ablation | Qwen3-4B | same recipe; "how small can the spender be" |
 
 Baselines it must beat: `webfloor`, `never_verify`, `always_deep_verify`,
 `abstain_always`, the untrained base, and GPT-5.6-mini with identical tools and

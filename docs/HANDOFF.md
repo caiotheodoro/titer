@@ -1,4 +1,4 @@
-# HANDOFF — operator log
+# HANDOFF: operator log
 
 What to run, and what not to do. Read before touching anything.
 
@@ -17,7 +17,7 @@ What to run, and what not to do. Read before touching anything.
   A generated `2026q2_form345.zip` returns 404 while the page advertises that
   quarter, so a generator truncates the corpus silently.
 - **Do not run two full runs at once**, and do not launch a slow background run
-  without a trailing `| tail` — output buffers and the log stays empty.
+  without a trailing `| tail`, or output buffers and the log stays empty.
 - **Do not edit `docs/PRE-REGISTRATION.md`.** Supersede it with a dated
   DECISIONS entry carrying a reversal clause.
 - **Do not trust a local green.** Verify from a fresh tree; a stale venv passes
@@ -74,7 +74,7 @@ repo, not the working tree.
 House style across the six collections: **the title carries the claim** in two
 contrasting clauses ("ReconForge: lost on accuracy. Caught every HIGH."), the
 **description is one result line plus `Code: <url>`**, and **item notes lead
-with the caveat**, not the win — assay's model note opens "A negative result,
+with the caveat**, not the win. assay's model note opens "A negative result,
 published so the ablation row is checkable."
 
 Hard limits, both enforced server-side and both hit on the first attempt:
@@ -108,9 +108,9 @@ upload fails validation, not silently.
 | Item | Value | Source |
 |---|---|---|
 | Ploid pay-as-you-go | $0.20 / ACU | live pricing page, 2026-09-02 |
-| Ploid `/v1/person` | 25 ACU = **$5.00** PAYG | docs say "$2.50 face value" — that is the Business seat rate of $0.10/ACU |
+| Ploid `/v1/person` | 25 ACU = **$5.00** PAYG | docs say "$2.50 face value"; that is the Business seat rate of $0.10/ACU |
 | Ploid search | $0.10 per 10 matches | live pricing page |
-| Ploid free-plan credits | **not published** — budgeted as zero | absent from the live page; the "200 credits" figure circulating in search snippets is from a superseded pricing model |
+| Ploid free-plan credits | **not published**, budgeted as zero | absent from the live page; the "200 credits" figure circulating in search snippets is from a superseded pricing model |
 | Ploid rate limit | Free 10 rpm, PAYG 30 rpm | errors-and-limits doc |
 | Exa free tier | $20 on signup + $10/month recurring | pricing page |
 | Exa rate limit | `/search` 10 QPS | rate-limits doc |

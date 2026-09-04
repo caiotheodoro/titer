@@ -4,7 +4,7 @@ Results. Two findings survive attack; the rest is unmeasured, void, or retracted
 
 ---
 
-# E1 — expertise verification (the headline)
+# E1: expertise verification (the headline)
 
 **Exa `/answer`, n=750, zero errors, $3.75, 2026-09-03.** Negatives verified
 false against OpenAlex `/works` **before** the provider was asked, catch-all
@@ -18,16 +18,15 @@ topics excluded, stratified per `docs/PRE-REGISTRATION-EXPERTISE.md`.
 
 **The finding: Exa confirms real expertise 96% of the time and affirms claims
 that are provably false roughly one time in seven.** Across both false tiers,
-0.1500 [0.1214, 0.1840] — though that pooled figure mixes two tiers in a
+0.1500 [0.1214, 0.1840], though that pooled figure mixes two tiers in a
 proportion we chose, so the per-tier rates are the reportable ones.
 
-It is not that the provider is bad at the task. It is specifically bad at
-saying *no*.
+The provider is specifically bad at saying *no*.
 
 Under the `expert_sourcing` profile (CONTRACTS A5, a 150x false-merge ratio
 grounded in observed sourcing bounties of $250-$15,000 against an infiltration
 incident and a breach), expected loss is **19.8** and **25.2** on the false
-strata against **0.04** on attested. The asymmetry is the entire result.
+strata against **0.04** on attested.
 
 ## This number survived two independent attacks
 
@@ -37,7 +36,7 @@ strata against **0.04** on attested. The asymmetry is the entire result.
 | Post-hoc, net of measured contamination | 0.1832 [0.1348, 0.2442] | 0.1751 [0.1262, 0.2379] |
 | **Confirmatory, verified negatives** | **0.1320 [0.0956, 0.1796]** | **0.1680 [0.1268, 0.2193]** |
 
-The post-hoc correction slightly **over**stated FAR — its point estimate sits
+The post-hoc correction slightly **over**stated FAR. Its point estimate sits
 above the confirmatory interval's centre, though the intervals overlap. That is
 worth stating: a post-hoc correction is weaker evidence than a clean
 measurement, and here it was measurably so.
@@ -51,9 +50,9 @@ same authors at 0.9840 [0.9596, 0.9938].
 
 | Tier | False affirmation |
 |---|---|
-| NEAR — adjacent subfield | 0.1680 [0.1268, 0.2193] |
-| FAR — adjacent field | 0.1320 [0.0956, 0.1796] |
-| **CONTROL — different domain** | **0.0840 [0.0556, 0.1250]** |
+| NEAR, adjacent subfield | 0.1680 [0.1268, 0.2193] |
+| FAR, adjacent field | 0.1320 [0.0956, 0.1796] |
+| **CONTROL, different domain** | **0.0840 [0.0556, 0.1250]** |
 
 **NEAR is exactly 2.00x the control and the intervals do not overlap.** Topic
 distance changes the rate; D031's two tiers were too close together to resolve
@@ -61,20 +60,20 @@ it, not wrong in principle. FAR still does not separate from the control, so the
 gradient is only visible at the extremes.
 
 **And the control is not zero: 21 of 250 absurd claims were affirmed, one in
-twelve.** That floor is the more important number, because it is the one no
-generous reading explains — see RED-TEAM A12, now bounded rather than open. At
-least 8.4 of the 16.8 points is genuine error.
+twelve.** No generous reading of the prompt explains those 21 affirmations, so at
+least 8.4 of the 16.8 NEAR points are genuine error. That bounds RED-TEAM A12
+rather than leaving it open.
 
 An earlier version of this file said "negative difficulty does not detectably
 change the false-affirmation rate". That was true of NEAR versus FAR and wrong
 as a general claim. See `docs/DECISIONS.md` D034.
 
-## E3 — calibration, on clean labels
+## E3: calibration, on clean labels
 
 Brier **0.1191**, ECE **0.1153**, ten bins, empty bins reported as empty.
 
 **686 of 750 answers (91.5%) landed in the 0.9-1.0 confidence bin, at mean
-confidence 0.987 against accuracy 0.889** — a ten-point overconfidence gap in
+confidence 0.987 against accuracy 0.889**, a ten-point overconfidence gap in
 the bin holding nearly all the mass. Confidence is effectively pinned at
 ceiling and does not track correctness there.
 

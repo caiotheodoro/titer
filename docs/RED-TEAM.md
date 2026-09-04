@@ -1,4 +1,4 @@
-# RED-TEAM — attacks on this repository's own claims
+# RED-TEAM: attacks on this repository's own claims
 
 Written at W0, before there are results to defend. Each attack gets a status:
 **LIVE** (a real weakness we carry), **MITIGATED** (with the mechanism named),
@@ -6,7 +6,7 @@ or **OPEN** (we do not yet know).
 
 ---
 
-## A1. "Your ground truth is not a person key." — LIVE
+## A1. "Your ground truth is not a person key." · LIVE
 
 `RPTOWNERCIK` is unique per filer *registration*. A human who registered twice
 holds two CIKs and the SEC publishes no merge table. So a provider we score
@@ -20,7 +20,7 @@ exactly-normalized name *and* an overlapping issuer) and report false merges raw
 and net of it. If the bound turns out to be large, the R2 claim weakens
 proportionally and we say so in the README.
 
-## A2. "Executives are the easy case, so your numbers flatter the providers." — LIVE
+## A2. "Executives are the easy case, so your numbers flatter the providers." · LIVE
 
 Section 16 filers have unusual web presence. Providers should do better on them
 than on a representative target.
@@ -31,7 +31,7 @@ safe one for a critical finding: if providers fail here, they fail worse
 elsewhere. It does mean no measured *success* rate generalises, and
 `docs/COVERAGE.md` says so.
 
-## A3. "Cross-sectional staleness is not staleness." — LIVE
+## A3. "Cross-sectional staleness is not staleness." · LIVE
 
 R1 infers a survival curve from one snapshot across many elapsed-day values,
 rather than watching a record update.
@@ -43,7 +43,7 @@ then R1 measures "is the fact present now, as a function of how old it is",
 which is a weaker claim than "how fast does the index update", and the README
 must use the weaker wording.
 
-## A4. "Your title normalization is a judgement call dressed as a program." — MITIGATED
+## A4. "Your title normalization is a judgement call dressed as a program." · MITIGATED
 
 Mapping `"President and CEO"` to a class is a decision, and decisions can be
 tuned toward a result.
@@ -55,7 +55,7 @@ rather than scored in either direction. Residual risk: the regex set was written
 by us, before seeing results, but by us. A reviewer should read
 `src/titer/corpus/title_map.py` as an adversary.
 
-## A5. "n = 50 cannot separate anything, so this is theatre." — MITIGATED
+## A5. "n = 50 cannot separate anything, so this is theatre." · MITIGATED
 
 At the achievable budget the Wilson half-width may exceed 0.10.
 
@@ -65,7 +65,7 @@ published result is "this budget cannot separate these providers, and here is
 the `n` that would." The attack is correct that a small `n` limits the claim; it
 is wrong that this is discovered after the fact.
 
-## A6. "You excluded the providers that would have beaten Ploid." — MITIGATED
+## A6. "You excluded the providers that would have beaten Ploid." · MITIGATED
 
 Apollo and PDL are absent, and Ploid is the lead subject.
 
@@ -76,7 +76,7 @@ lawfully", not "who matters". No provider is ever dropped for performing badly;
 that rule is in the pre-registration. A reviewer should verify the quoted clauses
 against the live Terms rather than trusting our quotation.
 
-## A7. "The simulator is fitted to the same data you evaluate on." — MITIGATED
+## A7. "The simulator is fitted to the same data you evaluate on." · MITIGATED
 
 If it were, the sim-to-real gap would be unmeasurable.
 
@@ -85,7 +85,7 @@ of the W2 cache only, the split is frozen in the pre-registration, and the
 enforcement is a test rather than a convention. This is the single easiest thing
 in the repository to get quietly wrong, so it gets an explicit failing test.
 
-## A8. "The reward has a shaping term you did not notice." — OPEN
+## A8. "The reward has a shaping term you did not notice." · OPEN
 
 We claim zero shaping. Claims like that are usually wrong somewhere.
 
@@ -98,7 +98,7 @@ abstention is priced by the cost profile like every other outcome.
 The wider lesson is recorded in D024: four of the confirmed review findings were
 defects in the *probes*, not in the thing being probed.
 
-## A9. "You are measuring a vendor while asking them for a job." — MITIGATED
+## A9. "You are measuring a vendor while asking them for a job." · MITIGATED
 
 The stated outcome is publish-first then a link-first email proposing
 collaboration.
@@ -110,7 +110,7 @@ goal explicitly so that framing cannot drift toward flattery at wave 4. A
 reviewer should check whether the README leads with the unflattering number; if
 it does not, this attack has landed.
 
-## A10. "A benchmark of real named people is itself the harm you are measuring." — LIVE, and answered
+## A10. "A benchmark of real named people is itself the harm you are measuring." · LIVE, and answered
 
 Aggregating scattered public facts about real people into one convenient file is
 a privacy harm.
@@ -126,7 +126,7 @@ The residual: we still query commercial providers with real people's names. That
 is unavoidable for the measurement to exist, it is within each provider's Terms,
 and the responses are stripped of contact fields before they touch disk.
 
-## A11. "Ploid's Terms disclaim accuracy, so there is no claim to test." — OPEN
+## A11. "Ploid's Terms disclaim accuracy, so there is no claim to test." · OPEN
 
 Ploid §12: *"We do not warrant that outputs will be accurate, complete, or
 suitable for any particular decision."*
@@ -142,14 +142,14 @@ that implies otherwise.
 
 # Attacks on the expertise findings (added 2026-09-03)
 
-## A12. "Your 18% is prompt interpretation, not error." — LIVE, and the strongest
+## A12. "Your 16.8% is prompt interpretation, not error." · BOUNDED
 
 The prompt asks *"Does X have published research expertise in T?"* A provider
 may reasonably read that as "does X work in an area close to T", in which case
 affirming an adjacent topic is a defensible answer to a vague question rather
 than a false claim.
 
-**Status: BOUNDED, no longer fully open.** See `docs/DECISIONS.md` D034.
+Bounded by a control tier, not closed. See `docs/DECISIONS.md` D034.
 
 The worry was real and the confirmatory run could not address it: removing
 *contaminated* negatives does not remove *adjacent* ones, and a provider might
@@ -165,7 +165,7 @@ Still live: whether the remaining ~8pp is interpretation or error. The
 experiment that would settle *that* is a prompt variant demanding a specific
 citation, scored on whether the citation exists. Not run; budget.
 
-## A13. "The negatives are still constructed by you." — MITIGATED, not eliminated
+## A13. "The negatives are still constructed by you." · MITIGATED, not eliminated
 
 Every negative is a topic with zero attested works, chosen by a versioned set
 operation over the OpenAlex hierarchy, verified against `/works`, and stripped
@@ -175,7 +175,7 @@ of catch-all labels. Spot-checked at 0/150 contaminated [0, 0.0250].
 that taxonomy propagates into ours. D031's difficulty tiers were *supposed* to
 detect this and did not separate.
 
-## A14. "E3's calibration is measured against your labels." — LIVE
+## A14. "E3's calibration is measured against your labels." · LIVE
 
 The overconfidence gap (0.987 stated vs 0.889 actual) uses our correctness
 labels. If those labels are wrong in the provider's favour, the gap shrinks -
@@ -188,7 +188,7 @@ that survives is the weaker one: **confidence is pinned at ceiling on 91.5% of
 answers and does not discriminate there**, which holds regardless of where
 accuracy truly sits.
 
-## A15. "H1's inverted U is your oracle, not the index." — LIVE, and we say so
+## A15. "H1's inverted U is your oracle, not the index." · LIVE, and we say so
 
 Reflection rises 0.28 → 0.57 → 0.29. We argue the fall after three years is SEC
 ageing out of reality rather than an index regressing.
@@ -198,7 +198,7 @@ it as a hypothesis and names the experiment (E4, over a population whose oracle
 tracks people after they leave public companies). Not run. Until it is, H1 is
 **mis-specified** - not confirmed, not falsified.
 
-## A16. "One provider is not a benchmark." — LIVE
+## A16. "One provider is not a benchmark." · LIVE
 
 Every surviving number describes **Exa**. Ploid is retracted, the web floor is
 a parser artefact, and no other provider was measured.
@@ -207,7 +207,7 @@ a parser artefact, and no other provider was measured.
 about the category. `docs/BENCHMARK.md` names one provider throughout, and the
 pre-registered `cannot_separate` branch forbids ranking language regardless.
 
-## A17. "You published the methodology because the results were thin." — answered
+## A17. "You published the methodology because the results were thin." · answered
 
 Six headline numbers, five artefacts. A reader may reasonably suspect the
 framing is a rescue.

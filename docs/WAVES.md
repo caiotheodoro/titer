@@ -10,7 +10,7 @@ Execution order. Each wave ends: build → **fresh-context** review → fix fan-
 | **W2** | Adapters, replay cache, cost accounting | Measured cost per task per provider recorded; achievable matched `n` computed; PRE-REGISTRATION §3 branch selected and recorded |
 | **W3** | R1 staleness, R2 false merge | Paired bootstrap intervals; matched-`n` table plus max-`n` table; contamination bound measured |
 | **W4** | R3 calibration and abstention | Reliability diagram with unmerged bins; coverage and floor returned as a pair |
-| **W5** | Simulator, OpenEnv env, keel facade | Env health report emitted: gold 1.0, noop 0.0, flat probe passes, solve-rate histogram, in-band %, zero-advantage group % — **then `assay` audits this environment and the audit is published** |
+| **W5** | Simulator, OpenEnv env, keel facade | Env health report emitted: gold 1.0, noop 0.0, flat probe passes, solve-rate histogram, in-band %, zero-advantage group %. **Then `assay` audits this environment and the audit is published** |
 | **W6** | SFT → GRPO, 8B and 4B | ≥4 seeds per arm; across-seed spread computed **before** any margin is written; checkpoint selected on hill-climb, never on the frozen test split |
 | **W7** | Publication | Datasets ×2, models ×2, static Space, collection, video, RED-TEAM updated, repo made public, then the outreach email |
 

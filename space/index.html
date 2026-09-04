@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>titer — six numbers, five artefacts</title>
+<title>titer · six numbers, five artefacts</title>
 <meta name="description" content="An instrument for measuring people-search claims against attested records. Six headline numbers, five of them artefacts of the measurer."/>
 <link rel="preconnect" href="https://cdn.jsdelivr.net"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -112,45 +112,43 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
     <h1>Six numbers.<br/>Five were ours<span class="dot">.</span></h1>
     <p class="standfirst">Six headline measurements of commercial people-search products.
     <strong>Five turned out to be artefacts of the instrument, not findings about any
-    vendor.</strong> Every one was caught by reading the rows a provider returned —
+    vendor.</strong> Every one was caught by reading the rows a provider returned,
     never by reading a summary statistic.</p>
-    <p>That ratio is the result. The surviving measurements are below, and they
-    matter less than it does.</p>
   </div>
 
   <dl class="stats" data-fade data-delay="1">
     <div class="stat"><dt>Headline numbers</dt><dd>6<span>five retracted</span></dd></div>
     <div class="stat"><dt>Attested rows</dt><dd>4.2M<span>SEC Forms 3/4/5</span></dd></div>
-    <div class="stat"><dt>Total spend</dt><dd>$22.75<span>all measurement</span></dd></div>
-    <div class="stat"><dt>Tests</dt><dd>238<span>seven gates</span></dd></div>
+    <div class="stat"><dt>Total spend</dt><dd>$24.96<span>all measurement</span></dd></div>
+    <div class="stat"><dt>Tests</dt><dd>240<span>ten gates</span></dd></div>
   </dl>
 
   <section class="section" data-fade>
     <h2>Why the ratio is the finding</h2>
     <p>Published comparisons put the <em>same</em> B2B data vendor at <strong>42.4%</strong>
     in one study and <strong>78%</strong> in another. Neither publishes a methodology.
-    A gap that size does not come from vendors differing — it comes from harnesses
-    differing. This is a worked example of how.</p>
+    Harness design moves a vendor number further than vendor quality does. This is
+    a worked example of how far.</p>
     <table>
       <thead><tr><th>#</th><th>The number</th><th>What it actually was</th></tr></thead>
       <tbody>
         <tr><td class="num">1</td><td>Ploid 0/21</td><td>Company packed into the free-text query instead of the documented <code>filters</code></td></tr>
         <tr><td class="num">2</td><td>Ploid 0/21 again</td><td>The company filter selects people <em>currently</em> there, so the anchor always came back</td></tr>
         <tr><td class="num">3</td><td>Web floor 0/300</td><td>Our parser read person names out of page titles like <code>FORM 8-K 10.04.2013</code></td></tr>
-        <tr><td class="num">4</td><td>Expertise 17–21%</td><td>13.3% of "false" claims were true — OpenAlex topics is a top-N summary, not a record</td></tr>
+        <tr><td class="num">4</td><td>Expertise 17–21%</td><td>13.3% of "false" claims were true. OpenAlex topics is a top-N summary, not a record</td></tr>
         <tr><td class="num">5</td><td>Lag 7,360 days</td><td>Isotonic regression forcing monotonicity onto a non-monotone curve</td></tr>
-        <tr><td class="num hi">6</td><td class="hi">Expertise 13–17%</td><td class="hi">Survived. Twice.</td></tr>
+        <tr><td class="num hi">6</td><td class="hi">Expertise 8–17%</td><td class="hi">Survived three times</td></tr>
       </tbody>
     </table>
-    <p>In case 4 the affirmations kept looking <em>correct</em> — a dermatologic
-    oncologist affirmed for "Educational Methods", who had in fact co-authored
+    <p>In case 4 the affirmations kept looking <em>correct</em>: a dermatologic
+    oncologist affirmed for "Educational Methods" had in fact co-authored
     medical education research. Correct answers, scored as errors.</p>
   </section>
 
   <hr class="rule"/>
 
   <section class="section" data-fade>
-    <h2>What survives<span class="count" style="margin-left:10px">n=750</span></h2>
+    <h2>What survives<span class="count" style="margin-left:10px">n=1,000</span></h2>
     <h3>A provider is bad at saying no</h3>
     <p>Expertise claims put to Exa, with every false claim verified against OpenAlex
     <code>/works</code> <em>before</em> the provider was asked.</p>
@@ -158,17 +156,17 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
       <thead><tr><th>Claim</th><th>n</th><th>Correct</th><th>False affirmation</th></tr></thead>
       <tbody>
         <tr><td>Attested</td><td class="num">250</td><td class="num">0.9600 [0.9279, 0.9781]</td><td class="num">0 [0, 0.0151]</td></tr>
-        <tr><td>False — adjacent field</td><td class="num">250</td><td class="num">0.8680</td><td class="num hi">0.1320 [0.0956, 0.1796]</td></tr>
-        <tr><td>False — adjacent subfield</td><td class="num">250</td><td class="num">0.8320</td><td class="num hi">0.1680 [0.1268, 0.2193]</td></tr>
-        <tr><td>False — <b>different domain</b> (control)</td><td class="num">250</td><td class="num">0.9160</td><td class="num hi">0.0840 [0.0556, 0.1250]</td></tr>
+        <tr><td>False, adjacent field</td><td class="num">250</td><td class="num">0.8680</td><td class="num hi">0.1320 [0.0956, 0.1796]</td></tr>
+        <tr><td>False, adjacent subfield</td><td class="num">250</td><td class="num">0.8320</td><td class="num hi">0.1680 [0.1268, 0.2193]</td></tr>
+        <tr><td>False, <b>different domain</b> (control)</td><td class="num">250</td><td class="num">0.9160</td><td class="num hi">0.0840 [0.0556, 0.1250]</td></tr>
       </tbody>
     </table>
     <p>It confirms real expertise <strong>96%</strong> of the time and affirms claims
     about topics the person has <strong>never published in</strong> roughly one time in
-    six. Topic distance halves that — but does not remove it. Asked whether an
+    six. Topic distance halves that rate without removing it. Asked whether an
     organometallic chemist has published on <em>historical studies on Spain</em>, it
-    says yes <strong>one time in twelve</strong>. No generous reading of the question
-    explains that, which is why the floor matters more than the gradient.</p>
+    still says yes <strong>one time in twelve</strong>. No generous reading of the
+    question explains those 21 affirmations.</p>
   </section>
 
   <section class="section" data-fade>
@@ -177,8 +175,8 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
       <div class="t">Confidence is pinned at the ceiling</div>
       <p><strong>686 of 750 answers (91.5%)</strong> sit in the 0.9–1.0 confidence bin,
       at mean confidence <strong>0.987</strong> against accuracy <strong>0.889</strong>.
-      A ten-point overconfidence gap in the bin holding nearly all the mass — and it
-      does not discriminate there. ECE 0.1153.</p>
+      A ten-point overconfidence gap in the bin holding nearly all the mass, and no
+      discrimination inside it. ECE 0.1153.</p>
     </div>
   </section>
 
@@ -195,7 +193,7 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
       <div class="b"><span class="v">0.29</span><div class="fill" style="height:40%"></div><span class="k">7y+</span></div>
     </div>
     <p>Non-monotone, so no half-life exists and the pre-registered estimator was
-    withdrawn — it had produced a "median lag" of 7,360 days by forcing a shape the
+    withdrawn. It had produced a "median lag" of 7,360 days by forcing a shape the
     data does not have. The fall after three years is most likely <em>our oracle</em>
     ageing out: executives leave public companies and SEC stops seeing them.</p>
   </section>
@@ -205,28 +203,29 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
   <section class="section" data-fade>
     <h2>The retraction record<span class="count" style="margin-left:10px">2 formal</span></h2>
     <div class="card">
-      <div class="t">R001 — the Ploid arm</div>
+      <div class="t">R001: the Ploid arm</div>
       <p>Three runs, all void. Every failure was a defect in our harness, so
       <strong>no number about Ploid is claimed anywhere</strong>. The credits ran out
       before a clean run existed.</p>
     </div>
     <div class="card">
-      <div class="t">R002 — the raw expertise rates</div>
+      <div class="t">R002: the raw expertise rates</div>
       <p>Negatives built from a top-N summary rather than an exhaustive record. 13.3%
-      were actually true — the same magnitude as the effect being measured.</p>
+      were true, the same magnitude as the effect being measured.</p>
     </div>
-    <p style="margin-top:1rem">The retraction machinery — the log, the leak probe, the
-    integrity probe, the claim gates — was committed <strong>before any measurement
-    existed</strong>. That ordering is checkable in the git history, and it is the only
-    reason five artefacts were caught rather than published.</p>
+    <p style="margin-top:1rem">The log, the leak probe, the integrity probe and the
+    claim gates were all committed <strong>before any measurement existed</strong>.
+    That ordering is checkable in the git history, and it is the only reason five
+    artefacts were caught rather than published.</p>
   </section>
 
   <section class="section" data-fade>
     <h2>Limits</h2>
     <p><strong>One provider.</strong> Every surviving number describes Exa; nothing here
-    supports a claim about the category. <strong>The surviving 18% may be prompt
-    interpretation</strong> — the confirmatory run removed contaminated negatives but
-    cannot remove adjacent ones. <strong>Publication record is not expertise</strong>:
+    supports a claim about the category. <strong>Part of the 16.8% may be prompt
+    interpretation</strong>: the confirmatory run removed contaminated negatives but
+    cannot remove adjacent ones, so only the control's 8.4 points are error under
+    every reading. <strong>Publication record is not expertise</strong>:
     engineers, practising clinicians and lawyers leave no bibliographic trace and are
     invisible here. <strong>Nothing is trained.</strong></p>
   </section>
@@ -249,7 +248,7 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
     <p style="color:inherit;font-size:inherit">titer · MIT · corpora published as
     pointers, never as assembled records. If you appear in one and want out, see
     <a class="body-link" href="https://github.com/caiotheodoro/titer/blob/main/docs/ETHICS.md">ETHICS §6</a>
-    — honoured within 7 days, no justification required.</p>
+    Honoured within 7 days, no justification required.</p>
   </footer>
 
 </main>

@@ -1,4 +1,4 @@
-# DATASET CARD — titer-edgar-officers
+# DATASET CARD: titer-edgar-officers
 
 **Status: not released.** Scheduled for W1. This card is written first so the
 release cannot outrun its own documentation.
@@ -22,7 +22,7 @@ using the accession numbers.
 ## Source and licence
 
 US Government public domain (SEC Insider Transactions Data Sets). Coverage
-2003q3 onward — mandatory electronic Section 16 filing began mid-2003.
+2003q3 onward, because mandatory electronic Section 16 filing began mid-2003.
 
 ## Construction
 

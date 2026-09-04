@@ -18,10 +18,10 @@ export TITER_OPENALEX_MAILTO="you@example.com"      # OpenAlex polite pool
 export TITER_NAME_SALT="<random hex>"               # published name hashes
 ```
 
-## Gates — run these first
+## Gates: run these first
 
 ```bash
-make validate                        # 9 gates. A nonzero exit is the product.
+make validate                        # 10 gates. A nonzero exit is the product.
 uv run --extra dev pytest tests      # unit + contract tests
 ```
 
@@ -46,7 +46,7 @@ uv run --extra dev python scripts/full_run.py \
 
 Each writes to `results/`. Without `--spend` nothing is billed and anything not
 already cached is skipped, so a fresh clone reproduces exactly the cached
-subset — which is every number in `docs/BENCHMARK.md`.
+subset, which is every number in `docs/BENCHMARK.md`.
 
 ## Rebuild the corpora from source (slow, free, needs the env vars)
 
@@ -75,7 +75,7 @@ way and ended up asserting SEC was blocked against 4.2M built rows.
 ## Footguns, all of them paid for
 
 - **SEC needs a *contactable* address.** A GitHub `users.noreply` address gets a
-  403 — and SEC's 403 page is titled "Request Rate Threshold Exceeded"
+  403, and SEC's 403 page is titled "Request Rate Threshold Exceeded"
   regardless of cause, so do not diagnose from the page title.
 - **SEC throttles on burst**, well below its documented 10 req/s. Space requests;
   do not loop on a 403.
