@@ -22,19 +22,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from titer.adapters.base import BudgetExceeded, Ledger  # noqa: E402
-from titer.adapters.cache import CacheKey, ReplayCache  # noqa: E402
-from titer.adapters.http import ProviderHTTPError, exa_transport, ploid_transport  # noqa: E402
-from titer.adapters.providers import Exa, Ploid  # noqa: E402
-from titer.corpus.collision import CollisionIndex  # noqa: E402
-from titer.corpus.schema import AttestedTuple, RoleClass  # noqa: E402
-from titer.corpus.tasks import Task, band_distribution  # noqa: E402
-from titer.corpus.title_map import TitleClass, classify  # noqa: E402
-from titer.costs.profiles import REPORTABLE, accuracy, expected_loss  # noqa: E402
-from titer.metrics.intervals import wilson  # noqa: E402
-from titer.metrics.survival import binned_rates, pava  # noqa: E402
-from titer.oracle.outcome import Answer, Outcome, atoms, judge  # noqa: E402
-from titer.oracle.resolve import resolve, resolve_issuer  # noqa: E402
+from titer.adapters.base import BudgetExceeded, Ledger
+from titer.adapters.cache import CacheKey, ReplayCache
+from titer.adapters.http import ProviderHTTPError, exa_transport, ploid_transport
+from titer.adapters.providers import Exa, Ploid
+from titer.corpus.collision import CollisionIndex
+from titer.corpus.schema import AttestedTuple, RoleClass
+from titer.corpus.tasks import Task, band_distribution
+from titer.corpus.title_map import TitleClass, classify
+from titer.costs.profiles import REPORTABLE, accuracy, expected_loss
+from titer.metrics.intervals import wilson
+from titer.metrics.survival import binned_rates, pava
+from titer.oracle.outcome import Answer, Outcome, atoms, judge
+from titer.oracle.resolve import resolve, resolve_issuer
 
 ROOT = Path(__file__).resolve().parent.parent
 TASKS = ROOT / "data" / "tasks.jsonl"
@@ -82,21 +82,56 @@ def load_indices():
     return index, issuer_index
 
 
-def build_arms(spend: bool, wanted: set[str]):
+def build_arms(spend: bool, wanted: set[str], e2: bool = False):
+    """Arm name -> (adapter, action, render_fn, provider_name).
+
+    An arm used to BE a provider: one provider appeared once, and the rendering
+    came from the adapter class. E2 needs four renderings of the same task, so
+    the renderer moved onto the arm and the provider became a separate field -
+    the ledger keys on the provider, or a four-arm run silently spends 4x what
+    --budget-usd reads.
+    """
     arms = {}
+    if e2:
+        # E2 / D029: four renderings, identical task set, within-task contrast.
+        from titer.adapters.e2 import (
+            exa_anchor_freetext,
+            exa_full_context,
+            exa_name_only,
+            ploid_company_filter,
+        )
+        if "exa" in wanted:
+            try:
+                for name, fn in (("exa_A_name_only", exa_name_only),
+                                 ("exa_C_anchor_freetext", exa_anchor_freetext),
+                                 ("exa_D_full_context", exa_full_context)):
+                    arms[name] = (Exa(transport=exa_transport() if spend else None),
+                                  "answer", fn, "exa")
+            except RuntimeError as e:
+                print(f"  exa unavailable: {e}", file=sys.stderr)
+        if "ploid" in wanted:
+            try:
+                arms["ploid_B_company_filter"] = (
+                    Ploid(transport=ploid_transport() if spend else None),
+                    "search_fast", ploid_company_filter, "ploid")
+            except RuntimeError as e:
+                print(f"  ploid unavailable: {e}", file=sys.stderr)
+        return arms
+
     if "ploid" in wanted:
         try:
             arms["ploid"] = (Ploid(transport=ploid_transport() if spend else None),
-                             "search_fast")
+                             "search_fast", Ploid.render, "ploid")
         except RuntimeError as e:
             print(f"  ploid unavailable: {e}", file=sys.stderr)
     if {"exa", "webfloor"} & wanted:
         try:
             if "exa" in wanted:
-                arms["exa"] = (Exa(transport=exa_transport() if spend else None), "answer")
+                arms["exa"] = (Exa(transport=exa_transport() if spend else None),
+                               "answer", Exa.render, "exa")
             if "webfloor" in wanted:
                 arms["webfloor"] = (Exa(transport=exa_transport() if spend else None),
-                                    "search")
+                                    "search", Exa.render, "exa")
         except RuntimeError as e:
             print(f"  exa unavailable: {e}", file=sys.stderr)
     return arms
@@ -115,6 +150,9 @@ def main() -> int:
                     help="hard cap on LIVE calls per provider. The ledger caps "
                          "dollars; this caps credits, which is what a grant is "
                          "denominated in. Cached replays do not count.")
+    ap.add_argument("--e2", action="store_true",
+                    help="E2/D029: four renderings of the identical task set, "
+                         "compared within-task. Arm B is Ploid-only.")
     ap.add_argument("--band", default=None,
                     choices=("unique", "low", "medium", "high"),
                     help="restrict the draw to ONE collision band. A single-"
@@ -183,20 +221,24 @@ def main() -> int:
 
     window = datetime.now().strftime("%Y-%m")
     cache = ReplayCache(ROOT / "data" / "replay.jsonl")
-    arms = build_arms(args.spend, {a.strip() for a in args.providers.split(',')})
-    ledgers = {k: Ledger(args.budget_usd) for k in arms}
-    live_calls: dict[str, int] = {k: 0 for k in arms}
+    arms = build_arms(args.spend, {a.strip() for a in args.providers.split(',')},
+                      e2=args.e2)
+    # Budget and credit caps key on the PROVIDER, not the arm: four arms of one
+    # provider each holding a full --budget-usd would spend 4x the flag.
+    provs = {p for (_, _, _, p) in arms.values()}
+    ledgers = {p: Ledger(args.budget_usd) for p in provs}
+    live_calls: dict[str, int] = {p: 0 for p in provs}
     records: dict[str, list[dict]] = {k: [] for k in arms}
 
     for i, task in enumerate(sample, 1):
-        for arm, (adapter, action) in arms.items():
-            rendered = adapter.render(task)
+        for arm, (adapter, action, render_fn, prov) in arms.items():
+            rendered = render_fn(task)
             key = CacheKey(arm, action, f"{task.task_id}|{rendered}", window)
             entry = cache.get(key)
             if entry is None:
                 if not args.spend:
                     continue
-                if args.max_calls is not None and live_calls[arm] >= args.max_calls:
+                if args.max_calls is not None and live_calls[prov] >= args.max_calls:
                     continue  # credit cap reached; not an error, just the budget
                 try:
                     answers, sp = adapter.query(action, rendered)
@@ -204,11 +246,11 @@ def main() -> int:
                     print(f"  [{i}] {arm}: {type(e).__name__}: {str(e)[:120]}", file=sys.stderr)
                     continue
                 try:
-                    ledgers[arm].charge(sp)
+                    ledgers[prov].charge(sp)
                 except BudgetExceeded as e:
                     print(f"  [{i}] {arm} budget exhausted: {e}", file=sys.stderr)
                     continue
-                live_calls[arm] += 1
+                live_calls[prov] += 1
                 entry = cache.put(key, answers, sp, 0.0, datetime.now().isoformat(),
                                   raw=getattr(adapter, 'last_raw', None))
             got = ReplayCache.to_answers(entry)
@@ -256,6 +298,44 @@ def main() -> int:
               "arms": {}}
     matched = min((len(v) for v in records.values() if v), default=0)
     report["matched_n"] = matched
+
+    # E2 is a within-task design, so every comparison runs over the task ids
+    # ALL arms actually returned. The loop `continue`s per arm on an error or a
+    # budget stop, which silently unpairs them; taking a min over lengths (as
+    # matched_n does) papers over that, and paired_bootstrap raises on unequal
+    # arms. Intersecting first is the only thing that keeps the pairing real.
+    if args.e2 and len([v for v in records.values() if v]) > 1:
+        from titer.metrics.intervals import paired_bootstrap
+        common = None
+        for recs in records.values():
+            ids = {r["task_id"] for r in recs}
+            common = ids if common is None else (common & ids)
+        common = sorted(common or [])
+        report["paired_task_ids"] = len(common)
+        by_arm = {}
+        for arm, recs in records.items():
+            m = {r["task_id"]: r for r in recs}
+            by_arm[arm] = [1.0 if m[t]["outcome"] == Outcome.CORRECT.value else 0.0
+                           for t in common if t in m]
+        report["e2_paired"] = {}
+        names = sorted(by_arm)
+        for i_a in range(len(names)):
+            for i_b in range(i_a + 1, len(names)):
+                a, b = names[i_a], names[i_b]
+                if len(by_arm[a]) != len(by_arm[b]) or not by_arm[a]:
+                    continue
+                iv = paired_bootstrap(by_arm[a], by_arm[b],
+                                      lambda xs: sum(xs) / len(xs))
+                report["e2_paired"][f"{a} - {b}"] = {
+                    "mean_a": round(sum(by_arm[a]) / len(by_arm[a]), 4),
+                    "mean_b": round(sum(by_arm[b]) / len(by_arm[b]), 4),
+                    "diff": str(iv),
+                    "separates": not (iv.lo <= 0.0 <= iv.hi)}
+        report["e2_note"] = (
+            "D029: supported if C ~= A and D > B (the index cannot exploit "
+            "history even when handed it); falsified if C > A. Per-stratum "
+            "only - D027's pooling ban applies, and D032 makes any colliding "
+            "sample case-control, so no rate here is a population rate.")
     for arm, recs in records.items():
         if not recs:
             report["arms"][arm] = {"n": 0, "note": "no observations"}

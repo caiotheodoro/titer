@@ -1,0 +1,9 @@
+{
+  "generated": "2026-09-04",
+  "citations_checked_per_affirmation": 2,
+  "spend_usd": 0.0,
+  "audited": 0,
+  "requested": 329,
+  "method": "For each affirmation, up to N cited titles are resolved against OpenAlex. 'backed' means at least one cited title is a work OpenAlex says this author wrote. No model reads the evidence string.",
+  "strata": {}
+}

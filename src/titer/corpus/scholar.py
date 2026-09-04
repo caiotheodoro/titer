@@ -18,12 +18,14 @@ from __future__ import annotations
 
 import json
 import random
+import re
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Iterator
+from urllib.parse import quote
 
 API = "https://api.openalex.org"
 ADJACENCY_VERSION = "topic_adjacency/v1"
@@ -87,10 +89,34 @@ def _get(url: str, ua: str, timeout: int = 60) -> dict:
     except urllib.error.HTTPError as e:
         body = e.read()[:200]
         if e.code == 429 and b"Insufficient budget" in body:
+            # Fall back ONCE to an unauthenticated request. Tried once, not
+            # looped, so it is not the retry the module bans.
+            #
+            # Be careful what this does and does not buy. Measured 2026-09-04:
+            # with the key the account reported $0.0008 against a $0.001
+            # request; the same query with no Authorization header returned
+            # 200. Twenty minutes later BOTH paths reported "$0 remaining".
+            # So authenticated and unauthenticated bill the same account
+            # budget, and the fallback does not conjure quota - it only helps
+            # when the key itself is the problem (invalid, revoked, wrong
+            # account). When the budget is genuinely gone, nothing here helps
+            # and the caller must wait for midnight UTC.
+            if _auth_headers():
+                try:
+                    req = urllib.request.Request(
+                        url, headers={"User-Agent": ua,
+                                      "Accept": "application/json"})
+                    with urllib.request.urlopen(req, timeout=timeout) as r:
+                        return json.loads(r.read().decode())
+                except urllib.error.HTTPError as e2:
+                    raise OpenAlexError(
+                        f"premium key exhausted AND the polite pool returned "
+                        f"{e2.code}; wait for midnight UTC"
+                    ) from e2
             raise OpenAlexError(
-                "OpenAlex daily budget exhausted. It resets at midnight UTC. "
-                "Set OPENALEX_API_KEY for a premium key, which lifts the cap. "
-                "Do NOT loop - each retry burns budget you do not have."
+                "OpenAlex daily budget exhausted and no key is set to fall "
+                "back from. It resets at midnight UTC. Do NOT loop - each "
+                "retry burns budget you do not have."
             ) from e
         raise OpenAlexError(f"OpenAlex {e.code} for {url}: {body!r}") from e
     finally:
@@ -297,6 +323,47 @@ def has_works_in_topic(author_id: str, topic_id: str, ua: str) -> int:
     aid = author_id.rsplit("/", 1)[-1]
     tid = topic_id.rsplit("/", 1)[-1]
     d = _get(f"{API}/works?filter=authorships.author.id:{aid},topics.id:{tid}"
+             f"&per-page=1", ua)
+    return d["meta"]["count"]
+
+
+_TITLE_NOISE = re.compile(r"[^\w\s]", re.UNICODE)
+
+
+def _clean_title(t: str) -> str:
+    """OpenAlex title.search chokes on punctuation and directional marks."""
+    return re.sub(r"\s+", " ", _TITLE_NOISE.sub(" ", t or "")).strip()
+
+
+def cited_work_by_author(title: str, author_id: str, ua: str) -> int:
+    """Works matching `title` that list `author_id` as an author.
+
+    The programmatic half of RED-TEAM A12. When a provider affirms expertise it
+    also returns citations; this asks whether any of them is a work that
+    actually exists AND actually lists the person. No model reads the evidence
+    string - a model assigning that label would be the circularity D022 bans.
+
+    Returns 0 for a title that resolves to nothing, which is the common case
+    when the "citation" is a Google Scholar profile or a staff page rather than
+    a paper. That is a finding, not a failure: an affirmation supported only by
+    a profile page cites no attested work.
+    """
+    clean = _clean_title(title)
+    if len(clean) < 12:            # too short to identify a work
+        return 0
+    aid = author_id.rsplit("/", 1)[-1]
+    d = _get(f"{API}/works?filter=authorships.author.id:{aid},"
+             f"title.search:{quote(clean[:180])}&per-page=1", ua)
+    return d["meta"]["count"]
+
+
+def work_exists(title: str, ua: str) -> int:
+    """Works matching `title` at all, by anyone. Separates 'does not exist'
+    from 'exists but is not theirs'."""
+    clean = _clean_title(title)
+    if len(clean) < 12:
+        return 0
+    d = _get(f"{API}/works?filter=title.search:{quote(clean[:180])}"
              f"&per-page=1", ua)
     return d["meta"]["count"]
 

@@ -229,3 +229,23 @@ def test_far_domain_does_not_silently_fall_back(immunologist):
                                  "Immunology and Microbiology", "Life")}
     assert adjacent_false_topic(immunologist, same_domain_only, random.Random(1),
                                 FAR_DOMAIN, verify=lambda a, t: 0) is None
+
+
+def test_exhausted_premium_key_falls_back_to_the_polite_pool():
+    """An exhausted OpenAlex key must not disable free verification. D037 C6.
+
+    `_auth_headers()` attaches the key unconditionally, so an invalid or
+    revoked key stops every OpenAlex call - including `has_works_in_topic`, the
+    exhaustive check that exists because skipping it voided a whole study
+    (R002). One unauthenticated retry covers that case.
+
+    It does NOT cover an exhausted account: measured 2026-09-04, authenticated
+    and unauthenticated requests bill the same budget, and once it read
+    "$0 remaining" both paths 429ed until midnight UTC.
+    """
+    import titer.corpus.scholar as sch
+    src = open(sch.__file__).read()
+    body = src[src.index("def _get("):src.index("def fetch_topics")]
+    assert "Insufficient budget" in body
+    assert "_auth_headers()" in body.split("Insufficient budget")[1], (
+        "the 429 branch must check for a key and retry once unauthenticated")
