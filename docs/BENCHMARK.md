@@ -166,6 +166,37 @@ test on the surface the hypothesis was actually about.
 D032 applies too: a colliding sample is deliberately enriched, case-control, so
 **no collision rate here is a population rate**.
 
+### E2 arm B: the filter-based surface, where D029 was actually aimed
+
+Ploid, within-provider, `medium` band, n=12 per arm, paired, $4.00. **Both arms
+scored 0 correct**, so no accuracy claim is made and none can be.
+
+| | A: name only | B: name + documented `company` filter |
+|---|---|---|
+| correct | 0.0000 [0.0000, 0.2425] | 0.0000 [0.0000, 0.2425] |
+| `STALE` (anchor returned) | 0 | **2** |
+| resolved (`unique_name` + `narrowed_by_anchor`) | **0** | **3** |
+| `colliding_name_no_employer` | **11** | 0 |
+
+**Read the resolution column, not the outcome column.** With the name alone,
+11 of 12 queries returned people whose employer Ploid did not give, so the
+collision could not be broken and nothing could be scored. With the filter, 3
+resolved - and 2 of those came back as `STALE`, meaning the row returned was
+the **anchor**, which is what D028 C1 predicted a current-state company filter
+would do.
+
+So on this surface the filter buys resolution and spends it on the wrong
+answer. That is consistent with D029's argument, and **consistency at n=12 with
+zero correct answers in both arms is not evidence.** The paired interval reads
+`0.0000 [0.0000, 0.0000]` only because both arms are uniformly zero; it is
+degenerate and must not be read as "no difference".
+
+**What it would cost to know:** 49 tasks per arm for a ±0.10 half-width at
+p=0.15, which is **$9.80 per arm** at the measured $0.20 per search. This
+budget bought 12.
+
+**Five budgets, no Ploid accuracy number.** That remains the honest state.
+
 ## What does NOT hold
 
 ### The web floor is not measured. It is a parser artefact.

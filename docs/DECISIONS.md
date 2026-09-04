@@ -1749,3 +1749,53 @@ read against.
 plausible architectural story about a product gap, cited as motivation and never
 tested. It is exactly the kind of claim this repository exists to make
 falsifiable, and it did not survive contact.
+
+---
+
+## D040 - Two defects I introduced, and the Ploid arm they cost (2026-09-04)
+
+Recorded because the record is the product, and these were committed by the
+tooling rather than caught by it.
+
+### C1 - A patch that silently did not apply
+
+`build_arms` was patched with `str.replace()` against an anchor that was not in
+the file, without an assert, and the script printed `ploid arms wired`
+unconditionally. Nothing errored. The arm was simply absent from the dict, and
+**$1.60 bought one arm of a two-arm within-provider contrast**.
+
+This is the exact shape of every defect in `RETRACTIONS.md`: a claim that
+quietly stopped being true, believed because the tool said so. `build_arms` now
+constructs both arms, and four tests pin the arm sets - including that the
+default non-E2 set is unchanged - so an absent arm is a red test rather than a
+wasted budget.
+
+### C2 - An arm is not a provider, and the card started inventing vendors
+
+Since E2, four renderings of one provider are four arms. A cache key's first
+field is the arm, which is **correct** - two renderings must never collide - but
+`refresh_card.live_spend()` summed spend by that field. So
+`MEASUREMENT_CARD.json` grew entries for `exa_A_name_only`,
+`exa_C_anchor_freetext`, `exa_D_full_context`, `ploid_A_name_only` and
+`ploid_B_company_filter`, **five fictional providers**, with E2's real spend
+split across them.
+
+The aggregate total stayed right, which is why nothing looked wrong. Attribution
+now folds the arm back onto the provider that billed it. Corrected:
+**ploid $15.60, exa $19.77, webfloor $2.28, total $37.65.**
+
+### The arm itself
+
+Ploid, within-provider, `medium` band, n=12 per arm, $4.00. Both arms **0
+correct**. The difference is in resolution, not accuracy: name-only left 11 of
+12 as `colliding_name_no_employer` and resolved nothing; the filter resolved 3,
+and 2 of those came back `STALE` - the **anchor**, exactly as D028 C1 predicted
+a current-state filter would.
+
+That is consistent with D029 on the surface D029 was aimed at, and **consistency
+at n=12 with zero correct in both arms is not evidence**. The paired interval
+`0.0000 [0.0000, 0.0000]` is degenerate, not a null result. Required n is 49 per
+arm for a ±0.10 half-width, $9.80 per arm; this budget bought 12.
+
+**Five budgets, no Ploid accuracy number.** Unchanged, and stated rather than
+softened.

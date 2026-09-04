@@ -111,8 +111,11 @@ in the provider, reproduced by our own policy in an environment that prices it.
 
 ## What does not survive
 
-Ploid, after **four** runs and four budgets, every one killed by a defect of
-ours, so **no number about Ploid is claimed**. The seventh defect was found on
+Ploid, after **five** runs and five budgets, every one killed by a defect of
+ours or too small to claim, so **no number about Ploid is claimed**. The fifth
+arm scored 0 of 12 on both renderings; the informative part was that a
+name-only query left 11 of 12 unresolvable, while the documented `company`
+filter resolved 3 and returned the **anchor** on 2 of them. The seventh defect was found on
 the last $0.40: the anchor company tokens displace the person they were meant to
 disambiguate. Asking for `Michael Anzilotti Access National` returns two other
 people at that company; asking for `Michael Anzilotti` returns him at rank 1.
@@ -172,7 +175,7 @@ uv run python scripts/env_health.py --real
 Every measurement regenerates from the replay cache without an API key.
 Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
-**259 tests green.** Total spend to produce all of the above: **$29.96**.
+**260 tests green.** Total spend to produce all of the above: **$37.65**.
 
 ## Layout
 
@@ -184,7 +187,7 @@ Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
 | [`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md) · [`-EXPERTISE`](docs/PRE-REGISTRATION-EXPERTISE.md) | Frozen before `src/`, hashes published. Never edited. |
 | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) | The two formal retractions. Committed at W0, before any measurement. |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 39 entries, each with the counterfactual. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 40 entries, each with the counterfactual. |
 | [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 7 carried LIVE, 2 open, 1 bounded by a control tier. |
 | [`docs/BENCHMARK.md`](docs/BENCHMARK.md) · [`RUBRIC`](docs/RUBRIC.md) · [`COVERAGE`](docs/COVERAGE.md) | Results, the independent read (74/90 against a 78/90 self-score), and what this cannot see. |
 | [`docs/MARKET.md`](docs/MARKET.md) | Where an attestation layer would sell, with the case against it. |

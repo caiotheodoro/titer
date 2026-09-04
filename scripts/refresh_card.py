@@ -46,10 +46,23 @@ def live_spend() -> dict[str, float]:
     cache = ROOT / "data" / "replay.jsonl"
     if not cache.exists():
         return {}
+    # A cache key's first field is the ARM, and since E2 an arm is no longer a
+    # provider: four renderings of one provider are four arms. Arm-scoped keys
+    # are right (two renderings must never collide), but summing spend by them
+    # invented providers - the card listed "exa_A_name_only" and
+    # "ploid_B_company_filter" as if they were vendors. Attribution folds the
+    # arm back onto the provider it actually billed.
+    def provider_of(arm: str) -> str:
+        for known in ("exa", "ploid", "webfloor"):
+            if arm == known or arm.startswith(known + "_"):
+                return known
+        return arm
+
     out: dict[str, float] = {}
     for line in cache.open():
         e = json.loads(line)
-        out[e["provider"]] = round(out.get(e["provider"], 0.0) + e["spend_usd"], 4)
+        prov = provider_of(e["provider"])
+        out[prov] = round(out.get(prov, 0.0) + e["spend_usd"], 4)
     # Calls made through the adapter directly never reach the cache. Diagnostic
     # spend is still spend, and a card that reads only the cache under-reported
     # it by $1.40. See results/manual_spend.json.

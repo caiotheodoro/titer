@@ -170,3 +170,23 @@ class TestRealEnvBuilder:
         assert len(parts.observations) == len(parts.tasks)
         assert parts.model.fallback is not None
         assert 0.0 <= parts.model.fallback.p_correct <= 1.0
+
+
+def test_card_attributes_arm_spend_to_the_provider_that_billed_it():
+    """An arm is not a provider. Since E2, four renderings of one provider are
+    four arms, and summing the replay cache by its first key field invented
+    vendors: the card listed `exa_A_name_only` and `ploid_B_company_filter`
+    alongside real ones, splitting E2's spend across five fictions."""
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+    import refresh_card
+    src = open(refresh_card.__file__).read()
+    assert "provider_of" in src, "spend must be folded back onto the provider"
+    ns: dict = {}
+    exec(src[src.index("    def provider_of"):src.index("    out: dict[str, float]")]
+         .replace("    def provider_of", "def provider_of").replace("\n        ", "\n    "), ns)
+    f = ns["provider_of"]
+    assert f("exa_A_name_only") == "exa"
+    assert f("ploid_B_company_filter") == "ploid"
+    assert f("exa") == "exa" and f("webfloor") == "webfloor"

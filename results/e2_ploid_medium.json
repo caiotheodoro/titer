@@ -5,7 +5,7 @@
   "live_calls": {
     "ploid": 12
   },
-  "max_calls": 24,
+  "max_calls": 14,
   "requested_n": 12,
   "dry_run": false,
   "strategy": "random",
@@ -28,6 +28,75 @@
     "max_age_years": 10.0
   },
   "arms": {
+    "ploid_A_name_only": {
+      "n": 12,
+      "spend_usd": 2.4,
+      "outcomes": {
+        "CORRECT": 0,
+        "FALSE_MERGE": 0,
+        "UNSURE_WRONG": 0,
+        "MISS": 12,
+        "ABSTAIN": 0,
+        "STALE": 0
+      },
+      "accuracy": 0.0,
+      "correct": "0.0000 [0.0000, 0.2425] n=12",
+      "false_merge": "0.0000 [0.0000, 0.2425] n=12",
+      "stale": "0.0000 [0.0000, 0.2425] n=12",
+      "expected_loss": {
+        "recruiter": 1.0,
+        "gtm_outbound": 1.0,
+        "kyc_sanctions": 3.0,
+        "journalism": 1.0,
+        "expert_sourcing": 1.0
+      },
+      "mean_atoms": 0.0,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-365d",
+          "0.0000 [0.0000, 0.7935] n=1"
+        ],
+        [
+          "365-1095d",
+          "0.0000 [0.0000, 0.6576] n=2"
+        ],
+        [
+          "1095-2555d",
+          "0.0000 [0.0000, 0.6576] n=2"
+        ],
+        [
+          "2555-infd",
+          "0.0000 [0.0000, 0.3543] n=7"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 12,
+          "false_merge": 0
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "colliding_name_no_employer": 11,
+        "name_not_in_corpus": 1
+      }
+    },
     "ploid_B_company_filter": {
       "n": 12,
       "spend_usd": 1.6,
@@ -100,5 +169,15 @@
       }
     }
   },
-  "matched_n": 12
+  "matched_n": 12,
+  "paired_task_ids": 12,
+  "e2_paired": {
+    "ploid_A_name_only - ploid_B_company_filter": {
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "diff": "0.0000 [0.0000, 0.0000] n=12",
+      "separates": false
+    }
+  },
+  "e2_note": "D029: supported if C ~= A and D > B (the index cannot exploit history even when handed it); falsified if C > A. Per-stratum only - D027's pooling ban applies, and D032 makes any colliding sample case-control, so no rate here is a population rate."
 }
