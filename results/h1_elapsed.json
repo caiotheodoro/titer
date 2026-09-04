@@ -1,0 +1,127 @@
+{
+  "window": "2026-09",
+  "as_of": "2026-09-03",
+  "seed": 11,
+  "live_calls": {
+    "exa": 0
+  },
+  "max_calls": null,
+  "requested_n": 500,
+  "dry_run": true,
+  "strategy": "elapsed",
+  "strata": {
+    "0-90d": {
+      "available": 481,
+      "sampled": 100
+    },
+    "90-365d": {
+      "available": 2575,
+      "sampled": 100
+    },
+    "365-1095d": {
+      "available": 3405,
+      "sampled": 100
+    },
+    "1095-2555d": {
+      "available": 6798,
+      "sampled": 100
+    },
+    "2555-infd": {
+      "available": 9756,
+      "sampled": 100
+    }
+  },
+  "pooling_rule": "STRATIFIED: per-band rates only. A pooled marginal rate over this sample would misstate the population and must not be reported.",
+  "corpus": {
+    "rows_streamed": 4206080,
+    "people": 230405,
+    "tasks": 23015,
+    "retained_fraction": 0.09988932531846097,
+    "bands": {
+      "unique": 19818,
+      "medium": 759,
+      "low": 2283,
+      "high": 155
+    },
+    "min_gap_days": 180,
+    "require_last_employer": true,
+    "max_age_years": 10.0
+  },
+  "arms": {
+    "exa": {
+      "n": 500,
+      "spend_usd": 2.5,
+      "outcomes": {
+        "CORRECT": 185,
+        "FALSE_MERGE": 4,
+        "UNSURE_WRONG": 0,
+        "MISS": 236,
+        "ABSTAIN": 0,
+        "STALE": 75
+      },
+      "accuracy": 0.37,
+      "correct": "0.3700 [0.3288, 0.4132] n=500",
+      "false_merge": "0.0080 [0.0031, 0.0204] n=500",
+      "stale": "0.1500 [0.1214, 0.1840] n=500",
+      "expected_loss": {
+        "recruiter": 0.638,
+        "gtm_outbound": 0.812,
+        "kyc_sanctions": 2.566,
+        "journalism": 1.722,
+        "expert_sourcing": 1.972
+      },
+      "mean_atoms": 0.4526666666666666,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "0.2800 [0.2014, 0.3749] n=100"
+        ],
+        [
+          "90-365d",
+          "0.3800 [0.2910, 0.4779] n=100"
+        ],
+        [
+          "365-1095d",
+          "0.5700 [0.4722, 0.6627] n=100"
+        ],
+        [
+          "1095-2555d",
+          "0.3300 [0.2456, 0.4269] n=100"
+        ],
+        [
+          "2555-infd",
+          "0.2900 [0.2101, 0.3854] n=100"
+        ]
+      ],
+      "median_reflection_lag_days": 7360,
+      "by_band": {
+        "unique": {
+          "n": 440,
+          "false_merge": 2
+        },
+        "low": {
+          "n": 44,
+          "false_merge": 1
+        },
+        "medium": {
+          "n": 16,
+          "false_merge": 1
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "employer_matches_no_candidate": 5,
+        "narrowed_by_anchor": 6,
+        "colliding_name_no_employer": 26,
+        "still_ambiguous_after_employer": 1,
+        "unique_name": 418,
+        "narrowed_by_employer": 25,
+        "name_not_in_corpus": 19
+      }
+    }
+  },
+  "matched_n": 500
+}

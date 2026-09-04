@@ -90,8 +90,16 @@ def pava(observations: Sequence[tuple[int, bool]]) -> ReflectionCurve:
     return ReflectionCurve(steps, n=len(pts))
 
 
+#: Default reporting edges. **These must match the sampling strata**, or
+#: stratification is undone at reporting time: an H1 run that put 100
+#: observations into each of five sampling bins re-binned into these edges and
+#: reported n = 100, 64, 36, 46, 254 - reintroducing exactly the concentration
+#: the stratification existed to prevent.
+DEFAULT_EDGES = (0, 90, 365, 1095, 2555, 10**9)
+
+
 def binned_rates(observations: Sequence[tuple[int, bool]],
-                 edges: Sequence[int] = (0, 30, 90, 180, 365, 730, 10_000)
+                 edges: Sequence[int] = DEFAULT_EDGES
                  ) -> list[tuple[str, Interval]]:
     """Reflection rate per elapsed-time bucket, each with a Wilson interval.
 
@@ -101,6 +109,6 @@ def binned_rates(observations: Sequence[tuple[int, bool]],
     out = []
     for lo, hi in zip(edges, edges[1:]):
         sel = [hit for d, hit in observations if lo <= d < hi]
-        label = f"{lo}-{hi if hi < 10_000 else 'inf'}d"
+        label = f"{lo}-{hi if hi < 10**8 else 'inf'}d"
         out.append((label, wilson(sum(sel), len(sel))))
     return out

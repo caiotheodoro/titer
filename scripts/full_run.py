@@ -115,7 +115,8 @@ def main() -> int:
                     help="hard cap on LIVE calls per provider. The ledger caps "
                          "dollars; this caps credits, which is what a grant is "
                          "denominated in. Cached replays do not count.")
-    ap.add_argument("--strategy", choices=("random", "stratified"), default="random",
+    ap.add_argument("--strategy", choices=("random", "stratified", "elapsed"),
+                    default="random",
                     help="random for R1 (a claim about the population); "
                          "stratified for R2 (colliding names are 15%% of movers "
                          "and simple random sampling finds almost none)")
@@ -126,10 +127,32 @@ def main() -> int:
     index, issuer_index = load_indices()
     print(f"  {len(tasks):,} tasks; bands {band_distribution(tasks)}")
 
+    as_of = date.today()
     rng = random.Random(args.seed)
     if args.strategy == "random":
         sample = rng.sample(tasks, min(args.n, len(tasks)))
         strata = None
+    elif args.strategy == "elapsed":
+        # H1 needs observations spread across elapsed time. A random draw put
+        # 272 of 299 into the >730d bin, leaving three of five bins with ten
+        # observations or fewer and no curve to fit. Same failure as D027 on a
+        # different axis. Equal allocation per bin fixes it.
+        EDGES = [(0, 90), (90, 365), (365, 1095), (1095, 2555), (2555, 10**9)]
+        by_bin: dict[str, list] = {}
+        for t_ in tasks:
+            el = t_.elapsed_days(as_of)
+            for lo, hi in EDGES:
+                if lo <= el < hi:
+                    by_bin.setdefault(f"{lo}-{hi if hi < 10**8 else 'inf'}d",
+                                      []).append(t_)
+                    break
+        per = max(1, args.n // max(len(by_bin), 1))
+        sample, strata = [], {}
+        for b in sorted(by_bin, key=lambda k: int(k.split("-")[0])):
+            pick = rng.sample(by_bin[b], min(per, len(by_bin[b])))
+            strata[b] = {"available": len(by_bin[b]), "sampled": len(pick)}
+            sample.extend(pick)
+        rng.shuffle(sample)
     else:
         # Equal allocation across bands, so the hard cells are actually
         # populated. Strata are reported SEPARATELY and never pooled into a
@@ -151,7 +174,6 @@ def main() -> int:
         print(f"  strata: {strata}")
 
     window = datetime.now().strftime("%Y-%m")
-    as_of = date.today()
     cache = ReplayCache(ROOT / "data" / "replay.jsonl")
     arms = build_arms(args.spend, {a.strip() for a in args.providers.split(',')})
     ledgers = {k: Ledger(args.budget_usd) for k in arms}

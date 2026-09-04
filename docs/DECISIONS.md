@@ -1237,3 +1237,59 @@ stratified runs and will carry it here.
 **What would have been reported otherwise.** A false-merge-under-collision rate
 computed over 1,241 accidentally-colliding authors, presented as if collision
 were 6% of researchers. The real figure is unknown and larger.
+
+---
+
+## D033 - H1's monotonicity assumption is falsified; the isotonic estimator is withdrawn (2026-09-03)
+
+**D023 replaced Kaplan-Meier with isotonic regression, arguing that monotonicity
+was "the single structural assumption we are willing to make: an index that has
+reflected a change does not un-reflect it." Measured, that assumption is false.**
+
+Reflection rate by elapsed time since the filing became public, n=100 per bin,
+sampling strata and reporting bins aligned:
+
+| Elapsed | Reflected |
+|---|---|
+| 0-90d | 0.2800 [0.2014, 0.3749] |
+| 90-365d | 0.3800 [0.2910, 0.4779] |
+| **365-1095d** | **0.5700 [0.4722, 0.6627]** |
+| 1095-2555d | 0.3300 [0.2456, 0.4269] |
+| 2555-inf | 0.2900 [0.2101, 0.3854] |
+
+An inverted U. Reflection roughly doubles over three years and then falls back
+to its starting level. The 0-90d and 365-1095d intervals do not overlap, so the
+rise is real; the 365-1095d and 2555+ intervals do not overlap either, so the
+fall is real.
+
+**Consequences.**
+
+1. **The isotonic estimator is withdrawn for H1.** PAVA pools violators to force
+   monotonicity, so on this data it produced a "median reflection lag" of 7,360
+   days - an artefact of forcing a shape the data does not have. **That number
+   is not reported.** Binned rates with Wilson intervals are reported instead;
+   they assume nothing about shape.
+2. **H1's falsification condition is not met.** The pre-registration said H1 is
+   falsified if reflection is flat in elapsed time. It is not flat. But the
+   "half-life" framing the hypothesis was built on does not apply to a
+   non-monotone curve, so H1 is neither confirmed nor falsified as written - it
+   is **mis-specified**, and that is the honest verdict.
+
+**The most likely explanation is our oracle, not the index.** For an old filing,
+the person's last SEC-attested employer is increasingly likely to be stale
+*relative to reality*: executives leave public-company roles and SEC stops being
+able to see them. A provider correctly reporting where they are **now** is then
+scored wrong by us. Under that reading the rise to three years is genuine index
+catch-up and the fall afterwards is **oracle decay** - the ground truth ageing
+out, not the index regressing.
+
+That is a hypothesis, not a finding. The experiment that distinguishes them is
+E4: run the same instrument over the scholarly population, whose oracle
+(OpenAlex affiliations) tracks people after they leave public companies. If the
+scholarly curve is monotone where the EDGAR curve is not, the inverted U is
+ours.
+
+**What would have been reported under D023 as written.** A median reflection lag
+of 7,360 days - roughly twenty years - presented as a staleness half-life. It
+would have been nonsense, and it would have looked like a devastating finding
+about the provider.
