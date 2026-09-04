@@ -49,6 +49,24 @@ Corollary: check the provider's documented request shape against what the
 adapter actually sends. Ploid documents structured `filters`; we were putting
 the company in the free text.
 
+## Publishing to the Hub
+
+`hf upload` re-attempts `repos/create` on every call and gets **402 Payment
+Required** even for a **static** Space, which HF documents as free. D016
+anticipated the 402 from assay's experience and was right about the wall,
+wrong about the cause - it is not the SDK, it is the redundant create.
+
+Use the Python path against an already-created repo:
+
+```python
+from huggingface_hub import HfApi
+HfApi().upload_folder(folder_path="space", repo_id="<user>/<name>",
+                      repo_type="space", commit_message="...")
+```
+
+`short_description` in a Space README is capped at **60 characters** and the
+upload fails validation, not silently.
+
 ## Budget ledger
 
 | Item | Value | Source |
