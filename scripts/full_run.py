@@ -115,6 +115,11 @@ def main() -> int:
                     help="hard cap on LIVE calls per provider. The ledger caps "
                          "dollars; this caps credits, which is what a grant is "
                          "denominated in. Cached replays do not count.")
+    ap.add_argument("--band", default=None,
+                    choices=("unique", "low", "medium", "high"),
+                    help="restrict the draw to ONE collision band. A single-"
+                         "stratum claim is what the D027 pooling ban permits; "
+                         "a pooled rate over a small multi-band draw is not.")
     ap.add_argument("--strategy", choices=("random", "stratified", "elapsed"),
                     default="random",
                     help="random for R1 (a claim about the population); "
@@ -126,6 +131,9 @@ def main() -> int:
     tasks = load_tasks()
     index, issuer_index = load_indices()
     print(f"  {len(tasks):,} tasks; bands {band_distribution(tasks)}")
+    if args.band:
+        tasks = [t_ for t_ in tasks if t_.collision_band == args.band]
+        print(f"  restricted to band={args.band}: {len(tasks):,} tasks")
 
     as_of = date.today()
     rng = random.Random(args.seed)

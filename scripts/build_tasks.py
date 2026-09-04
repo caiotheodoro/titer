@@ -20,9 +20,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from titer.corpus.collision import band  # noqa: E402
-from titer.corpus.name_norm import (normalize, normalize_company,  # noqa: E402
-                                    normalize_presented)
+from titer.corpus.collision import band
+from titer.corpus.name_norm import (
+    is_entity_name,
+    normalize,
+    normalize_company,
+    normalize_presented,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 CORPUS = ROOT / "data" / "corpus.jsonl"
@@ -74,6 +78,7 @@ def main() -> int:
     print(f"streamed {n:,} rows, {len(hist):,} people", flush=True)
 
     written = 0
+    excluded_entity = 0
     bands: collections.Counter = collections.Counter()
     with OUT.open("w") as out:
         for cik, rows in hist.items():
@@ -98,6 +103,10 @@ def main() -> int:
             if args.max_age_years is not None and age_days > args.max_age_years * 365.25:
                 continue
             raw = names[cik]
+            # A Section 16 filer is not always a human. See name_norm.ENTITY_NAME.
+            if is_entity_name(raw):
+                excluded_entity += 1
+                continue
             deg = len(by_presented.get(normalize_presented(raw), ()))
             strict = len(by_strict.get(normalize(raw), ()))
             bands[band(deg)] += 1
@@ -131,6 +140,7 @@ def main() -> int:
              "retained_fraction": written / len(hist), "bands": dict(bands),
              "min_gap_days": args.min_gap_days,
              "require_last_employer": args.require_last_employer,
+             "excluded_entity_filers": excluded_entity,
              "max_age_years": args.max_age_years}
     (ROOT / "results" / "task_stats.json").write_text(json.dumps(stats, indent=2) + "\n")
     print(json.dumps(stats, indent=2))

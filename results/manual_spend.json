@@ -1,0 +1,14 @@
+{
+  "why": "Money spent through the adapter directly, outside the replay-cached run path, and therefore invisible to refresh_card.live_spend(). A card generated from the cache under-reported real spend by $1.40 until this file existed. Diagnostic calls are still spend.",
+  "recorded": "2026-09-04",
+  "entries": [
+    {"provider": "ploid", "usd": 0.20, "calls": 1,
+     "what": "R001 pilot: one task on the wire, rows read verbatim. Found C3 (entity filers) and C4 (the word 'formerly' matched as search text)."},
+    {"provider": "ploid", "usd": 0.40, "calls": 2,
+     "what": "A/B of name-only versus name-plus-anchor rendering, on one task."},
+    {"provider": "ploid", "usd": 0.40, "calls": 2,
+     "what": "Two confirmations of the corrected render. The second found C6, that middle names suppress the match."},
+    {"provider": "ploid", "usd": 0.40, "calls": 2,
+     "what": "Name-only ablation that proved C7: anchor tokens displace the target person."}
+  ]
+}

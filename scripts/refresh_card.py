@@ -50,6 +50,13 @@ def live_spend() -> dict[str, float]:
     for line in cache.open():
         e = json.loads(line)
         out[e["provider"]] = round(out.get(e["provider"], 0.0) + e["spend_usd"], 4)
+    # Calls made through the adapter directly never reach the cache. Diagnostic
+    # spend is still spend, and a card that reads only the cache under-reported
+    # it by $1.40. See results/manual_spend.json.
+    manual = ROOT / "results" / "manual_spend.json"
+    if manual.exists():
+        for e in json.loads(manual.read_text())["entries"]:
+            out[e["provider"]] = round(out.get(e["provider"], 0.0) + e["usd"], 4)
     return out
 
 

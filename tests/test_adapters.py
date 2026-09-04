@@ -232,12 +232,35 @@ def test_ploid_render_never_filters_on_the_anchor_employer():
 
 
 def test_ploid_render_carries_the_anchor_as_context_not_a_constraint():
-    """The anchor still has to disambiguate the person; it just must not
-    constrain the answer."""
+    """The anchor disambiguates the person and must not constrain the answer.
+
+    "formerly" was removed after one live call showed the index matching the
+    word itself against company-history text: querying "Kelly Nima, formerly at
+    GoDaddy" returned a geodesist at "NGA formerly NIMA" and a manager at
+    "PERSOL (formerly known as Kelly Services)". See docs/DECISIONS.md D035.
+    """
     q = Ploid.render(_fake_task())["query"]
     assert "George Reyes" in q          # SEC files "REYES GEORGE"
     assert "Google" in q                # registrant suffix stripped
-    assert "formerly" in q              # framed as past, not current
+    assert "formerly" not in q          # matched as search text, not as framing
+    assert "Gen Digital" not in q       # the scored fact stays withheld
+
+
+def test_ploid_render_sends_the_name_in_human_order():
+    """53.4% of the task set went out in the wrong order.
+
+    `normalize_presented` SORTS its tokens, which is right for a collision key
+    and wrong for a query. It reproduces given-name-first order only when the
+    given name sorts before the surname, so "REYES GEORGE" -> "George Reyes"
+    was correct by luck and was the only example anyone checked.
+    """
+    from titer.corpus.name_norm import presented_query_name
+    assert presented_query_name("Kelly Nima") == "Nima Kelly"
+    assert presented_query_name("EDWARDS JEFFREY L") == "Jeffrey Edwards"
+    assert presented_query_name("Van Dask Kristin Lea") == "Kristin Van Dask"
+    assert presented_query_name("THOMPSON JACK EDWARD") == "Jack Thompson"
+    assert presented_query_name("De La Cruz Maria") == "Maria De La Cruz"
+    assert presented_query_name("REYES GEORGE") == "George Reyes"
 
 
 def test_prompt_asks_what_a_current_state_index_can_answer():

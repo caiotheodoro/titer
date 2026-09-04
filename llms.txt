@@ -26,7 +26,7 @@ supports a claim about the category.
 - [METHOD](docs/METHOD.md): why a filing and not a judge; why cost and not
   accuracy; where a model is allowed to act.
 - [ARCHITECTURE](docs/ARCHITECTURE.md): modules and seams.
-- [DECISIONS](docs/DECISIONS.md): append-only decision log, D001-D034.
+- [DECISIONS](docs/DECISIONS.md): append-only decision log, D001-D035.
 
 ## Honesty surface
 

@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Protocol
 
 from titer.adapters.base import Call, RawAnswer, Spend
+from titer.corpus.name_norm import presented_query_name
 
 Transport = Callable[[str, str, dict], dict]  # (method, url, payload) -> json
 
@@ -76,12 +77,31 @@ class Ploid:
         The facts disclosed are unchanged: person name plus the anchor employer.
         The scored fact - the employer at the target date - is still withheld.
         """
-        # The anchor is CONTEXT, never a filter. Ploid's company filter selects
-        # people currently at that company, so filtering on the anchor
-        # guarantees the anchor comes back - and the anchor is exactly what we
-        # score as STALE. See docs/DECISIONS.md D028 C1.
-        return {"query": f"{_presented_name(task.person_name_raw)}, "
-                         f"formerly at {_company_for_filter(task.anchor_issuer_name)}"}
+        # The anchor is not sent at all. Two defects, both found by putting one
+        # task on the wire and reading the rows (docs/DECISIONS.md D035):
+        #
+        # C1 (D028): the `company` filter selects people CURRENTLY there, so
+        #   filtering on the anchor guarantees the anchor comes back, and the
+        #   anchor is exactly what we score as STALE.
+        # C3: the free-text replacement, "<name>, formerly at <company>", is
+        #   matched semantically. The literal word "formerly" hits company
+        #   history text in the index. Querying "Kelly Nima, formerly at
+        #   GoDaddy" returned a geodesist at "NGA formerly NIMA", a solicitor
+        #   at "Kelly & Co (formerly Michael F Kelly Solicitor)", and a manager
+        #   at "PERSOL (formerly known as Kelly Services)". Not one row was a
+        #   person; every one matched the scaffolding of our own query.
+        #
+        # The anchor employer IS still disclosed, as bare tokens, because every
+        # arm must disclose the same facts (CONTRACTS 4.2) and dropping it for
+        # one arm unmatches the comparison. Verified live on the same task:
+        # bare tokens put the right person at rank 1, where the "formerly"
+        # phrasing returned five wrong people.
+        #
+        # C4: the surname is not always token 0. EDGAR files "Van Dask Kristin
+        # Lea", and taking one token as the surname yields "Dask Kristin Lea
+        # Van". See name_norm.presented_query_name.
+        return {"query": f"{presented_query_name(task.person_name_raw)} "
+                         f"{_company_for_filter(task.anchor_issuer_name)}".strip()}
 
     def query(self, action: str, prompt, **kw) -> tuple[list[RawAnswer], Spend]:
         if self.transport is None:

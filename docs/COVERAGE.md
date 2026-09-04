@@ -75,6 +75,15 @@ applied quietly.
 | ...who actually moved employer | 46,332 (20.1%) | D022: the query fact and the scored fact must differ |
 | ...whose target is their LAST employer | 30,607 (13.3%) | D028 C2: a people index returns a CURRENT employer |
 | ...last attested within 5 years | **16,896 (7.3%)** | the corpus cannot see moves it never recorded |
+| ...who are natural persons | minus 1.82% | D035 C3: ten-percent owners are routinely funds and LLCs |
+
+The last row is a fifth narrowing, added 2026-09-04. Measured on the 10-year
+variant of the population, **419 of 23,015 tasks (1.82%) named an organisation**
+rather than a human: `LGP Associates V LLC`, `Permira V L.P.`, `ARMISTICE
+CAPITAL, LLC`. A people index cannot return a current employer for a limited
+partnership, so each was a guaranteed `MISS` that reads as a coverage failure.
+Three landed in a 40-task draw, which is **7.5 points of fabricated error rate**
+in an arm whose headline was 0/21.
 
 **7.3% of the corpus is usable.** A reader should hold that against every rate
 this instrument reports: the population measured is US public-company officers

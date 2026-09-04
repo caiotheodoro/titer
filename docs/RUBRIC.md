@@ -65,5 +65,7 @@ read had not caught. A third, `gate_no_placeholders`, was later widened to
 > category.
 
 That is the honest description of this work. It measured one provider at
-n=1,000 across four strata and produced one surviving number. What it
+n=1,000 across four strata and produced one surviving number; a second
+provider consumed four budgets and produced seven harness defects and no
+measurement. What it
 demonstrates well is a process for not publishing the other five.

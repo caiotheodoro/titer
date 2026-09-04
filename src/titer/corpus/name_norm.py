@@ -108,3 +108,74 @@ def normalize_presented(name_raw: str | None) -> str:
     canon = _WS.sub(" ", _PUNCT.sub(" ", _TIGHT.sub("", name_raw))).strip().lower()
     tokens = [t for t in canon.split() if len(t) > 1 and t not in _SUFFIXES]
     return " ".join(sorted(tokens))
+
+
+# Section 16 reporting owners are not all humans. Ten-percent owners are
+# routinely funds, LLCs and partnerships, and 419 of the 23,015 built tasks
+# (1.82%) name one. A people-search index cannot return a current employer for
+# "Permira V L.P.", so every such task is a guaranteed MISS that looks exactly
+# like a damning finding about the provider's coverage. Three of the 40 tasks in
+# the seed-11 draw were entities: 7.5 points of fabricated error rate.
+#
+# Caught by running one task through the wire and reading it before spending,
+# which is the rule docs/RETRACTIONS.md R001 established after the same class of
+# defect cost an entire budget.
+#
+# Matching is deliberately conservative. Bare HOLDING, TRUST, BANKS, CHURCH and
+# PARISH are NOT markers: "HOLDING FRANK B JR" and "TRUST MARTIN" are real
+# filers with those surnames, and excluding them would trade a false finding
+# about a vendor for a silent narrowing of the population.
+ENTITY_NAME = re.compile(
+    r"(\b(L\.?L\.?C|L\.?L\.?P|L\.?P|PLC|GMBH|N\.?V|S\.?A|S\.?A\.?R\.?L|PTE|PTY|AB|AG|BV|SARL)\b\.?"
+    r"|\b(INC|INCORPORATED|CORP|CORPORATION|LTD|LIMITED|COMPANY|CO)\b\.?\s*$"
+    r"|\b(PARTNERS|PARTNERSHIP|HOLDINGS|VENTURES?|ADVISORS?|ADVISERS?|MANAGEMENT|"
+    r"CAPITAL|ASSOCIATES|BANCORP|FOUNDATION|PORTFOLIOS?|OFFSHORE)\b)", re.IGNORECASE)
+
+
+def is_entity_name(name_raw: str | None) -> bool:
+    """True when a Section 16 filer name is an organisation, not a person."""
+    return bool(name_raw and ENTITY_NAME.search(name_raw))
+
+
+_NAME_PARTICLES = frozenset({
+    "van", "von", "de", "del", "della", "der", "den", "di", "da", "das", "dos",
+    "du", "la", "le", "les", "mac", "mc", "st", "ter", "ten", "bin", "ibn",
+    "af", "al", "abu", "op", "ver", "vander", "vanden",
+})
+
+
+def presented_query_name(name_raw: str | None) -> str:
+    """The name in the order a person actually writes it: "Nima Kelly".
+
+    Distinct from `normalize_presented`, which SORTS its tokens. Sorting is
+    right for a collision key, where "REYES GEORGE" and "George Reyes" must
+    land on one bucket regardless of order. It is wrong for a provider query,
+    and it was silently wrong for **53.4% of the task set**: the sort happens
+    to reproduce given-name-first order only when the given name sorts before
+    the surname. "REYES GEORGE" -> "George Reyes" is correct by luck (G < R),
+    and it is the single example the docstring carried.
+
+    EDGAR conformed names are LAST FIRST MIDDLE, so the surname is token 0.
+    """
+    if not name_raw:
+        return ""
+    canon = _WS.sub(" ", _PUNCT.sub(" ", _TIGHT.sub("", name_raw))).strip().lower()
+    tokens = [t for t in canon.split() if len(t) > 1 and t not in _SUFFIXES]
+    if len(tokens) < 2:
+        return " ".join(w.capitalize() for w in tokens)
+    # A surname is not always one token. EDGAR files "Van Dask Kristin Lea";
+    # taking token 0 as the whole surname yields "Dask Kristin Lea Van". A
+    # leading particle absorbs the token after it.
+    cut = 0
+    while cut < len(tokens) - 1 and tokens[cut] in _NAME_PARTICLES:
+        cut += 1
+    cut = min(cut + 1, len(tokens) - 1)
+    surname, given = tokens[:cut], tokens[cut:]
+    # Middle tokens are dropped, for the reason `normalize_presented` already
+    # gives above: SEC filings carry them and a person searching for someone
+    # does not. Verified live - "Kristin Lea Van Dask Prospect Capital" returns
+    # no Van Dask at all, while the same query without the middle name returns
+    # her. This is the corpus's own documented difficulty model applied to the
+    # query, not a knob turned until the number improved.
+    given = given[:1]
+    return " ".join(w.capitalize() for w in given + surname)

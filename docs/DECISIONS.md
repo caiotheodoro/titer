@@ -1345,3 +1345,132 @@ fully open, leaving the entire headline explicable as prompt interpretation.
 
 Cost: $2.50. It resolved a LIVE red-team attack and corrected a published
 falsification, which is the best value per dollar in this project.
+
+---
+
+## D035 - Four more harness defects, found by one pilot call before the budget (2026-09-04)
+
+A $5 Ploid top-up arrived. R001's rule is that before spending a budget on an
+arm, one task goes through it and the returned rows are read verbatim. That
+single call, plus two follow-ups, found **four defects**. None is about Ploid.
+
+### C3 - A Section 16 filer is not always a human
+
+The first task drawn was `LGP Associates V LLC`. Ten-percent owners are
+routinely funds and partnerships: **419 of the 23,015 built tasks (1.82%)** name
+an organisation. A people index cannot return a current employer for
+`Permira V L.P.`, so each is a guaranteed `MISS` that reads as a coverage
+failure. **Three of the 40 tasks in the seed-11 draw were entities: 7.5 points
+of fabricated error rate**, in an arm whose earlier runs reported 0/21.
+
+Now excluded mechanically by `name_norm.is_entity_name`, rate published in
+`results/task_stats.json`. The rule is deliberately conservative: bare
+`HOLDING`, `TRUST`, `BANKS` and `CHURCH` are not markers, because
+`HOLDING FRANK B JR` and `TRUST MARTIN` are real filers with those surnames.
+Excluding them would trade a false finding about a vendor for a silent
+narrowing of the population.
+
+### C4 - The word "formerly" was matched as search text
+
+D028 replaced the company filter with free-text context: `"<name>, formerly at
+<company>"`. Querying `"Kelly Nima, formerly at GoDaddy"` returned a geodesist
+at *"NGA formerly NIMA"*, a solicitor at *"Kelly & Co (formerly Michael F Kelly
+Solicitor)"*, and a manager at *"PERSOL (formerly known as Kelly Services)"*.
+
+Not one row was a person we asked about. Every one matched the **scaffolding of
+our own query** against company-history text in the index. The anchor is still
+disclosed, as bare tokens, because every arm must disclose the same facts; on
+the same task, bare tokens put the right person at rank 1.
+
+### C5 - 53.4% of names went out in the wrong order
+
+`_presented_name` called `normalize_presented`, which **sorts its tokens**.
+Sorting is correct for a collision key, where `REYES GEORGE` and `George Reyes`
+must land in one bucket. It is wrong for a query, and it reproduces
+given-name-first order only when the given name sorts before the surname.
+`REYES GEORGE -> George Reyes` is correct **by luck** (G < R), and it was the
+only example the docstring carried. `Kelly Nima` went out as `Kelly Nima`;
+`EDWARDS JEFFREY L` as `edwards jeffrey`.
+
+Measured over the task set: **12,066 of 22,596 names (53.4%)** were presented in
+an order no person writes. Fixed by `name_norm.presented_query_name`, which is
+kept separate from the collision key rather than changing it.
+
+### C6 - The surname is not always token 0
+
+EDGAR files `Van Dask Kristin Lea`. Taking one token as the surname yields
+`Dask Kristin Lea Van`. A leading particle now absorbs what follows it
+(`van`, `de la`, `mc`, `st`): 144 names, 0.64%. Middle tokens are dropped for
+the reason `normalize_presented` already documents - filings carry them, people
+searching do not. Verified live: `"Kristin Lea Van Dask Prospect Capital"`
+returns no Van Dask at all; without the middle name she is rank 1.
+
+### What this says about the arm
+
+Three earlier runs, three defects, zero findings. A fourth budget, four more
+defects, all in the same class: **the harness was measured, not the vendor.**
+Every one was caught by reading returned rows, and every one would have produced
+a publishable-looking number about a commercial product.
+
+`docs/SURVEY.md` records the same provider at 42.4% and 78% in two published
+comparisons with no methodology. Seven defects across four budgets is what that
+gap is made of, and it is the reason this repository's headline is a ratio
+rather than a leaderboard.
+
+**Counterfactual.** Without the pilot rule, the $5 would have bought 25 calls
+through a harness that sent half the names backwards, poisoned its own
+retrieval, and asked a people index about limited partnerships. The result
+would have been another 0/n, and this time there would have been no credits
+left to find out why.
+
+### C7 - The anchor tokens displace the person they were meant to disambiguate
+
+The corrected render sent `"<given> <surname> <anchor company>"`. On 6 of the 18
+scored tasks the returned rows were people **at the anchor company with the
+wrong name**: asking for `Michael Anzilotti Access National` returned Libby Fike
+and Byron Schulze at *virginia commerce bancorp inc*.
+
+Settled by ablation on the last $0.40. `{"query": "Michael Anzilotti"}` returns
+**Michael Anzilotti at rank 1**. The company tokens do not disambiguate the
+name; they compete with it, and sometimes win.
+
+This is C4 wearing different clothes. Removing the word "formerly" removed the
+phrasing that matched company-history text, and left a bag of company tokens
+that matches company text directly. A free-text people search has no way to
+express "this person, who used to be here" - the surface takes one string and
+ranks against all of it.
+
+### Outcome of the fourth budget
+
+**The run is void, and no number about Ploid is claimed. Again.**
+
+`results/ploid_v4.json` records 0 correct of 18 (band `unique`, seed 23,
+$3.60). It is not reportable: C7 was live during it, proven on a task inside
+the run. The record is kept because a void run with a known cause is evidence,
+and because deleting it would leave the fourth 0/n looking like the first three.
+
+What the rows do show, and what they do not:
+
+- The queried name appeared in the top 3 on **12 of 18** tasks, attached to a
+  different individual. "Randall Stephenson" returns a Las Vegas police officer
+  and a Methodist church volunteer; the Walmart director is not among them.
+- That is **suggestive and unclaimable**. Six of the eighteen were contaminated
+  by C7, and the two clean name-only ablations are an anecdote, not a rate.
+
+**What it would cost to know**, per the pre-registered power rule, at `p = 0.15`:
+
+| half-width | n | search-tier cost |
+|---|---|---|
+| ±0.10 | 49 | $9.80 |
+| ±0.05 | 196 | $39.20 |
+
+The measured cost is **$0.20 per search**, twice Ploid's published $0.10-per-10-
+matches, because a live call reports `meta.credits_charged = 1` at $0.20/ACU.
+Publishing that number is the pre-registered `cannot_separate` branch doing its
+job: this budget could not separate anything, and the `n` that would is now on
+the record.
+
+**Four budgets, seven defects, zero findings about a vendor.** Every defect was
+found by reading returned rows; not one was visible in a summary statistic. The
+instrument is now materially better and the vendor remains unmeasured, which is
+an honest description of where four budgets went.
