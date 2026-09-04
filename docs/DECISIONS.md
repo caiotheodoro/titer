@@ -1293,3 +1293,55 @@ ours.
 of 7,360 days - roughly twenty years - presented as a staleness half-life. It
 would have been nonsense, and it would have looked like a devastating finding
 about the provider.
+
+---
+
+## D034 - The control tier: the axis exists, and it has a floor (2026-09-04)
+
+**Partially reverses D031's falsification.** D031's NEAR and FAR tiers did not
+separate, and the confirmatory run reported the difficulty axis as unsupported.
+That was true of those two tiers and wrong as a general claim.
+
+A third tier, `FAR_DOMAIN`, was added as an explicit **control** rather than a
+difficulty step: a topic from a wholly different OpenAlex domain. An
+immunologist asked about multiferroics; a dermatologic oncologist asked about
+aquatic ecosystems; an organometallic chemist asked about historical studies on
+Spain. n=250, verified zero-works, catch-alls excluded.
+
+| Tier | False affirmation |
+|---|---|
+| NEAR — adjacent subfield | 0.1680 [0.1268, 0.2193] |
+| FAR — adjacent field | 0.1320 [0.0956, 0.1796] |
+| **CONTROL — different domain** | **0.0840 [0.0556, 0.1250]** |
+
+Matched `ATTESTED` arm on the same 250 authors: 0.9840 [0.9596, 0.9938].
+
+**Two findings, and the second is the one that matters.**
+
+1. **The axis exists.** NEAR is exactly **2.00x** the control and the intervals
+   do not overlap. Topic distance changes the rate. D031's tiers were too close
+   together to resolve it, not wrong in principle. FAR still does not separate
+   from the control, so the gradient is only visible at the extremes.
+
+2. **The control is not zero.** 21 of 250 unambiguously absurd claims were
+   affirmed - **one in twelve**. There is a floor of affirmation that topic
+   distance does not remove.
+
+**Why the floor matters more than the gradient.** `docs/RED-TEAM.md` A12 is the
+strongest live attack on this project's headline: that the 13-17% on adjacent
+topics may be a *defensible reading* of a vague question rather than an error,
+since a provider might reasonably answer "does X work near T". That defence
+cannot apply here. No reading of "published research expertise in historical
+studies on Spain" applies to an organometallic chemist.
+
+So A12 is now **bounded rather than open**: at least **8.4 percentage points**
+of the 16.8% is genuine error. Interpretation can account for at most the
+difference, roughly 8pp, not the whole rate.
+
+**What would have been reported without this tier.** "Negative difficulty does
+not detectably change the false-affirmation rate" - which is what the previous
+BENCHMARK said, and which is wrong at the extremes. And A12 would have stayed
+fully open, leaving the entire headline explicable as prompt interpretation.
+
+Cost: $2.50. It resolved a LIVE red-team attack and corrected a published
+falsification, which is the best value per dollar in this project.

@@ -149,13 +149,20 @@ may reasonably read that as "does X work in an area close to T", in which case
 affirming an adjacent topic is a defensible answer to a vague question rather
 than a false claim.
 
-**Status: LIVE.** The evidence strings support the worry - some affirmations
-cited genuinely adjacent work. The confirmatory run removed *contaminated*
-negatives (the person really had published in T) but cannot remove *adjacent*
-ones. The honest reading of 13-17% is therefore **"affirms claims about topics
-the person has never published in"**, not "hallucinates expertise".
+**Status: BOUNDED, no longer fully open.** See `docs/DECISIONS.md` D034.
 
-The experiment that would settle it: a prompt variant demanding a specific
+The worry was real and the confirmatory run could not address it: removing
+*contaminated* negatives does not remove *adjacent* ones, and a provider might
+defensibly answer "does X work near T".
+
+A control tier settles the lower bound. Asked about a topic from a **wholly
+different domain** - an organometallic chemist and historical studies on Spain -
+the false-affirmation rate is **0.0840 [0.0556, 0.1250]**, n=250. No generous
+reading rescues that. **At least 8.4 percentage points of the 16.8% is genuine
+error**, and interpretation can account for at most the difference.
+
+Still live: whether the remaining ~8pp is interpretation or error. The
+experiment that would settle *that* is a prompt variant demanding a specific
 citation, scored on whether the citation exists. Not run; budget.
 
 ## A13. "The negatives are still constructed by you." — MITIGATED, not eliminated

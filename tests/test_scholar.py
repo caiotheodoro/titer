@@ -205,3 +205,27 @@ def test_unverified_construction_is_still_possible_but_must_be_explicit():
     from titer.corpus import scholar
     src = inspect.getsource(scholar.adjacent_false_topic)
     assert "verify" in src and "top-n" in src.lower()
+
+
+def test_far_domain_is_a_wholly_different_domain(topics, immunologist):
+    """The CONTROL tier. NEAR and FAR did not separate, which leaves two
+    readings: the tiers were too close, or topic distance does not matter at
+    all. Only an obviously absurd negative distinguishes them."""
+    from titer.corpus.scholar import FAR_DOMAIN
+    got = adjacent_false_topic(immunologist, topics, random.Random(11), FAR_DOMAIN,
+                               verify=lambda a, t: 0)
+    assert got is not None
+    topic, tier = got
+    assert tier == FAR_DOMAIN
+    assert topic.domain not in immunologist.domains
+    assert topic.id == "T5"          # Mathematics / Physical, the only one
+
+
+def test_far_domain_does_not_silently_fall_back(immunologist):
+    """A control that quietly degrades into an adjacent tier measures the wrong
+    thing and would look like a result."""
+    from titer.corpus.scholar import FAR_DOMAIN
+    same_domain_only = {"T7": _t("T7", "Microbial ecology", "Microbiology",
+                                 "Immunology and Microbiology", "Life")}
+    assert adjacent_false_topic(immunologist, same_domain_only, random.Random(1),
+                                FAR_DOMAIN, verify=lambda a, t: 0) is None

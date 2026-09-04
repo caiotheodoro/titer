@@ -23,9 +23,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from titer.corpus.name_norm import normalize_presented  # noqa: E402
-from titer.corpus.scholar import (FAR, NEAR, AttestedTopic,  # noqa: E402
-                                  Author, adjacent_false_topic, fetch_topics,
-                                  has_works_in_topic, user_agent)
+from titer.corpus.scholar import (FAR, FAR_DOMAIN, NEAR,  # noqa: E402
+                                  AttestedTopic, Author, adjacent_false_topic,
+                                  fetch_topics, has_works_in_topic, user_agent)
 
 ROOT = Path(__file__).resolve().parent.parent
 CORPUS = ROOT / "data" / "scholar.jsonl"
@@ -62,6 +62,9 @@ def main() -> int:
                          "per candidate negative, so a smaller verified corpus "
                          "beats a large unverified one")
     ap.add_argument("--out", default="expert_tasks.jsonl")
+    ap.add_argument("--tier", choices=(NEAR, FAR, FAR_DOMAIN), default=None,
+                    help="force one tier. FAR_DOMAIN is a CONTROL - a wholly "
+                         "different domain, which should be rejected near 100%%.")
     ap.add_argument("--mailto", default=os.environ.get("TITER_OPENALEX_MAILTO", ""))
     args = ap.parse_args()
     if not CORPUS.exists():
@@ -100,7 +103,7 @@ def main() -> int:
             # control tier had no n at all, and its entire purpose (D031) is to
             # show the difficulty axis is doing work. Polarity stays balanced
             # 50/50 because each author still yields exactly one of each.
-            want = NEAR if rng.random() < 0.5 else FAR
+            want = args.tier or (NEAR if rng.random() < 0.5 else FAR)
             got = adjacent_false_topic(a, topics, rng, want, verify=verify)
             if got is None:
                 no_negative += 1

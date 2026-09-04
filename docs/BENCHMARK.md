@@ -42,14 +42,32 @@ above the confirmatory interval's centre, though the intervals overlap. That is
 worth stating: a post-hoc correction is weaker evidence than a clean
 measurement, and here it was measurably so.
 
-## D031's difficulty axis is not supported
+## The difficulty axis exists, and it has a floor
 
-NEAR 0.1680 against FAR 0.1320 is 3.6 points with heavily overlapping intervals,
-and the post-hoc analysis put them in the *opposite* order. **Negative
-difficulty does not detectably change the false-affirmation rate.** The FAR tier
-was built as the control that would reveal whether the axis did any work; it
-revealed that it does not, and the apparent effect in the raw data was
-contamination (NEAR contamination 21.94%, FAR 4.14%).
+A third tier settled it. `FAR_DOMAIN` is a **control**, not a difficulty step: a
+topic from a wholly different OpenAlex domain, so an organometallic chemist is
+asked about historical studies on Spain. n=250, matched `ATTESTED` arm on the
+same authors at 0.9840 [0.9596, 0.9938].
+
+| Tier | False affirmation |
+|---|---|
+| NEAR — adjacent subfield | 0.1680 [0.1268, 0.2193] |
+| FAR — adjacent field | 0.1320 [0.0956, 0.1796] |
+| **CONTROL — different domain** | **0.0840 [0.0556, 0.1250]** |
+
+**NEAR is exactly 2.00x the control and the intervals do not overlap.** Topic
+distance changes the rate; D031's two tiers were too close together to resolve
+it, not wrong in principle. FAR still does not separate from the control, so the
+gradient is only visible at the extremes.
+
+**And the control is not zero: 21 of 250 absurd claims were affirmed, one in
+twelve.** That floor is the more important number, because it is the one no
+generous reading explains — see RED-TEAM A12, now bounded rather than open. At
+least 8.4 of the 16.8 points is genuine error.
+
+An earlier version of this file said "negative difficulty does not detectably
+change the false-affirmation rate". That was true of NEAR versus FAR and wrong
+as a general claim. See `docs/DECISIONS.md` D034.
 
 ## E3 — calibration, on clean labels
 

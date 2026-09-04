@@ -265,7 +265,7 @@ def iter_authors(ua: str, counts: ScholarCounts, target: int,
 #: chemist asked about approximation theory), because a domain like Physical
 #: Sciences spans chemistry to pure mathematics. A benchmark built only on the
 #: easy ones would report a false-affirmation rate near zero that means nothing.
-NEAR, FAR = "near", "far"
+NEAR, FAR, FAR_DOMAIN = "near", "far", "far_domain"
 
 
 # Catch-all topic labels. OpenAlex carries a handful of unfalsifiable buckets
@@ -311,8 +311,15 @@ def adjacent_false_topic(author: Author, topics: dict[str, Topic],
 
     * ``NEAR`` - **same field, different subfield.** An immunologist asked about
       a different immunology subfield. Hard, and the one that carries the signal.
-    * ``FAR``  - **same domain, different field.** Plausible but easier, and the
-      control that shows the difficulty axis is doing work.
+    * ``FAR``  - **same domain, different field.** Plausible but easier.
+    * ``FAR_DOMAIN`` - **a wholly different domain.** A chemist asked about
+      medieval poetry. This is a **CONTROL, not a difficulty tier**: it should be
+      rejected close to 100%. NEAR and FAR failed to separate (D031 falsified),
+      which leaves two readings - the tiers were too close together, or topic
+      distance does not affect the rate at all. Only a tier that is obviously
+      absurd distinguishes them. If it is affirmed at the same ~15% as the
+      others, the provider affirms almost anything at a fixed rate independent
+      of distance, which is a stronger finding than a gradient.
 
     Both require zero attested works in the topic. No model participates; this
     is a set operation over the OpenAlex hierarchy.
@@ -333,12 +340,18 @@ def adjacent_false_topic(author: Author, topics: dict[str, Topic],
                     if t.field in author.fields
                     and t.subfield not in subfields
                     and t.id not in author.topic_ids]
+        if tier == FAR_DOMAIN:
+            return [t for t in topics.values()
+                    if t.domain not in author.domains
+                    and t.id not in author.topic_ids]
         return [t for t in topics.values()
                 if t.domain in author.domains
                 and t.field not in author.fields
                 and t.id not in author.topic_ids]
 
-    for tier in ([NEAR, FAR] if difficulty == NEAR else [FAR, NEAR]):
+    order = {NEAR: [NEAR, FAR], FAR: [FAR, NEAR],
+             FAR_DOMAIN: [FAR_DOMAIN]}[difficulty]
+    for tier in order:
         pool = [t for t in pool_for(tier) if not is_catchall(t.display_name)]
         if not pool:
             continue

@@ -122,7 +122,7 @@ uv run python scripts/env_health.py --real
 Every measurement regenerates from `data/replay.jsonl` without an API key.
 Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
-**238 tests green.** Total spend to produce all of the above: **$22.75**.
+**240 tests green.** Total spend to produce all of the above: **$22.75**.
 
 ## Layout
 

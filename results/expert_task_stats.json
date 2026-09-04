@@ -1,16 +1,15 @@
 {
   "verified_negatives": true,
-  "tasks": 3200,
-  "authors_used": 1600,
-  "authors_considered": 1600,
+  "tasks": 600,
+  "authors_used": 300,
+  "authors_considered": 300,
   "authors_without_a_negative": 0,
   "polarity": {
-    "ATTESTED": 1600,
-    "CONSTRUCTED_FALSE": 1600
+    "ATTESTED": 300,
+    "CONSTRUCTED_FALSE": 300
   },
   "negative_tiers": {
-    "near": 791,
-    "far": 809
+    "far_domain": 300
   },
   "balanced": true,
   "collision_note": "sample-relative; see docs/DECISIONS.md D032"

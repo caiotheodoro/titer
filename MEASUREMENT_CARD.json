@@ -6,15 +6,15 @@
   "verdict": "PARTIALLY_VERIFIED",
   "rationale": "E1 and E3 are measured on verified negatives and survived attack. The employment study's H1 is mis-specified, H2's strata were empty by construction, and the Ploid arm is retracted. A card that always exits zero is decoration; this one names what is not established.",
   "code_state": {
-    "python_loc": 7977,
-    "tests_passing": 238,
+    "python_loc": 8114,
+    "tests_passing": 240,
     "gates": "make validate green (9 gates); oracle_selfcheck and env_health pass"
   },
   "spend_usd": {
     "ploid": 6.6,
-    "exa": 13.87,
+    "exa": 16.075,
     "webfloor": 2.282,
-    "total": 22.75
+    "total": 24.96
   },
   "verified": {
     "E1_false_affirmation": "Exa affirms verified-false expertise claims at 0.1320 [0.0956,0.1796] (adjacent field) and 0.1680 [0.1268,0.2193] (adjacent subfield), n=250 each, while confirming attested expertise at 0.9600 [0.9279,0.9781]. Negatives verified against /works before asking. Survived a post-hoc and a confirmatory test.",
