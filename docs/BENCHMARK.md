@@ -136,11 +136,15 @@ within-task comparison, seed 23, $3.60.
 
 Paired differences, 10,000 resamples, seed 11:
 
-| Contrast | `low` | `medium` | `high` |
-|---|---|---|---|
-| C - A | **+0.1500** [0.0750, 0.2375] | **+0.1875** [0.1000, 0.2750] | **+0.2875** [0.1875, 0.3875] |
-| D - A | +0.2875 [0.1875, 0.3875] | +0.2750 [0.1750, 0.3750] | +0.3000 [0.2000, 0.4000] |
-| D - C | +0.1375 [0.0500, 0.2250] | +0.0875 [0.0000, 0.1750] *ns* | +0.0125 [-0.0625, 0.0875] *ns* |
+| Contrast | `unique` | `low` | `medium` | `high` |
+|---|---|---|---|---|
+| C - A | **+0.1125** [0.0250, 0.2000] | **+0.1500** [0.0750, 0.2375] | **+0.1875** [0.1000, 0.2750] | **+0.2875** [0.1875, 0.3875] |
+| D - A | +0.2250 [0.1250, 0.3375] | +0.2875 [0.1875, 0.3875] | +0.2750 [0.1750, 0.3750] | +0.3000 [0.2000, 0.4000] |
+| D - C | +0.1125 [0.0250, 0.2000] | +0.1375 [0.0500, 0.2250] | +0.0875 [0.0000, 0.1750] *ns* | +0.0125 [-0.0625, 0.0875] *ns* |
+
+**C - A separates in all four bands**, colliding and not, and the effect grows
+with collision degree: +0.11 where names are unique, +0.29 where they collide
+most. Context helps everywhere and helps most where it is most needed.
 
 **Three things this says.**
 
@@ -150,8 +154,9 @@ Paired differences, 10,000 resamples, seed 11:
    from 0.05 to 0.20, and from **zero** to 0.19 and 0.29 at the two harder
    collision bands.
 2. **Nearly all of the benefit is the employer name alone.** `D - C` separates
-   only at `low`. Adding the attested date and the role class on top of the
-   company buys nothing measurable once names actually collide.
+   at `unique` and `low` but not at `medium` or `high`. Adding the attested date
+   and the role class on top of the company buys nothing measurable once names
+   actually collide - exactly where a caller would most want it to.
 3. **A colliding name with no context is unresolvable.** At `medium` and `high`,
    arm A is **0 of 80**. That is the ceiling a name-only query has against this
    population, and it is the number that makes the other arms interpretable.
