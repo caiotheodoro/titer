@@ -8,6 +8,15 @@ Status: published. E1 and E3 measured on verified negatives; two formal
 retractions; five of six headline numbers were artefacts of this instrument.
 `MEASUREMENT_CARD.json` reads PARTIALLY_VERIFIED and is generated, not written.
 
+Round 7 results: E2 FALSIFIED our own hypothesis D029 - a free-text capability
+constraint does disambiguate on an answer engine (C > A in all three colliding
+bands, paired intervals excluding zero). A policy is now trained on the R4
+simulator and clears the seed gate (0.0461 vs -0.1000, across-seed SD 0.0122 =
+0.08x the margin, 6 seeds); it learned selectivity, not calibration. Five
+environment defects were found before training, three of them reward hacks, and
+the previously published R4 floors were wrong. E4 is not measurable at this
+budget (D038). Five budgets, still no Ploid accuracy number.
+
 Headline: Exa confirms attested expertise at 0.9600 [0.9279, 0.9781] and affirms
 claims about topics the person has never published in at 0.1680 (adjacent
 subfield), 0.1320 (adjacent field) and 0.0840 (different domain), n=250 each. It
@@ -26,7 +35,7 @@ supports a claim about the category.
 - [METHOD](docs/METHOD.md): why a filing and not a judge; why cost and not
   accuracy; where a model is allowed to act.
 - [ARCHITECTURE](docs/ARCHITECTURE.md): modules and seams.
-- [DECISIONS](docs/DECISIONS.md): append-only decision log, D001-D035.
+- [DECISIONS](docs/DECISIONS.md): append-only decision log, D001-D040.
 
 ## Honesty surface
 
@@ -35,7 +44,8 @@ supports a claim about the category.
 - [COVERAGE](docs/COVERAGE.md): what this cannot see, in PeopleSearchBench's
   vocabulary rather than ours. 7.3% of the EDGAR population is usable.
 - [RED-TEAM](docs/RED-TEAM.md): 17 attacks on our own claims; 7 carried LIVE,
-  2 open, 1 bounded by a control tier.
+  2 open, 1 bounded by a control tier. A12's settling experiment is built and
+  costs $0, waiting on an OpenAlex quota reset.
 - [RUBRIC](docs/RUBRIC.md): independent read 74/90 against a 78/90 self-score,
   with the three downgrades named and not argued with.
 - [ETHICS](docs/ETHICS.md): pointers not records; no contact fields ever;

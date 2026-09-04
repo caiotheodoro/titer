@@ -24,4 +24,8 @@ affirms expertise claims about topics a person has never published in one time
 in six, and one time in twelve when the topic is from a wholly different
 domain, at 0.987 stated confidence against 0.889 accuracy.
 
+Since then a pre-registered experiment falsified one of our own hypotheses, and
+a trained policy cleared the across-seed gate after three reward hacks were
+found and fixed in the environment it trains on.
+
 Code: https://github.com/caiotheodoro/titer

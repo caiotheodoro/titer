@@ -119,8 +119,8 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
   <dl class="stats" data-fade data-delay="1">
     <div class="stat"><dt>Headline numbers</dt><dd>6<span>five retracted</span></dd></div>
     <div class="stat"><dt>Attested rows</dt><dd>4.2M<span>SEC Forms 3/4/5</span></dd></div>
-    <div class="stat"><dt>Total spend</dt><dd>$29.96<span>all measurement</span></dd></div>
-    <div class="stat"><dt>Tests</dt><dd>244<span>ten gates</span></dd></div>
+    <div class="stat"><dt>Total spend</dt><dd>$37.65<span>all measurement</span></dd></div>
+    <div class="stat"><dt>Tests</dt><dd>260<span>ten gates</span></dd></div>
   </dl>
 
   <section class="section" data-fade>
@@ -201,10 +201,61 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
   <hr class="rule"/>
 
   <section class="section" data-fade>
+    <h2>We falsified our own hypothesis</h2>
+    <h3>A capability constraint <em>does</em> disambiguate</h3>
+    <p>D029 argued a people-search surface cannot be handed a <em>biographical</em>
+    constraint: every documented filter describes a person&rsquo;s current state, so
+    where a name collides the caller cannot pass the one fact that would resolve it.
+    We wrote down the falsification condition first, then ran it. It fired.</p>
+    <table>
+      <thead><tr><th>Colliding band</th><th>Name alone</th><th>+ past employer</th><th>Paired difference</th></tr></thead>
+      <tbody>
+        <tr><td>low</td><td class="num">0.0500</td><td class="num">0.2000</td><td class="num hi">+0.1500 [0.0750, 0.2375]</td></tr>
+        <tr><td>medium</td><td class="num">0.0000</td><td class="num">0.1875</td><td class="num hi">+0.1875 [0.1000, 0.2750]</td></tr>
+        <tr><td>high</td><td class="num">0.0000</td><td class="num">0.2875</td><td class="num hi">+0.2875 [0.1875, 0.3875]</td></tr>
+      </tbody>
+    </table>
+    <p>Three bands, three intervals excluding zero, n=80 each, compared within task.
+    Two things we did not predict: naming the past employer captures nearly all the
+    benefit &mdash; adding the attested date and role buys nothing measurable once
+    names collide &mdash; and a colliding name with <strong>no</strong> context is
+    <strong>0 of 80</strong>, not merely harder but unresolvable.</p>
+    <p>What survives is the claim&rsquo;s scope. It was about indexes with
+    <em>structured filters</em>, and an answer engine is a different surface. On the
+    filter-based one, both renderings scored 0 of 12 and nothing is claimed.</p>
+  </section>
+
+  <section class="section" data-fade>
+    <h2>A trained policy, and three reward hacks it would have found</h2>
+    <p>Reading the environment before writing a training loop found five defects.
+    Three were exploits an optimiser finds and the baselines never do: a free reward
+    atom worth about +0.33 an episode, a confidence knob where stating 0.49 saved
+    penalty and cost nothing, and a turn cap that did not bind.</p>
+    <p><strong>The published baselines were wrong.</strong> Corrected,
+    <code>never_verify</code> falls from 0.0455 to &minus;0.2292 and
+    <code>always_deep_verify</code> from 0.0277 to &minus;0.2574. Both are now beaten
+    by <em>doing nothing</em>: at a 37% solve rate, answering is negative expected
+    value.</p>
+    <div class="card">
+      <div class="t">It clears the seed gate</div>
+      <p>Trained policy <strong>0.0461</strong> against <code>abstain_always</code>
+      &minus;0.1000 &mdash; margin 0.1461, across-seed SD <strong>0.0122</strong>,
+      0.08&times; the margin, over 6 seeds. No margin is published here without its
+      spread, because a sibling project retracted a headline whose spread was
+      2.86&times; its margin.</p>
+    </div>
+    <p><strong>It learned when to answer and not how sure to be.</strong> It abstains
+    on 41.7% of tasks, lifting precision from the 37% base rate to
+    <strong>64%</strong>, then states confidence <strong>1.0 on every answer it
+    gives</strong>. That is the same failure we measured in the provider, reproduced
+    by our own policy in an environment that prices exactly it.</p>
+  </section>
+
+  <section class="section" data-fade>
     <h2>The retraction record<span class="count" style="margin-left:10px">2 formal</span></h2>
     <div class="card">
       <div class="t">R001: the Ploid arm</div>
-      <p>Four runs and four budgets, all void. Every failure was a defect in our
+      <p>Five runs and five budgets, none of them a number. Every failure was a defect in our
       harness, so <strong>no number about Ploid is claimed anywhere</strong>. The
       seventh defect was found on the last $0.40: the anchor company tokens displace
       the person they were meant to disambiguate. Asking for "Michael Anzilotti
