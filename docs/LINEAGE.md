@@ -16,6 +16,30 @@ presented as more original than it is.
 | `blotter` | The left/right match-pair shape, in bank-reconciliation clothing. Structurally the same problem: two records, one match decision, an escalation cost | `src/titer/oracle/` |
 | the forge line (`suture`, `specula`, `plumb`, `habeas`) | "Find a task where the ground truth is a program, not an opinion"; contamination control by task signature; the docs-before-`src/` discipline | throughout |
 
+## The Space's design lineage
+
+`space/index.html` follows **`regretbench/packaging/hf/static_space.py`**, the
+LossBench control-plane Space (`caiotheodoro/lossbench-demo`), which is itself a
+port of the design system in `cv-related/cv/src/styles/global.css`.
+
+Taken from the sibling Space rather than reinvented: the short token names
+(`--accent`, `--border`, `--text-2/3`), the 960px column, the 36px graph-paper
+`body` grid fading at 45%, the mono `.kicker` with an accent `<b>`, `h1 .dot`,
+`.standfirst`, `h2` demoted to an uppercase hairline rule, `.pill` / `.pill.esc`,
+the `data-fade` / `data-delay` ladder and — importantly — the
+`prefers-reduced-motion` guard, which the CV itself lacks.
+
+Taken from the CV directly: the `AboutStats` stat-tile block and the `.label` +
+`.count` pill header.
+
+**A note on how this was nearly got wrong.** A first exploration reported "no HF
+Space uses the CV design system", and that claim was repeated to the user as
+fact. It came from a repo-wide grep that was killed after 300s having written
+zero bytes - silence from an unrun command, reported as a negative result. The
+sibling Space existed the whole time. It is the same failure mode this project
+documents elsewhere: a measurement that could not have observed the thing,
+mistaken for evidence that the thing is absent.
+
 ## External prior art
 
 - **PeopleSearchBench** (arXiv 2603.27476, ~Jul 2026). The closest existing

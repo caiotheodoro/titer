@@ -6,3 +6,5 @@ assay/src/assay/costs/
 regretbench/src/lossbench/
 vernier/docs/METHOD.md
 keel/docs/superpowers/specs/00-keel-protocol.md
+regretbench/packaging/hf/static_space.py
+cv-related/cv/src/styles/global.css
