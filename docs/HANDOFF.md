@@ -49,6 +49,22 @@ Corollary: check the provider's documented request shape against what the
 adapter actually sends. Ploid documents structured `filters`; we were putting
 the company in the free text.
 
+## Collections
+
+House style across the six collections: **the title carries the claim** in two
+contrasting clauses ("ReconForge: lost on accuracy. Caught every HIGH."), the
+**description is one result line plus `Code: <url>`**, and **item notes lead
+with the caveat**, not the win — assay's model note opens "A negative result,
+published so the ablation row is checkable."
+
+Hard limits, both enforced server-side and both hit on the first attempt:
+**description 150 characters, item note 500.** Check lengths before calling the
+API; the failure is a validation error, not a truncation.
+
+`create_collection(title, namespace, description, exists_ok=True)` then
+`add_collection_item(slug, item_id, item_type, note, exists_ok=True)`. The
+collection URL redirects to a slug without the trailing hash.
+
 ## Publishing to the Hub
 
 `hf upload` re-attempts `repos/create` on every call and gets **402 Payment

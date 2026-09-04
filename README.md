@@ -124,6 +124,9 @@ Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
 ## Layout
 
+**Everything in one place:**
+[the collection](https://huggingface.co/collections/caiotheodoro/titer-six-vendor-numbers-five-were-my-harness-6a9a4689d8a468b26e466075).
+
 | Path | What |
 |---|---|
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
