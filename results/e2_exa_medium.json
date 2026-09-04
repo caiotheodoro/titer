@@ -1,0 +1,269 @@
+{
+  "window": "2026-09",
+  "as_of": "2026-09-04",
+  "seed": 23,
+  "live_calls": {
+    "exa": 237
+  },
+  "max_calls": 240,
+  "requested_n": 80,
+  "dry_run": false,
+  "strategy": "random",
+  "strata": null,
+  "pooling_rule": "RANDOM: marginal rates are population estimates.",
+  "corpus": {
+    "rows_streamed": 4206080,
+    "people": 230405,
+    "tasks": 22596,
+    "retained_fraction": 0.09807078839434909,
+    "bands": {
+      "unique": 19464,
+      "medium": 755,
+      "low": 2222,
+      "high": 155
+    },
+    "min_gap_days": 180,
+    "require_last_employer": true,
+    "excluded_entity_filers": 419,
+    "max_age_years": 10.0
+  },
+  "arms": {
+    "exa_A_name_only": {
+      "n": 80,
+      "spend_usd": 0.4,
+      "outcomes": {
+        "CORRECT": 0,
+        "FALSE_MERGE": 3,
+        "UNSURE_WRONG": 0,
+        "MISS": 77,
+        "ABSTAIN": 0,
+        "STALE": 0
+      },
+      "accuracy": 0.0,
+      "correct": "0.0000 [0.0000, 0.0458] n=80",
+      "false_merge": "0.0375 [0.0128, 0.1045] n=80",
+      "stale": "0.0000 [0.0000, 0.0458] n=80",
+      "expected_loss": {
+        "recruiter": 1.0375,
+        "gtm_outbound": 1.15,
+        "kyc_sanctions": 4.7625,
+        "journalism": 4.7125,
+        "expert_sourcing": 6.5875
+      },
+      "mean_atoms": 0.0125,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-365d",
+          "0.0000 [0.0000, 0.4345] n=5"
+        ],
+        [
+          "365-1095d",
+          "0.0000 [0.0000, 0.2588] n=11"
+        ],
+        [
+          "1095-2555d",
+          "0.0000 [0.0000, 0.1843] n=17"
+        ],
+        [
+          "2555-infd",
+          "0.0000 [0.0000, 0.0756] n=47"
+        ]
+      ],
+      "median_reflection_lag_days": null,
+      "by_band": {
+        "unique": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 80,
+          "false_merge": 3
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "name_not_in_corpus": 3,
+        "colliding_name_no_employer": 65,
+        "narrowed_by_employer": 1,
+        "employer_matches_no_candidate": 9,
+        "unique_name": 2
+      }
+    },
+    "exa_C_anchor_freetext": {
+      "n": 80,
+      "spend_usd": 0.4,
+      "outcomes": {
+        "CORRECT": 15,
+        "FALSE_MERGE": 1,
+        "UNSURE_WRONG": 0,
+        "MISS": 61,
+        "ABSTAIN": 0,
+        "STALE": 3
+      },
+      "accuracy": 0.1875,
+      "correct": "0.1875 [0.1171, 0.2866] n=80",
+      "false_merge": "0.0125 [0.0022, 0.0675] n=80",
+      "stale": "0.0375 [0.0128, 0.1045] n=80",
+      "expected_loss": {
+        "recruiter": 0.825,
+        "gtm_outbound": 0.9,
+        "kyc_sanctions": 3.1,
+        "journalism": 2.125,
+        "expert_sourcing": 2.7125
+      },
+      "mean_atoms": 0.075,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-365d",
+          "0.4000 [0.1176, 0.7693] n=5"
+        ],
+        [
+          "365-1095d",
+          "0.4545 [0.2127, 0.7199] n=11"
+        ],
+        [
+          "1095-2555d",
+          "0.0000 [0.0000, 0.1843] n=17"
+        ],
+        [
+          "2555-infd",
+          "0.1702 [0.0889, 0.3014] n=47"
+        ]
+      ],
+      "median_reflection_lag_days": 6282,
+      "by_band": {
+        "unique": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 80,
+          "false_merge": 1
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "narrowed_by_anchor": 3,
+        "colliding_name_no_employer": 61,
+        "narrowed_by_employer": 16
+      }
+    },
+    "exa_D_full_context": {
+      "n": 80,
+      "spend_usd": 0.4,
+      "outcomes": {
+        "CORRECT": 22,
+        "FALSE_MERGE": 1,
+        "UNSURE_WRONG": 0,
+        "MISS": 50,
+        "ABSTAIN": 0,
+        "STALE": 7
+      },
+      "accuracy": 0.275,
+      "correct": "0.2750 [0.1892, 0.3814] n=80",
+      "false_merge": "0.0125 [0.0022, 0.0675] n=80",
+      "stale": "0.0875 [0.0430, 0.1698] n=80",
+      "expected_loss": {
+        "recruiter": 0.7375,
+        "gtm_outbound": 0.8625,
+        "kyc_sanctions": 2.9375,
+        "journalism": 2.1375,
+        "expert_sourcing": 2.675
+      },
+      "mean_atoms": 0.1,
+      "reflection_by_elapsed": [
+        [
+          "0-90d",
+          "empty [0.0000, 1.0000] n=0"
+        ],
+        [
+          "90-365d",
+          "0.6000 [0.2307, 0.8824] n=5"
+        ],
+        [
+          "365-1095d",
+          "0.4545 [0.2127, 0.7199] n=11"
+        ],
+        [
+          "1095-2555d",
+          "0.0588 [0.0105, 0.2698] n=17"
+        ],
+        [
+          "2555-infd",
+          "0.2766 [0.1694, 0.4176] n=47"
+        ]
+      ],
+      "median_reflection_lag_days": 6282,
+      "by_band": {
+        "unique": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "low": {
+          "n": 0,
+          "false_merge": 0
+        },
+        "medium": {
+          "n": 80,
+          "false_merge": 1
+        },
+        "high": {
+          "n": 0,
+          "false_merge": 0
+        }
+      },
+      "resolution_reasons": {
+        "name_not_in_corpus": 5,
+        "colliding_name_no_employer": 43,
+        "narrowed_by_employer": 24,
+        "narrowed_by_anchor": 6,
+        "employer_matches_no_candidate": 2
+      }
+    }
+  },
+  "matched_n": 80,
+  "paired_task_ids": 80,
+  "e2_paired": {
+    "exa_A_name_only - exa_C_anchor_freetext": {
+      "mean_a": 0.0,
+      "mean_b": 0.1875,
+      "diff": "-0.1875 [-0.2750, -0.1000] n=80",
+      "separates": true
+    },
+    "exa_A_name_only - exa_D_full_context": {
+      "mean_a": 0.0,
+      "mean_b": 0.275,
+      "diff": "-0.2750 [-0.3750, -0.1750] n=80",
+      "separates": true
+    },
+    "exa_C_anchor_freetext - exa_D_full_context": {
+      "mean_a": 0.1875,
+      "mean_b": 0.275,
+      "diff": "-0.0875 [-0.1750, 0.0000] n=80",
+      "separates": false
+    }
+  },
+  "e2_note": "D029: supported if C ~= A and D > B (the index cannot exploit history even when handed it); falsified if C > A. Per-stratum only - D027's pooling ban applies, and D032 makes any colliding sample case-control, so no rate here is a population rate."
+}

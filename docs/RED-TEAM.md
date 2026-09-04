@@ -161,9 +161,27 @@ the false-affirmation rate is **0.0840 [0.0556, 0.1250]**, n=250. No generous
 reading rescues that. **At least 8.4 percentage points of the 16.8% is genuine
 error**, and interpretation can account for at most the difference.
 
-Still live: whether the remaining ~8pp is interpretation or error. The
-experiment that would settle *that* is a prompt variant demanding a specific
-citation, scored on whether the citation exists. Not run; budget.
+Still live: whether the remaining ~8pp is interpretation or error.
+
+**The experiment is now built and it is cheaper than "budget" suggested.** Every
+one of the 2,388 cached `/answer` responses already carries `answer.evidence` and
+citations - mean 7.99 each, 1,984 with an author field. So the first half costs
+**nothing**: for each affirmation, resolve the cited titles against OpenAlex and
+ask whether any is a work that author actually wrote. An affirmation supported
+only by a Google Scholar profile or a staff page cites no attested work, and
+that is a fact about what was returned rather than a judgement about how the
+question was read. No model reads the evidence string - a model assigning that
+label is the circularity D022 bans.
+
+`scripts/a12_citation_audit.py` does this and spends $0.
+
+**It has not produced a number yet.** OpenAlex's account budget was exhausted
+mid-run (both authenticated and unauthenticated requests returned
+`$0 remaining ... resets at midnight UTC`), which cost the first attempt 175
+audited affirmations because it only wrote results at the end. It now
+checkpoints every 25 and stops cleanly on a rate wall. **A12 therefore stays
+LIVE, with the residual still open and the tooling waiting on a quota reset
+rather than on money.**
 
 ## A13. "The negatives are still constructed by you." · MITIGATED, not eliminated
 
