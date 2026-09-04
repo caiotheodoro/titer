@@ -1636,3 +1636,67 @@ that. Reporting only the margin would hide the more interesting half.
 or 4B arms, or about a policy operating against a live provider. Every number
 here is measured against a simulator fitted to 485 cached observations, and the
 simulator's `high` collision band still has zero of them.
+
+---
+
+## D038 - E4 is not measurable at this budget, and the reason is measured (2026-09-04)
+
+E4 asks whether the same provider resolves the academic and SEC populations at
+materially different rates, identical instruments, never pooled.
+
+The instrument was built (`scripts/run_e4_coverage.py`): the **name-only**
+question, the one rendering both populations can receive unchanged, since the
+scholar corpus carries no affiliation history to anchor on. Then the R001 rule
+was applied - two rows on the wire, read before the budget.
+
+**The first scholar row killed the design as scored.** Truth
+`Manipal Academy of Higher Education`; returned `Kasturba Medical College,
+Manipal University`. Kasturba Medical College is *inside* Manipal Academy of
+Higher Education, which was formerly Manipal University. The provider named the
+right institution at a finer granularity and a **normalised string match scored
+it wrong**.
+
+A 12-task probe ($0.07) put a number on it. Of 8 scholar rows:
+
+| | n |
+|---|---|
+| strict match | 2 |
+| shares a distinctive token but not a match | 1 |
+| no overlap | 5 |
+
+The no-overlap cases are mostly genuine misses - `Adam Smith Institute` returned
+`The Mohegan Tribe` - which is what a name-only query on an ambiguous name
+does. But at least one more is a hierarchy artefact
+(`Centre National de la Recherche Scientifique` returned as one of its
+*laboratoires*), and one is plausibly a joint appointment (`UCLA` returned as
+`VA Greater Los Angeles Healthcare System`).
+
+**So the measurement cannot separate "wrong person" from "right institution,
+named as a sub-unit" without an institution resolver.** At n=250 that ambiguity
+would sit inside the headline, and the headline would read as a coverage finding
+about the academic population. That is the R002 shape exactly: a scoring artefact
+the same size as the effect.
+
+**Two things block it, and both are named rather than worked around.**
+
+1. **The scorer needs institution IDs, not strings.** Resolving both sides
+   against OpenAlex `/institutions` and comparing IDs is the same
+   "resolve against an oracle" discipline `resolve.py` already uses for CIKs.
+   OpenAlex's account budget was exhausted for the day at the time of writing
+   (both authenticated and unauthenticated paths returned
+   `$0 remaining ... resets at midnight UTC`), so it could not be built or run.
+2. **The two oracles are not equally strong, and no scorer fixes that.** SEC
+   truth is a filing an officer signed. Scholar truth is OpenAlex
+   `last_known_institutions`, derived from publication affiliations, which lags
+   a move and can name a lab rather than the parent body. A measured gap is
+   therefore (index coverage x oracle freshness) and cannot be split without a
+   second scholarly oracle.
+
+**Not run. E4 stays unmet in `MEASUREMENT_CARD.json`.** Tuning the matcher
+against the rows just read would be fitting the scorer to the sample, which is
+the failure this repository is about. Total spent finding this out: **$0.08**.
+
+**What it would take:** an institution resolver over OpenAlex IDs, a measured
+sub-unit-to-parent containment rate published alongside, and a second scholarly
+affiliation source to bound oracle staleness. That is a wave of work, not a
+budget line.

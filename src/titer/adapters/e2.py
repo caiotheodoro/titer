@@ -52,6 +52,18 @@ def exa_full_context(task) -> str:
             f"{task.anchor_title_class.value}. {QUESTION}{CONF}")
 
 
+def ploid_name_only(task) -> dict:
+    """A, on Ploid. The within-provider control for the filter arm.
+
+    D029 is a claim about people-search INDEXES with structured filters, not
+    about answer engines. Comparing Ploid-with-filter against Exa-without would
+    confound the provider with the arm, and the pre-registered cannot_separate
+    branch forbids ranking across providers anyway. So the filter is measured
+    against the same provider without it.
+    """
+    return {"query": presented_query_name(task.person_name_raw)}
+
+
 def ploid_company_filter(task) -> dict:
     """B. The structured filter the API documents.
 
