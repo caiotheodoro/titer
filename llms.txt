@@ -4,8 +4,9 @@
 > confidently resolve the wrong human, and what it is worth paying to find out.
 > Ground truth is an SEC filing, not a model's judgement.
 
-Status: W0. Docs frozen, `src/` empty by design, no results exist.
-`MEASUREMENT_CARD.json` reads NOT_VERIFIED.
+Status: published. E1 and E3 measured on verified negatives; two formal
+retractions; five of six headline numbers were artefacts of this instrument.
+`MEASUREMENT_CARD.json` reads PARTIALLY_VERIFIED and is generated, not written.
 
 ## Core
 

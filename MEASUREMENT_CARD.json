@@ -1,60 +1,51 @@
 {
   "project": "titer",
-  "contracts_version": "contracts/v1",
-  "wave": "W11 complete (E1 + E3); employment study partial",
-  "generated": "2026-09-02",
+  "contracts_version": "contracts/v1 + contracts/v1-expertise",
+  "wave": "published; E1 and E3 measured, employment study partial",
+  "generated": "2026-09-04",
   "verdict": "PARTIALLY_VERIFIED",
-  "rationale": "E1 and E3 are measured on verified negatives and survive attack. The employment study's H1-H4 remain unfinished and the Ploid arm is retracted. A card that always exits zero is decoration.",
-  "unmet_claims": [
-    "E1 difficulty axis (D031): NOT SUPPORTED - NEAR and FAR do not separate",
-    "E2 disambiguation under a capability constraint: not run, needs Ploid credit",
-    "E4 cross-domain coverage: not run",
-    "H1 staleness half-life: sampling failure, not measurable from a random draw",
-    "H2 false merge under name collision: strata empty by construction in the one run",
-    "Ploid: RETRACTED after three runs, unmeasured",
-    "web floor: parser artefact, withdrawn",
-    "R4 value-of-information policy: no model trained"
-  ],
-  "gates_passed": [
-    "doc spine present",
-    "PRE-REGISTRATION frozen before src/",
-    "provider Terms-of-Service gate resolved (DECISIONS D019)",
-    "privacy gate: no contact-field patterns in tracked files",
-    "oracle self-check: gold 1.0, no-op priced below gold, inverted collapses",
-    "env health: 98.3% of tasks in the 10-80% solve band, 0% zero-advantage groups",
-    "leak probe demonstrated to have power (0.92 person-level leak under the old scheme)"
-  ],
-  "providers_in_scope": [
-    "ploid",
-    "exa",
-    "webfloor"
-  ],
-  "providers_excluded": {
-    "apollo": "ToS 3(f)(vii) prohibits disclosing benchmark results without prior written consent; consent requested",
-    "peopledatalabs": "SSA 5 sweeps derived information into confidentiality; SSA 6.4 requires deletion within 30 days of termination, incompatible with a retained reproducible corpus",
-    "clay": "excluded on comparability, not law: an orchestrator over 75+ tools rather than a proprietary index"
-  },
-  "blocked_on": {
-    "corpus": "SEC returns HTTP 403 for every sec.gov host from this egress IP (Akamai rate-threshold block). No quarterly archive has been downloaded.",
-    "provider_calls": "No Ploid or Exa API key configured. Zero credits spent."
-  },
+  "rationale": "E1 and E3 are measured on verified negatives and survived attack. The employment study's H1 is mis-specified, H2's strata were empty by construction, and the Ploid arm is retracted. A card that always exits zero is decoration; this one names what is not established.",
   "code_state": {
-    "python_loc": 5209,
-    "tests_passing": 178,
-    "gates": "make validate green; oracle_selfcheck and env_health pass"
+    "python_loc": 7977,
+    "tests_passing": 238,
+    "gates": "make validate green (9 gates); oracle_selfcheck and env_health pass"
   },
-  "measured": {
-    "corpus_rows": 4206080,
-    "people": 230405,
-    "tasks": 46332,
-    "power_branch": "cannot_separate",
-    "ploid": "RETRACTED (R001): harness sent the company in the free-text query instead of the documented filters; 0/21 measured our wire format",
-    "exa": "n=24, 10 CORRECT, 1 STALE, 13 MISS; correct 0.4167 [0.2447, 0.6117]",
-    "webfloor": "n=24, 0 CORRECT; correct 0.0000 [0.0000, 0.1380]",
-    "false_merge_all_arms": "0 observed; interval [0, 0.138] - cannot rule out 14%"
+  "spend_usd": {
+    "ploid": 6.6,
+    "exa": 13.87,
+    "webfloor": 2.282,
+    "total": 22.75
   },
   "verified": {
-    "E1_false_affirmation": "Exa affirms verified-false expertise claims at 0.1320 [0.0956,0.1796] FAR and 0.1680 [0.1268,0.2193] NEAR, n=250 each, while confirming attested expertise at 0.9600 [0.9279,0.9781]. Negatives verified against /works before asking. Survived a post-hoc and a confirmatory test.",
-    "E3_calibration": "91.5% of answers in the 0.9-1.0 confidence bin at mean 0.987 vs accuracy 0.889; ECE 0.1153, Brier 0.1191."
+    "E1_false_affirmation": "Exa affirms verified-false expertise claims at 0.1320 [0.0956,0.1796] (adjacent field) and 0.1680 [0.1268,0.2193] (adjacent subfield), n=250 each, while confirming attested expertise at 0.9600 [0.9279,0.9781]. Negatives verified against /works before asking. Survived a post-hoc and a confirmatory test.",
+    "E3_calibration": "686 of 750 answers (91.5%) in the 0.9-1.0 confidence bin at mean 0.987 against accuracy 0.889; ECE 0.1153, Brier 0.1191.",
+    "R4_environment": "Simulator fitted to 500 real observations; solve rate 0.37, inside the 10-80% band. never_verify (0.0455) beats always_deep_verify (0.0277): 3x the spend bought marginally fewer correct answers."
+  },
+  "superseded": {
+    "W3_exa_employment_n299": "0.5886 [0.5321,0.6429] correct, false-merge <0.0127. Measured under the pre-D028 dated prompt on the unrestricted task set, so it is not comparable to anything measured afterwards. Retained as record.",
+    "E1_raw_rates": "0.1875 / 0.2212 - retracted, see docs/RETRACTIONS.md R002."
+  },
+  "unmet_claims": [
+    "One provider. Every surviving number describes Exa; nothing supports a claim about the category.",
+    "The surviving 13-17% may be prompt interpretation rather than error - adjacent negatives cannot be removed (RED-TEAM A12).",
+    "E1 difficulty axis (D031): NOT SUPPORTED - NEAR and FAR do not separate.",
+    "E2 disambiguation under a capability constraint: not run, needs credit.",
+    "E4 cross-domain coverage: not run.",
+    "H1 staleness: mis-specified - non-monotone, so no half-life exists (D033).",
+    "H2 false merge under name collision: strata empty by construction.",
+    "Ploid: RETRACTED after three runs, unmeasured.",
+    "Trivial floor: withdrawn as a parser artefact, never validly measured.",
+    "R4 value-of-information policy: environment shipped, no model trained."
+  ],
+  "artifacts": {
+    "code": "https://github.com/caiotheodoro/titer",
+    "edgar_corpus": "https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers",
+    "expertise_corpus": "https://huggingface.co/datasets/caiotheodoro/titer-expertise-claims",
+    "space": "https://huggingface.co/spaces/caiotheodoro/titer"
+  },
+  "independent_read": {
+    "score": "74/90",
+    "self_score": "78/90",
+    "summary": "high as a methodology exemplar, low as a benchmark of the category"
   }
 }

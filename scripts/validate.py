@@ -206,10 +206,107 @@ def gate_card_honest() -> None:
         fail("card", "verdict is NOT_VERIFIED but no unmet claim is named")
 
 
+def _collected_tests() -> int | None:
+    out = subprocess.run(
+        ["uv", "run", "--extra", "dev", "pytest", "--collect-only", "-q", "tests"],
+        cwd=ROOT, capture_output=True, text=True, check=False)
+    m = re.search(r"(\d+)\s+tests? collected", out.stdout)
+    return int(m.group(1)) if m else None
+
+
+def _live_loc() -> int:
+    n = 0
+    for d in ("src", "tests", "scripts"):
+        for p in (ROOT / d).rglob("*.py"):
+            if "__pycache__" in p.parts:
+                continue
+            n += sum(1 for _ in p.open(errors="replace"))
+    return n
+
+
+def gate_card_fresh() -> None:
+    """The measurement card is a claim, and it went eight commits stale.
+
+    It ended up asserting that SEC was blocked and no archive had been
+    downloaded - against 4.2M built rows - while every gate stayed green,
+    because the suite-size gate reads prose and never looked at JSON. That is a
+    gate measuring the wrong surface, and it is the third time in this
+    repository that a probe could not observe the thing it was meant to watch.
+
+    Regenerate with scripts/refresh_card.py rather than editing by hand.
+    """
+    import json as _json
+    card = _json.loads((ROOT / "MEASUREMENT_CARD.json").read_text())
+    cs = card.get("code_state") or {}
+
+    collected = _collected_tests()
+    if collected is not None and cs.get("tests_passing") != collected:
+        fail("card-fresh", f"card says tests_passing={cs.get('tests_passing')} but "
+                           f"pytest collects {collected}. Run scripts/refresh_card.py.")
+
+    loc = _live_loc()
+    if cs.get("python_loc") and abs(cs["python_loc"] - loc) > max(50, loc * 0.02):
+        fail("card-fresh", f"card says python_loc={cs['python_loc']}, live count is "
+                           f"{loc}. Run scripts/refresh_card.py.")
+
+    spent = sum(v for k, v in (card.get("spend_usd") or {}).items() if k != "total")
+    if card.get("blocked_on") and spent > 0:
+        fail("card-fresh", f"card carries blocked_on while recording ${spent:.2f} of "
+                           "spend. Both cannot be true; the block was cleared.")
+
+    gen = card.get("generated", "")
+    newest = subprocess.run(["git", "log", "-1", "--format=%cs", "--", "results"],
+                            cwd=ROOT, capture_output=True, text=True,
+                            check=False).stdout.strip()
+    if gen and newest and gen < newest:
+        fail("card-fresh", f"card generated {gen} but results/ last changed {newest}. "
+                           "The card is describing an older repository.")
+
+
+#: Present-tense status assertions, each with the check that disproves it.
+#: Historical references ("committed at W0, before any measurement existed") are
+#: deliberately NOT matched - only claims about the current state.
+STALE_STATUS = [
+    ("src/ is empty", lambda: any(
+        p.stat().st_size > 0 for p in (ROOT / "src" / "titer").rglob("*.py"))),
+    ("no result exists", lambda: any((ROOT / "results").glob("*.json"))),
+    ("No result exists", lambda: any((ROOT / "results").glob("*.json"))),
+    ("Nothing to reproduce yet", lambda: any((ROOT / "results").glob("*.json"))),
+    ("nothing to reproduce yet", lambda: any((ROOT / "results").glob("*.json"))),
+    ("reads NOT_VERIFIED", lambda: _card_verdict() != "NOT_VERIFIED"),
+    ("reads `NOT_VERIFIED`", lambda: _card_verdict() != "NOT_VERIFIED"),
+]
+
+
+def _card_verdict() -> str:
+    import json as _json
+    return _json.loads((ROOT / "MEASUREMENT_CARD.json").read_text()).get("verdict", "")
+
+
+def gate_no_stale_status() -> None:
+    """A doc must not assert a state the repository disproves.
+
+    REPRODUCTION.md opened with "Nothing to reproduce yet - src/ is empty by
+    design at W0" while being linked from the README as THE reproduction guide,
+    and AGENTS.md told every agent that no result exists. Both were true once.
+    Neither was true when a reader found them.
+    """
+    for rel in SPINE + ["docs/BENCHMARK.md"]:
+        p = ROOT / rel
+        if p.suffix not in {".md", ".txt"} or not p.is_file():
+            continue
+        text = p.read_text()
+        for phrase, contradicted in STALE_STATUS:
+            if phrase in text and contradicted():
+                fail("stale-status",
+                     f"{rel} asserts {phrase!r}, which the repository disproves.")
+
+
 def main() -> int:
     for gate in (gate_spine, gate_privacy, gate_cited_paths,
                  gate_no_placeholders, gate_prereg_frozen, gate_card_honest,
-                 gate_advertised_suite_size):
+                 gate_advertised_suite_size, gate_card_fresh,
+                 gate_no_stale_status):
         gate()
     if FAILURES:
         print(f"FAILED {len(FAILURES)} check(s):\n", file=sys.stderr)

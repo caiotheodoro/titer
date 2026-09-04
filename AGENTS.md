@@ -37,9 +37,20 @@ SEC filing, not a model's judgement.
 
 ## Current state
 
-W0. `src/` is empty by design. `MEASUREMENT_CARD.json` reads `NOT_VERIFIED` and
-will until every gate passes. No result exists. Any number you find in this repo
-today is an illustration of format, not a finding.
+Published. Results exist and are in `docs/BENCHMARK.md`.
+
+- **E1/E3 measured** on verified negatives, n=750: a provider confirms attested
+  expertise 0.9600 [0.9279, 0.9781] and affirms claims about topics the person
+  never published in at 0.1320–0.1680, stating 0.987 confidence against 0.889
+  accuracy.
+- **Two formal retractions** (`docs/RETRACTIONS.md`). Five of six headline
+  numbers were artefacts of this harness. **No number about Ploid is claimed.**
+- `MEASUREMENT_CARD.json` reads `PARTIALLY_VERIFIED` and names ten unmet claims.
+  It is **generated** by `scripts/refresh_card.py` — never hand-edit it.
+- Independent cold read: **74/90** against a self-score of 78/90.
+
+Before changing anything, read `docs/RETRACTIONS.md`. Every defect there looked
+like a finding about a vendor until someone read the returned rows.
 
 ## Verify
 

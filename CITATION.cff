@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+title: "titer: measuring people-search claims against attested records"
+message: "If you use this work, please cite it as below."
+type: software
+authors:
+  - family-names: Theodoro
+    given-names: Caio
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+repository-code: "https://github.com/caiotheodoro/titer"
+url: "https://huggingface.co/spaces/caiotheodoro/titer"
+abstract: >-
+  An instrument for measuring whether a people-search provider's claim about a
+  person is attested by a public record rather than judged by a model. Ground
+  truth comes from SEC Section 16 filings and from OpenAlex authorship backed by
+  Crossref DOIs; no model assigns any label. Six headline measurements were
+  produced; five turned out to be artefacts of the instrument rather than
+  findings about any vendor, each caught by reading returned rows rather than a
+  summary statistic. The surviving result, confirmed twice on negatives verified
+  exhaustively before the provider was asked, is that one provider confirms
+  attested expertise 96% of the time while affirming claims about topics a
+  person has never published in roughly one time in six, at 0.987 stated
+  confidence. Two formal retractions are published alongside.
+keywords:
+  - entity resolution
+  - expertise verification
+  - benchmark auditing
+  - measurement error
+  - people search
+license: MIT
+date-released: "2026-09-04"
+references:
+  - type: data
+    title: "titer - EDGAR officer corpus"
+    url: "https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers"
+  - type: data
+    title: "titer - attested expertise claims"
+    url: "https://huggingface.co/datasets/caiotheodoro/titer-expertise-claims"

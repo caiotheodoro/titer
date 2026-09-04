@@ -1,5 +1,7 @@
 # titer
 
+[![gates](https://github.com/caiotheodoro/titer/actions/workflows/ci.yml/badge.svg)](https://github.com/caiotheodoro/titer/actions/workflows/ci.yml)
+
 *The concentration you reach by titration: add reagent until you know.*
 
 **Six headline numbers about commercial people-search products. Five of them

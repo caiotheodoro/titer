@@ -1,0 +1,43 @@
+name: gates
+
+# "238 tests green" was a claim in a README. This turns it into a check.
+# The project's whole argument is that an unverified claim quietly stops being
+# true, so it applies the argument to itself.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gate_card_fresh compares the card's `generated` date against the
+          # newest commit touching results/. A shallow clone has no such
+          # history and the check silently no-ops.
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --extra dev
+
+      - name: Gates
+        # Nine gates: spine, privacy, cited paths, placeholders, pre-registration
+        # freeze, card honesty, advertised suite size, card freshness, stale
+        # status. All offline; none needs a key or a .env.
+        run: uv run python scripts/validate.py
+
+      - name: Tests
+        run: uv run pytest tests -q
+
+      - name: Oracle integrity
+        # Gold 1.0, no-op 0.0, inverted collapses, flat-profile identity, and a
+        # non-flat profile able to reorder arms. No network.
+        run: uv run python scripts/oracle_selfcheck.py

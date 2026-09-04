@@ -34,12 +34,35 @@ unavailable because no results existed. They exist now.
 - **The hardest collision band is empty** in the fitted environment.
 - **No trained policy.** R4 ships an environment, not a result about a model.
 
-## Independent read
+## Independent read — obtained 2026-09-04
 
-**Not yet obtained.** Two fresh-context adversarial reviews ran during
-development and found 26 findings, nine confirmed critical — that is a code
-review, not a cold read of the finished claims. An independent pass over
-`BENCHMARK.md`, `RETRACTIONS.md` and this file should be requested before the
-work is cited anywhere, and the number recorded here beside the self-score even
-when it is lower. A sibling repo scored itself 82 and took 75 from an
-independent pass; both are published.
+**74 / 90**, against a self-score of 78. The reviewer checked the repository
+cold and verified the delivery claims independently: 238 tests passing, gates
+green, both pre-registration hashes matching and their files untouched since the
+freeze commits, GitHub public, both datasets public and ungated, Space serving
+200.
+
+Three criteria were marked down, and all three are correct:
+
+| Criterion | Self | Independent | Why |
+|---|---|---|---|
+| 3 — trivial floor | 4 | **3** | The floor was withdrawn as a parser artefact and never validly measured. |
+| 5 — unflattering findings lead | 10 | **8** | `MEASUREMENT_CARD.json` was eight commits stale and contradicted the README on the front page — claiming SEC was blocked and zero credits spent, against 4.2M built rows. |
+| 8 — cost asymmetry, ranking stability | 6 | **5** | No cross-provider ranking exists at all. |
+
+The criterion-5 deduction is the sharpest one, because it lands on the criterion
+the card *is*. The fix was not to edit the card: it is now **generated** by
+`scripts/refresh_card.py` and gated by `gate_card_fresh`, which compares its
+counts to live values and refuses a `blocked_on` alongside recorded spend. A
+second gate, `gate_no_stale_status`, refuses any document asserting a state the
+repository disproves — it found five on its first run, two of which the cold
+read had not caught.
+
+### The reviewer's own summary, kept verbatim because it is fairer than mine
+
+> Value: high as methodology exemplar and hiring signal. Low as benchmark of
+> category.
+
+That is the honest description of this work. It measured one provider at n=750
+and produced one surviving number; what it demonstrates well is a process for
+not publishing the other five.

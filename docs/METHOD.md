@@ -133,5 +133,8 @@ discovered by a reader.
   path is tracked by git.
 - `docs/RED-TEAM.md` attacks this repository's own findings.
 - No training margin is quoted without its across-seed spread.
-- `MEASUREMENT_CARD.json` reads `NOT_VERIFIED` until every gate passes. A card
-  that always exits zero is decoration.
+- `MEASUREMENT_CARD.json` is **generated** from live state by
+  `scripts/refresh_card.py` and gated by `gate_card_fresh`. It went eight
+  commits stale when hand-maintained, asserting SEC was blocked against 4.2M
+  built rows. A card that always exits zero is decoration; a card that quietly
+  stops being true is worse.
