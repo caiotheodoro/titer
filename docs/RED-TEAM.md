@@ -137,3 +137,77 @@ as catching a broken promise. It is also itself the finding: the marketing says
 warrants nothing. We must be careful to test the marketing claim as a factual
 question, not as a breach - and a reviewer should flag any sentence in the README
 that implies otherwise.
+
+---
+
+# Attacks on the expertise findings (added 2026-09-03)
+
+## A12. "Your 18% is prompt interpretation, not error." — LIVE, and the strongest
+
+The prompt asks *"Does X have published research expertise in T?"* A provider
+may reasonably read that as "does X work in an area close to T", in which case
+affirming an adjacent topic is a defensible answer to a vague question rather
+than a false claim.
+
+**Status: LIVE.** The evidence strings support the worry - some affirmations
+cited genuinely adjacent work. The confirmatory run removed *contaminated*
+negatives (the person really had published in T) but cannot remove *adjacent*
+ones. The honest reading of 13-17% is therefore **"affirms claims about topics
+the person has never published in"**, not "hallucinates expertise".
+
+The experiment that would settle it: a prompt variant demanding a specific
+citation, scored on whether the citation exists. Not run; budget.
+
+## A13. "The negatives are still constructed by you." — MITIGATED, not eliminated
+
+Every negative is a topic with zero attested works, chosen by a versioned set
+operation over the OpenAlex hierarchy, verified against `/works`, and stripped
+of catch-all labels. Spot-checked at 0/150 contaminated [0, 0.0250].
+
+**Residual:** adjacency is defined by OpenAlex's own taxonomy, so a defect in
+that taxonomy propagates into ours. D031's difficulty tiers were *supposed* to
+detect this and did not separate.
+
+## A14. "E3's calibration is measured against your labels." — LIVE
+
+The overconfidence gap (0.987 stated vs 0.889 actual) uses our correctness
+labels. If those labels are wrong in the provider's favour, the gap shrinks -
+which is exactly what happened when contamination was removed (12.5 points →
+10 points).
+
+**Status: LIVE and bounded.** The direction is known and the correction has been
+applied once. A residual adjacent-topic bias would shrink it further. The claim
+that survives is the weaker one: **confidence is pinned at ceiling on 91.5% of
+answers and does not discriminate there**, which holds regardless of where
+accuracy truly sits.
+
+## A15. "H1's inverted U is your oracle, not the index." — LIVE, and we say so
+
+Reflection rises 0.28 → 0.57 → 0.29. We argue the fall after three years is SEC
+ageing out of reality rather than an index regressing.
+
+**Status: LIVE, and it is our own explanation of our own result.** D033 states
+it as a hypothesis and names the experiment (E4, over a population whose oracle
+tracks people after they leave public companies). Not run. Until it is, H1 is
+**mis-specified** - not confirmed, not falsified.
+
+## A16. "One provider is not a benchmark." — LIVE
+
+Every surviving number describes **Exa**. Ploid is retracted, the web floor is
+a parser artefact, and no other provider was measured.
+
+**Status: LIVE and unfixable at this budget.** Nothing here supports a claim
+about the category. `docs/BENCHMARK.md` names one provider throughout, and the
+pre-registered `cannot_separate` branch forbids ranking language regardless.
+
+## A17. "You published the methodology because the results were thin." — answered
+
+Six headline numbers, five artefacts. A reader may reasonably suspect the
+framing is a rescue.
+
+**Status: answered by the record, which is checkable.** `docs/RETRACTIONS.md`
+and `docs/DECISIONS.md` are append-only and timestamped; the retraction
+machinery (`RETRACTIONS.md`, the `flat` integrity probe, the leak probe, the
+claim gates) was committed at **W0, before any measurement existed** - see the
+first commit. The pre-registrations were hash-published before their studies.
+The framing is what the record produced, not a story fitted to it afterwards.

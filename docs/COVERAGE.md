@@ -111,3 +111,33 @@ open-ended placeholder.
 | Paid `confidence` untested | A budget increase **and** a proportionality argument in DECISIONS, not a budget increase alone |
 | Cross-sectional staleness only | A forward panel: re-query the same tasks at intervals after a fresh filing |
 | Recruiting / prospecting scenarios | A second Tier A oracle covering non-executive roles; none currently identified |
+
+---
+
+## The scholarly population (expertise study)
+
+Same discipline, different gaps. Stated in the vocabulary an expert-sourcing
+buyer would use, not ours.
+
+| Gap | Size | Consequence |
+|---|---|---|
+| **Publication record is not expertise** | unquantifiable | A brilliant engineer who never publishes is invisible. The oracle attests *authorship*, and CONTRACTS A6 says so. |
+| **OpenAlex `topics` is a top-N summary** | median 5 topics per author, for authors with ~120 works | This voided the first E1 run (R002). Negatives are now verified against `/works`, which is exhaustive - but only for the topics we ask about. |
+| **The corpus is 20,000 of ~3.66M eligible authors** | 0.55% | Name-collision degree measured inside it is a sampling artefact and under-counts reality (D032). No collision rate from this corpus is a population rate. |
+| **`works_count` band 20-500** | excludes both ends | Excludes merged author records (one real row carries 2.4M works across 42 affiliations) and excludes early-career researchers. |
+| **ORCID required** | ~3.66M of a much larger population | Researchers without an ORCID iD are absent entirely. |
+| **Institution required** | 849 of 20,878 dropped | Authors with no last-known institution are excluded, which skews away from the recently unaffiliated. |
+| **English-language, Anglophone-indexed venues dominate OpenAlex** | not measured | A known bias of the source; we inherit it and do not correct it. |
+| **Domain skew** | Physical Sciences 46,590 topic-instances vs Social Sciences 6,637 | Findings are weighted toward the physical sciences. |
+
+**What the expertise study cannot say anything about:** engineers, clinicians in
+practice, lawyers, and every other expert whose competence leaves no
+bibliographic trace. That is most of the population an expert-sourcing platform
+actually hires, and it is the single largest gap in this work.
+
+## Environment coverage (R4)
+
+The simulator is fitted from 500 real observations. Cells: `unique` 440, `low`
+44, `medium` 16, **`high` 0**. The hardest collision band has no data at all, so
+any policy trained on this simulator has never seen the cases the project was
+built to study. Reported rather than smoothed.
