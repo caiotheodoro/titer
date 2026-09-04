@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>titer — six numbers, five artefacts</title>
+<meta name="description" content="An instrument for measuring people-search claims against attested records. Six headline numbers, five of them artefacts of the measurer."/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1/dist/fonts/geist-mono/style.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --font-sans:"Plus Jakarta Sans",-apple-system,sans-serif;
+  --font-mono:"Geist Mono",monospace;
+  --color-accent:#c93d1e; --color-accent-hover:#a83218;
+  --color-border:#e8e8e4; --color-border-strong:#d4d4cf;
+  --color-bg:#ffffff; --color-bg-subtle:#f8f8f7; --color-code-bg:#f3f3ed;
+  --color-text:#171717; --color-text-secondary:#6b6b6b; --color-text-tertiary:#a3a3a3;
+  --s1:#c93d1e; --s2:#4361ee; --s3:#1f7a3d;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:var(--font-sans);font-size:16px;line-height:1.6;color:var(--color-text);
+  background:var(--color-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  scroll-behavior:smooth}
+body{min-height:100vh;overflow-x:hidden;background-color:#fff;
+  background-image:linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px);
+  background-size:36px 36px;position:relative}
+body::before{content:"";position:fixed;inset:0;
+  background:linear-gradient(to bottom,transparent 50%,#fff 100%);pointer-events:none;z-index:0}
+body>*{position:relative;z-index:1}
+a{color:inherit;text-decoration:none}
+main{max-width:680px;margin:0 auto;padding:clamp(2.5rem,8vh,5rem) 1.5rem 4rem}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1.05;margin-bottom:14px}
+h2{font-size:1.02rem;font-weight:600;letter-spacing:-.015em;margin-bottom:10px}
+p{font-size:.92rem;line-height:1.75;color:var(--color-text-secondary);margin-bottom:.9rem}
+p.lede{font-size:1.075rem;line-height:1.75;color:var(--color-text);margin-bottom:1.4rem}
+strong{color:var(--color-text);font-weight:600}
+.label{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--color-text-tertiary)}
+.section{margin-bottom:3rem}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.count{font-size:.65rem;background:var(--color-code-bg);border:1px solid var(--color-border);
+  padding:1px 7px;border-radius:10px;font-weight:500;color:var(--color-text-secondary)}
+hr.rule{border:0;border-top:1px solid var(--color-border);margin:2.5rem 0}
+code{font-family:var(--font-mono);font-size:.85em;background:var(--color-code-bg);
+  border:1px solid var(--color-border);border-radius:4px;padding:.15em .4em}
+dl.stats{display:flex;flex-wrap:wrap;margin:1.75rem 0 2.5rem;padding:1.5rem 0;
+  border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border)}
+dl.stats .stat{flex:1;min-width:132px;display:flex;flex-direction:column;gap:6px;
+  padding:.25rem 1.5rem .25rem 0}
+dl.stats .stat+.stat{padding-left:1.5rem;border-left:1px solid var(--color-border)}
+dl.stats dt{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--color-text-tertiary)}
+dl.stats dd{font-size:1.05rem;font-weight:600;color:var(--color-text);line-height:1.3}
+dl.stats dd span{font-size:.72rem;font-weight:400;color:var(--color-text-tertiary);display:block}
+table{width:100%;border-collapse:collapse;font-size:.82rem;margin:.5rem 0 1rem}
+th{text-align:left;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--color-text-tertiary);padding:0 10px 8px 0;border-bottom:1px solid var(--color-border)}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--color-border);
+  color:var(--color-text-secondary);vertical-align:top}
+td.num{font-family:var(--font-mono);font-size:.78rem;color:var(--color-text);white-space:nowrap}
+td.hi{color:var(--color-accent);font-weight:600}
+.card{border:1px solid var(--color-border);border-radius:10px;padding:14px 16px;
+  background:var(--color-bg);margin-bottom:10px}
+.card p{margin-bottom:0;font-size:.85rem}
+.card .t{font-size:.875rem;font-weight:600;color:var(--color-text);margin-bottom:5px}
+.bar{display:flex;align-items:flex-end;gap:10px;height:118px;margin:1.25rem 0 .5rem}
+.bar .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.bar .fill{width:100%;background:var(--s2);border-radius:3px 3px 0 0}
+.bar .b.peak .fill{background:var(--s1)}
+.bar .v{font-family:var(--font-mono);font-size:.7rem;color:var(--color-text)}
+.bar .k{font-size:.6rem;color:var(--color-text-tertiary);text-align:center;line-height:1.3}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
+.pill{font-size:.72rem;padding:5px 12px;border-radius:100px;border:1px solid var(--color-border);
+  color:var(--color-text-secondary);background:var(--color-bg);transition:border-color .15s,color .15s}
+.pill:hover{border-color:var(--color-border-strong);color:var(--color-accent)}
+.body-link{border-bottom:1px solid var(--color-border-strong);transition:color .15s,border-color .15s}
+.body-link:hover{color:var(--color-accent);border-color:var(--color-accent)}
+footer{border-top:1px solid var(--color-border);margin-top:3rem;padding-top:1.5rem;
+  font-size:.78rem;color:var(--color-text-tertiary)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+[data-fade]{opacity:0}
+[data-fade][data-visible]{animation:fadeUp .55s cubic-bezier(.25,.46,.45,.94) forwards}
+@media (max-width:520px){
+  dl.stats .stat{min-width:calc(50% - 1px)}
+  .bar{height:96px}
+}
+</style>
+</head>
+<body>
+<main>
+
+  <div data-fade>
+    <div class="label" style="margin-bottom:12px">titer · an instrument, and what it caught</div>
+    <h1>Six numbers.<br/>Five were ours.</h1>
+    <p class="lede">Six headline measurements of commercial people-search products.
+    <strong>Five turned out to be artefacts of the instrument, not findings about any
+    vendor.</strong> Every one was caught by reading the rows a provider returned —
+    never by reading a summary statistic.</p>
+    <p>That ratio is the result. The surviving measurements are below, and they
+    matter less than it does.</p>
+  </div>
+
+  <dl class="stats" data-fade data-delay="1">
+    <div class="stat"><dt>Headline numbers</dt><dd>6<span>five retracted</span></dd></div>
+    <div class="stat"><dt>Attested rows</dt><dd>4.2M<span>SEC Forms 3/4/5</span></dd></div>
+    <div class="stat"><dt>Total spend</dt><dd>$22.75<span>all measurement</span></dd></div>
+    <div class="stat"><dt>Tests</dt><dd>238<span>seven gates</span></dd></div>
+  </dl>
+
+  <section class="section" data-fade>
+    <div class="section-head"><span class="label">Why the ratio is the finding</span></div>
+    <p>Published comparisons put the <em>same</em> B2B data vendor at <strong>42.4%</strong>
+    in one study and <strong>78%</strong> in another. Neither publishes a methodology.
+    A gap that size does not come from vendors differing — it comes from harnesses
+    differing. This is a worked example of how.</p>
+    <table>
+      <thead><tr><th>#</th><th>The number</th><th>What it actually was</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Ploid 0/21</td><td>Company packed into the free-text query instead of the documented <code>filters</code></td></tr>
+        <tr><td class="num">2</td><td>Ploid 0/21 again</td><td>The company filter selects people <em>currently</em> there, so the anchor always came back</td></tr>
+        <tr><td class="num">3</td><td>Web floor 0/300</td><td>Our parser read person names out of page titles like <code>FORM 8-K 10.04.2013</code></td></tr>
+        <tr><td class="num">4</td><td>Expertise 17–21%</td><td>13.3% of "false" claims were true — OpenAlex topics is a top-N summary, not a record</td></tr>
+        <tr><td class="num">5</td><td>Lag 7,360 days</td><td>Isotonic regression forcing monotonicity onto a non-monotone curve</td></tr>
+        <tr><td class="num hi">6</td><td class="hi">Expertise 13–17%</td><td class="hi">Survived. Twice.</td></tr>
+      </tbody>
+    </table>
+    <p>In case 4 the affirmations kept looking <em>correct</em> — a dermatologic
+    oncologist affirmed for "Educational Methods", who had in fact co-authored
+    medical education research. Correct answers, scored as errors.</p>
+  </section>
+
+  <hr class="rule"/>
+
+  <section class="section" data-fade>
+    <div class="section-head"><span class="label">What survives</span><span class="count">n=750</span></div>
+    <h2>A provider is bad at saying no</h2>
+    <p>Expertise claims put to Exa, with every false claim verified against OpenAlex
+    <code>/works</code> <em>before</em> the provider was asked.</p>
+    <table>
+      <thead><tr><th>Claim</th><th>n</th><th>Correct</th><th>False affirmation</th></tr></thead>
+      <tbody>
+        <tr><td>Attested</td><td class="num">250</td><td class="num">0.9600 [0.9279, 0.9781]</td><td class="num">0 [0, 0.0151]</td></tr>
+        <tr><td>False — adjacent field</td><td class="num">250</td><td class="num">0.8680</td><td class="num hi">0.1320 [0.0956, 0.1796]</td></tr>
+        <tr><td>False — adjacent subfield</td><td class="num">250</td><td class="num">0.8320</td><td class="num hi">0.1680 [0.1268, 0.2193]</td></tr>
+      </tbody>
+    </table>
+    <p>It confirms real expertise <strong>96%</strong> of the time and affirms claims
+    about topics the person has <strong>never published in</strong> roughly one time in
+    six. Under a cost profile where a fake expert admitted costs 150× a miss, that
+    asymmetry <em>is</em> the result.</p>
+  </section>
+
+  <section class="section" data-fade>
+    <div class="section-head"><span class="label">Calibration</span></div>
+    <div class="card">
+      <div class="t">Confidence is pinned at the ceiling</div>
+      <p><strong>686 of 750 answers (91.5%)</strong> sit in the 0.9–1.0 confidence bin,
+      at mean confidence <strong>0.987</strong> against accuracy <strong>0.889</strong>.
+      A ten-point overconfidence gap in the bin holding nearly all the mass — and it
+      does not discriminate there. ECE 0.1153.</p>
+    </div>
+  </section>
+
+  <section class="section" data-fade>
+    <div class="section-head"><span class="label">Index freshness</span></div>
+    <h2>An inverted U, not a half-life</h2>
+    <p>Reflection of an attested job change, by time since the filing became public.
+    100 observations per bin.</p>
+    <div class="bar" aria-hidden="true">
+      <div class="b"><span class="v">0.28</span><div class="fill" style="height:38%"></div><span class="k">0–90d</span></div>
+      <div class="b"><span class="v">0.38</span><div class="fill" style="height:52%"></div><span class="k">90–365d</span></div>
+      <div class="b peak"><span class="v">0.57</span><div class="fill" style="height:78%"></div><span class="k">1–3y</span></div>
+      <div class="b"><span class="v">0.33</span><div class="fill" style="height:45%"></div><span class="k">3–7y</span></div>
+      <div class="b"><span class="v">0.29</span><div class="fill" style="height:40%"></div><span class="k">7y+</span></div>
+    </div>
+    <p>Non-monotone, so no half-life exists and the pre-registered estimator was
+    withdrawn — it had produced a "median lag" of 7,360 days by forcing a shape the
+    data does not have. The fall after three years is most likely <em>our oracle</em>
+    ageing out: executives leave public companies and SEC stops seeing them.</p>
+  </section>
+
+  <hr class="rule"/>
+
+  <section class="section" data-fade>
+    <div class="section-head"><span class="label">The retraction record</span><span class="count">2 formal</span></div>
+    <div class="card">
+      <div class="t">R001 — the Ploid arm</div>
+      <p>Three runs, all void. Every failure was a defect in our harness, so
+      <strong>no number about Ploid is claimed anywhere</strong>. The credits ran out
+      before a clean run existed.</p>
+    </div>
+    <div class="card">
+      <div class="t">R002 — the raw expertise rates</div>
+      <p>Negatives built from a top-N summary rather than an exhaustive record. 13.3%
+      were actually true — the same magnitude as the effect being measured.</p>
+    </div>
+    <p style="margin-top:1rem">The retraction machinery — the log, the leak probe, the
+    integrity probe, the claim gates — was committed <strong>before any measurement
+    existed</strong>. That ordering is checkable in the git history, and it is the only
+    reason five artefacts were caught rather than published.</p>
+  </section>
+
+  <section class="section" data-fade>
+    <div class="section-head"><span class="label">Limits</span></div>
+    <p><strong>One provider.</strong> Every surviving number describes Exa; nothing here
+    supports a claim about the category. <strong>The surviving 18% may be prompt
+    interpretation</strong> — the confirmatory run removed contaminated negatives but
+    cannot remove adjacent ones. <strong>Publication record is not expertise</strong>:
+    engineers, practising clinicians and lawyers leave no bibliographic trace and are
+    invisible here. <strong>Nothing is trained.</strong></p>
+  </section>
+
+  <section class="section" data-fade>
+    <div class="section-head"><span class="label">Artifacts</span></div>
+    <div class="links">
+      <a class="pill" href="https://github.com/caiotheodoro/titer">Code &amp; decisions</a>
+      <a class="pill" href="https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers">EDGAR corpus · 4.2M</a>
+      <a class="pill" href="https://huggingface.co/datasets/caiotheodoro/titer-expertise-claims">Expertise claims · 100K</a>
+    </div>
+    <p style="margin-top:1rem;font-size:.85rem">Both pre-registrations were
+    hash-published <em>before</em> their studies ran, and are byte-identical to their
+    first publication. Every measurement regenerates from the replay cache without an
+    API key.</p>
+  </section>
+
+  <footer data-fade>
+    <p style="color:inherit;font-size:inherit">titer · MIT · corpora published as
+    pointers, never as assembled records. If you appear in one and want out, see
+    <a class="body-link" href="https://github.com/caiotheodoro/titer/blob/main/docs/ETHICS.md">ETHICS §6</a>
+    — honoured within 7 days, no justification required.</p>
+  </footer>
+
+</main>
+<script>
+(function(){
+  var els=document.querySelectorAll('[data-fade]');
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.setAttribute('data-visible','')});return}
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){en.target.setAttribute('data-visible','');io.unobserve(en.target)}
+    })
+  },{rootMargin:'0px 0px -80px 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+</script>
+</body>
+</html>
