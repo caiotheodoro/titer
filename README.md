@@ -72,6 +72,7 @@ text, n=80 per colliding band, paired within task:
 
 | Band | name alone | + past employer | paired difference |
 |---|---|---|---|
+| `unique` | 0.2375 | 0.3500 | +0.1125 |
 | `low` | 0.0500 | 0.2000 | **+0.1500 [0.0750, 0.2375]** |
 | `medium` | **0.0000** | 0.1875 | **+0.1875 [0.1000, 0.2750]** |
 | `high` | **0.0000** | 0.2875 | **+0.2875 [0.1875, 0.3875]** |
@@ -80,6 +81,20 @@ Three bands, three intervals excluding zero. The pre-registered falsification
 condition was exactly this, and it fired. Adding the attested date and role on
 top of the employer buys nothing measurable once names collide, and a colliding
 name with **no** context is 0 of 80. ([D039](docs/DECISIONS.md))
+
+**False merges run backwards.** H2 predicted confidently-wrong identities would
+rise with name-collision degree. They fall:
+
+| collision degree | 1 | 2–3 | 4–9 | ≥10 |
+|---|---|---|---|---|
+| false merge, n=80 each | **0.0375** | 0.0000 | 0.0125 | 0.0000 |
+
+False merges are likeliest where names **don't** collide. On a colliding name the
+provider mostly cannot name anyone resolvable, so the outcome is a miss rather
+than a wrong identity: it never gets the chance to be confidently wrong. The risk
+sits where nobody stratifies for it. H2 is falsified, and it cost **$0** — the
+strata it needed were already in the E2 draw. ([D041](docs/DECISIONS.md),
+[D042](docs/DECISIONS.md))
 
 **Index freshness.** Reflection of an attested job change rises 0.28 → **0.57**
 over three years, then falls to 0.29. Non-monotone, so no half-life exists and
@@ -187,7 +202,7 @@ Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
 | [`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md) · [`-EXPERTISE`](docs/PRE-REGISTRATION-EXPERTISE.md) | Frozen before `src/`, hashes published. Never edited. |
 | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) | The two formal retractions. Committed at W0, before any measurement. |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 40 entries, each with the counterfactual. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 43 entries, each with the counterfactual. One (D042) corrects another. |
 | [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 7 carried LIVE, 2 open, 1 bounded by a control tier. |
 | [`docs/BENCHMARK.md`](docs/BENCHMARK.md) · [`RUBRIC`](docs/RUBRIC.md) · [`COVERAGE`](docs/COVERAGE.md) | Results, the independent read (74/90 against a 78/90 self-score), and what this cannot see. |
 | [`docs/MARKET.md`](docs/MARKET.md) | Where an attestation layer would sell, with the case against it. |

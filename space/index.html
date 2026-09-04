@@ -226,6 +226,27 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
   </section>
 
   <section class="section" data-fade>
+    <h2>False merges run backwards</h2>
+    <p>We predicted that confidently-wrong identities would rise as names get more
+    common. They fall.</p>
+    <div class="bar" aria-hidden="true">
+      <div class="b peak"><span class="v">0.0375</span><div class="fill" style="height:80%"></div><span class="k">unique</span></div>
+      <div class="b"><span class="v">0.0000</span><div class="fill" style="height:4%"></div><span class="k">2&ndash;3</span></div>
+      <div class="b"><span class="v">0.0125</span><div class="fill" style="height:30%"></div><span class="k">4&ndash;9</span></div>
+      <div class="b"><span class="v">0.0000</span><div class="fill" style="height:4%"></div><span class="k">10+</span></div>
+    </div>
+    <p>n=80 per band. On a colliding name the provider mostly cannot name anyone we
+    can resolve, so the outcome is a miss rather than a wrong identity &mdash; it
+    never gets the chance to be confidently wrong. <strong>The risk sits where
+    nobody stratifies for it:</strong> the easy, unique-name cases where an answer
+    comes back and looks clean.</p>
+    <p>This hypothesis sat unmeasured for the life of the project, filed as
+    &ldquo;strata empty by construction&rdquo;. It was never a budget problem. A
+    random draw had put 251 of 299 observations into one band; the stratified draw
+    built for a different experiment answered it for <strong>$0</strong>.</p>
+  </section>
+
+  <section class="section" data-fade>
     <h2>A trained policy, and three reward hacks it would have found</h2>
     <p>Reading the environment before writing a training loop found five defects.
     Three were exploits an optimiser finds and the baselines never do: a free reward
