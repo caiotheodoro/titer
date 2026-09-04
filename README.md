@@ -65,6 +65,22 @@ were affirmed, one in twelve, which puts a floor of at least 8.4 points under th
 mean confidence **0.987** against accuracy **0.889**. Confidence is pinned at
 ceiling and does not discriminate there. ECE 0.1153.
 
+**A capability constraint does disambiguate, falsifying our own hypothesis.**
+D029 argued a people-search surface cannot be handed a biographical constraint.
+On Exa's answer engine it plainly can. Naming the person's past employer in free
+text, n=80 per colliding band, paired within task:
+
+| Band | name alone | + past employer | paired difference |
+|---|---|---|---|
+| `low` | 0.0500 | 0.2000 | **+0.1500 [0.0750, 0.2375]** |
+| `medium` | **0.0000** | 0.1875 | **+0.1875 [0.1000, 0.2750]** |
+| `high` | **0.0000** | 0.2875 | **+0.2875 [0.1875, 0.3875]** |
+
+Three bands, three intervals excluding zero. The pre-registered falsification
+condition was exactly this, and it fired. Adding the attested date and role on
+top of the employer buys nothing measurable once names collide, and a colliding
+name with **no** context is 0 of 80. ([D039](docs/DECISIONS.md))
+
 **Index freshness.** Reflection of an attested job change rises 0.28 → **0.57**
 over three years, then falls to 0.29. Non-monotone, so no half-life exists and
 the pre-registered estimator was withdrawn. The fall is most likely *our oracle*
@@ -168,7 +184,7 @@ Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
 | [`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md) · [`-EXPERTISE`](docs/PRE-REGISTRATION-EXPERTISE.md) | Frozen before `src/`, hashes published. Never edited. |
 | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) | The two formal retractions. Committed at W0, before any measurement. |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 37 entries, each with the counterfactual. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 39 entries, each with the counterfactual. |
 | [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 7 carried LIVE, 2 open, 1 bounded by a control tier. |
 | [`docs/BENCHMARK.md`](docs/BENCHMARK.md) · [`RUBRIC`](docs/RUBRIC.md) · [`COVERAGE`](docs/COVERAGE.md) | Results, the independent read (74/90 against a 78/90 self-score), and what this cannot see. |
 | [`docs/MARKET.md`](docs/MARKET.md) | Where an attestation layer would sell, with the case against it. |

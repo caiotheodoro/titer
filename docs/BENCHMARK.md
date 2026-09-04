@@ -116,6 +116,56 @@ named a different person.
 That is a null result on H2's headline, and it is reported as prominently as a
 positive one would have been.
 
+## E2: a capability constraint DOES disambiguate, and D029 is falsified
+
+Pre-registered falsification condition: *"falsified if the free-text capability
+arm beats the name-alone arm - the semantic query field already absorbs
+biographical context, and the architectural gap D029 asserts does not exist in
+practice."*
+
+**It beats it, in all three colliding bands, with paired intervals excluding
+zero.** Exa `/answer`, n=80 per band, four renderings of the identical task set,
+within-task comparison, seed 23, $3.60.
+
+| Band | A: name alone | C: + past employer, free text | D: + full anchor context |
+|---|---|---|---|
+| `low` (degree 2-3) | 0.0500 [0.0196, 0.1216] | **0.2000** [0.1270, 0.3005] | 0.3375 [0.2435, 0.4464] |
+| `medium` (4-9) | **0.0000** [0.0000, 0.0458] | **0.1875** [0.1171, 0.2866] | 0.2750 [0.1892, 0.3814] |
+| `high` (>=10) | **0.0000** [0.0000, 0.0458] | **0.2875** [0.1999, 0.3946] | 0.3000 [0.2106, 0.4077] |
+
+Paired differences, 10,000 resamples, seed 11:
+
+| Contrast | `low` | `medium` | `high` |
+|---|---|---|---|
+| C - A | **+0.1500** [0.0750, 0.2375] | **+0.1875** [0.1000, 0.2750] | **+0.2875** [0.1875, 0.3875] |
+| D - A | +0.2875 [0.1875, 0.3875] | +0.2750 [0.1750, 0.3750] | +0.3000 [0.2000, 0.4000] |
+| D - C | +0.1375 [0.0500, 0.2250] | +0.0875 [0.0000, 0.1750] *ns* | +0.0125 [-0.0625, 0.0875] *ns* |
+
+**Three things this says.**
+
+1. **The hypothesis was ours and it is wrong.** D029 argued a people-search
+   surface cannot be handed a biographical constraint. On an answer engine it
+   plainly can: naming the past employer in free text moves the correct rate
+   from 0.05 to 0.20, and from **zero** to 0.19 and 0.29 at the two harder
+   collision bands.
+2. **Nearly all of the benefit is the employer name alone.** `D - C` separates
+   only at `low`. Adding the attested date and the role class on top of the
+   company buys nothing measurable once names actually collide.
+3. **A colliding name with no context is unresolvable.** At `medium` and `high`,
+   arm A is **0 of 80**. That is the ceiling a name-only query has against this
+   population, and it is the number that makes the other arms interpretable.
+
+**Scope, stated rather than assumed.** D029 is a claim about people-search
+indexes with **structured filters** - Ploid's documented `title`, `seniority`,
+`company`, `industry`, `location`, every one a current-state field. Exa
+`/answer` is an answer engine, a different surface, and falsifying the claim
+there does not falsify it for a filter-based index. Arm B is the within-provider
+test on the surface the hypothesis was actually about.
+
+**Per-stratum only.** D027's pooling ban applies and no pooled rate is given.
+D032 applies too: a colliding sample is deliberately enriched, case-control, so
+**no collision rate here is a population rate**.
+
 ## What does NOT hold
 
 ### The web floor is not measured. It is a parser artefact.

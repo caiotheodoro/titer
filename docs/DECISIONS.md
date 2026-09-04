@@ -1700,3 +1700,52 @@ the failure this repository is about. Total spent finding this out: **$0.08**.
 sub-unit-to-parent containment rate published alongside, and a second scholarly
 affiliation source to bound oracle staleness. That is a wave of work, not a
 budget line.
+
+---
+
+## D039 - E2 falsifies D029 on an answer engine (2026-09-04)
+
+D029 was recorded as *"a hypothesis, and never a finding"*, with the experiment
+that would settle it written down. The experiment ran. **The hypothesis is
+falsified**, on the surface tested, and it was our own.
+
+**Claim (D029).** A people-search surface cannot be handed a *biographical*
+constraint: every documented filter describes a person's current state, so where
+a name collides the caller has no way to pass the one fact that disambiguates.
+
+**Pre-registered falsification.** C > A - the free-text capability arm beats the
+name-alone arm.
+
+**Result.** Exa `/answer`, n=80 per colliding band, four renderings of the
+identical task set, within-task, seed 23, $3.60:
+
+| Contrast | `low` | `medium` | `high` |
+|---|---|---|---|
+| C - A | **+0.1500** [0.0750, 0.2375] | **+0.1875** [0.1000, 0.2750] | **+0.2875** [0.1875, 0.3875] |
+
+Three bands, three intervals excluding zero. Naming the past employer in free
+text moves the correct rate from 0.05 to 0.20 at `low`, and from **0 of 80** to
+0.19 and 0.29 at `medium` and `high`.
+
+**What survives of D029.** Its scope. The claim was about indexes with
+**structured filters** - `title`, `seniority`, `company`, `industry`,
+`location`, all current-state. Exa `/answer` is an answer engine and reads free
+text, so it was never the surface the argument was about. Falsifying it here
+does not falsify it for a filter-based index; the within-provider Ploid arm is
+that test.
+
+**The unexpected half.** `D - C` separates only at `low`. Handing over the
+attested date and role class on top of the company name buys **nothing
+measurable** once names actually collide. The disambiguating signal is the past
+employer, and the rest of the anchor is decoration. Nothing predicted that, and
+it is the more useful finding for anyone building a query.
+
+**Also worth stating plainly:** arm A is **0 of 80** at both `medium` and
+`high`. A colliding name with no context is not merely harder, it is
+unresolvable against this population, and that is the ceiling the other arms are
+read against.
+
+**Counterfactual.** Had this not run, D029 would have stayed in the log as a
+plausible architectural story about a product gap, cited as motivation and never
+tested. It is exactly the kind of claim this repository exists to make
+falsifiable, and it did not survive contact.
