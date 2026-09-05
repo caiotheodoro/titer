@@ -1954,3 +1954,112 @@ unsupported.
 
 **A12 therefore stays LIVE, bounded from two sides.** The remaining 174
 affirmations, including every `CONTROL` one, need a quota reset and cost $0.
+
+---
+
+## D044 - A12 complete, and D043's partial numbers were wrong by ~10 points (2026-09-04)
+
+The citation audit finished: **399 of 399 affirmations, $0**. It also proves the
+caveat D043 attached to itself, which is the more useful half.
+
+### The correction
+
+D043 reported a partial audit and warned that the subset was processed in
+task-dict order rather than sampled, so it "must not be quoted as" a randomised
+estimate. That warning was correct and the partial was **understated by roughly
+ten points** on both false strata:
+
+| Stratum | D043 (partial) | Complete | n |
+|---|---|---|---|
+| `ATTESTED` | 0.5733 (n=150) | **0.5733 [0.4933, 0.6497]** | 150 |
+| `FALSE_near` | 0.1429 (n=42) | **0.2302 [0.1653, 0.3110]** | 126 |
+| `FALSE_far` | 0.1515 (n=33) | **0.2843 [0.2058, 0.3784]** | 102 |
+| `CONTROL` | 0.0000 (n=18) | **0.0000 [0.0000, 0.1546]** | 21 |
+
+`ATTESTED` was already complete at 150/150 and did not move. The two partial
+strata moved a long way, in the same direction, which is what a non-random
+prefix of a list does. **An interval is not protection against a biased sample**,
+and quoting the partial as a rate would have been wrong by more than its own
+interval width.
+
+### The finding, now that it is complete
+
+The gradient is monotone and every step is a real gap:
+
+`ATTESTED` **0.57** > `FALSE_far` 0.28 ~ `FALSE_near` 0.23 > `CONTROL` **0.00**
+
+- A **true** affirmation cites a real work by that author **57%** of the time.
+- A **false** one does so about **a quarter** of the time - so roughly one in
+  four false affirmations *is* grounded in the person's real work, presumably on
+  another topic. **The "loose but reasonable reading" story keeps some support
+  for adjacent topics**, and saying otherwise would overstate this.
+- A **CONTROL** affirmation - a wholly different OpenAlex domain, an
+  organometallic chemist and historical studies on Spain - is grounded
+  **0 times out of 21**.
+
+### What this does to A12
+
+The control arm now fails two independent tests at once. It was already the
+arm no generous reading of the prompt explains, which put a floor of 8.4 points
+under the false-affirmation rate. It is now also the arm that cites **nothing
+verifiable whatsoever**. Two different instruments, pointing the same way, on
+the same 21 answers.
+
+**A12 moves from BOUNDED to BOUNDED-AND-EXPLAINED at the extreme, and stays
+LIVE in the middle.** For adjacent topics the interpretation defence survives on
+a quarter of cases; for distant ones it has nothing left to stand on.
+
+**Cost: $0.** Every citation was already in the replay cache.
+
+---
+
+## D045 - E4 preliminary, and a verdict computed from n=2 (2026-09-04)
+
+E4's data is bought: 500 responses, $2.50, cached. Scoring is the part that
+keeps stalling, and it produced a defect worth recording before the result.
+
+### The defect: a confident verdict built on nothing
+
+`run_e4_coverage.py` gained an unpaired bootstrap for the between-population
+difference. Its guard was `all(p.get("n_scored") for p in pops.values())` -
+non-zero, not adequate. On a run where OpenAlex scored **2 of 250** scholar rows
+it printed:
+
+> `"verdict": "E4 SUPPORTED: the interval excludes zero."`  point -0.18,
+> CI [-0.228, -0.136]
+
+That is a 250-versus-2 comparison wearing a bootstrap interval. It is exactly
+the shape this repository exists to name, and it was one commit from being
+published as a finding.
+
+**Now:** a `MIN_SCORED = 100` floor, and below it the field reads `NO VERDICT`
+with the scored counts and the reason. Verified to refuse on the same run that
+produced the bogus verdict.
+
+### The result, stated as preliminary
+
+The best scoring achieved so far, 203 of 250 scholar rows:
+
+| Population | n scored | correct |
+|---|---|---|
+| SEC (name-only) | 250/250 | 0.1800 [0.1373, 0.2324] |
+| Scholar (name-only) | 203/250 | 0.2069 [0.1569, 0.2678] |
+
+Unpaired difference, scholar - SEC, 10,000 resamples, seed 11:
+**+0.0269 [-0.0464, +0.1014]**, which **contains zero**. That is E4's
+pre-registered falsification condition, so the reading is *no detectable
+coverage difference between the two populations* - which the pre-registration
+itself calls worth reporting: "evidence that resolution quality is a property of
+the method rather than the population."
+
+**It is not final and must not be quoted as final.** 47 scholar rows are
+unscored, and D044 just demonstrated on the A12 audit that a non-randomly
+incomplete subset can move a rate by ten points - more than this interval's
+half-width. A complete re-score costs $0 and settles it.
+
+### One asymmetry that makes the null more interesting, not less
+
+Only OpenAlex publishes hierarchy, so a scholar named at a sub-unit of the right
+body scores correct while an executive named at a subsidiary of the right issuer
+scores wrong. The scholar arm is therefore scored *generously* relative to SEC,
+and the two are **still** indistinguishable.

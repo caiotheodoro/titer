@@ -2,7 +2,7 @@
   "generated": "2026-09-04",
   "citations_checked_per_affirmation": 3,
   "spend_usd": 0.0,
-  "audited": 243,
+  "audited": 399,
   "requested": 399,
   "method": "For each affirmation, up to N cited titles are resolved against OpenAlex. 'backed' means at least one cited title is a work OpenAlex says this author wrote. No model reads the evidence string.",
   "strata": {
@@ -15,28 +15,28 @@
       "backed_wilson": "0.5733 [0.4933, 0.6497] n=150"
     },
     "FALSE_far": {
-      "n": 33,
-      "backed": 5,
-      "title_exists_but_not_theirs": 4,
-      "no_resolvable_title": 24,
-      "backed_rate": 0.1515,
-      "backed_wilson": "0.1515 [0.0665, 0.3092] n=33"
+      "n": 102,
+      "backed": 29,
+      "title_exists_but_not_theirs": 17,
+      "no_resolvable_title": 56,
+      "backed_rate": 0.2843,
+      "backed_wilson": "0.2843 [0.2058, 0.3784] n=102"
     },
     "FALSE_far_domain": {
-      "n": 18,
+      "n": 21,
       "backed": 0,
-      "title_exists_but_not_theirs": 5,
-      "no_resolvable_title": 13,
+      "title_exists_but_not_theirs": 7,
+      "no_resolvable_title": 14,
       "backed_rate": 0.0,
-      "backed_wilson": "0.0000 [0.0000, 0.1759] n=18"
+      "backed_wilson": "0.0000 [0.0000, 0.1546] n=21"
     },
     "FALSE_near": {
-      "n": 42,
-      "backed": 6,
-      "title_exists_but_not_theirs": 11,
-      "no_resolvable_title": 25,
-      "backed_rate": 0.1429,
-      "backed_wilson": "0.1429 [0.0672, 0.2784] n=42"
+      "n": 126,
+      "backed": 29,
+      "title_exists_but_not_theirs": 24,
+      "no_resolvable_title": 73,
+      "backed_rate": 0.2302,
+      "backed_wilson": "0.2302 [0.1653, 0.3110] n=126"
     }
   }
 }

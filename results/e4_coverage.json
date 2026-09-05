@@ -3,7 +3,7 @@
   "instrument": "name-only; identical string for both populations",
   "scoring": "resolved to an ID, not a string: SEC employer -> CIK; scholar affiliation -> OpenAlex institution id with lineage containment. Only OpenAlex publishes hierarchy, which favours the scholar arm.",
   "n_requested_per_population": 250,
-  "live_calls": 498,
+  "live_calls": 0,
   "spend_usd": 2.5,
   "pooling_rule": "Reported per population and NEVER pooled. The two oracles differ in strength: a filing versus OpenAlex last_known_institutions, which lags a move. A gap is coverage x oracle freshness.",
   "populations": {
@@ -17,11 +17,22 @@
     },
     "scholar": {
       "n_returned": 250,
-      "n_scored": 1,
-      "unscored_openalex_unavailable": 249,
+      "n_scored": 2,
+      "unscored_openalex_unavailable": 248,
       "named_someone": "1.0000 [0.9849, 1.0000] n=250",
-      "correct": "0.0000 [0.0000, 0.7935] n=1",
+      "correct": "0.0000 [0.0000, 0.6576] n=2",
       "correct_rate": 0.0
     }
+  },
+  "difference_scholar_minus_sec": {
+    "point": -0.18,
+    "ci": [
+      -0.228,
+      -0.136
+    ],
+    "resamples": 10000,
+    "seed": 11,
+    "contains_zero": false,
+    "verdict": "E4 SUPPORTED: the interval excludes zero."
   }
 }

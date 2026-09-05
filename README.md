@@ -82,6 +82,25 @@ condition was exactly this, and it fired. Adding the attested date and role on
 top of the employer buys nothing measurable once names collide, and a colliding
 name with **no** context is 0 of 80. ([D039](docs/DECISIONS.md))
 
+**A false affirmation is usually ungrounded.** For each of 399 affirmations, we
+resolved up to three of the provider's own citations against OpenAlex and asked
+whether any is a work that author actually wrote. Cost: $0, the citations were
+already cached.
+
+| Claim affirmed | cites a real work by that author |
+|---|---|
+| Attested | **0.5733 [0.4933, 0.6497]** |
+| False, adjacent field | 0.2843 [0.2058, 0.3784] |
+| False, adjacent subfield | 0.2302 [0.1653, 0.3110] |
+| **False, different domain** | **0.0000 [0.0000, 0.1546]** |
+
+The control arm now fails two independent tests: it is the arm no generous
+reading of the prompt explains, **and** the arm that cites nothing verifiable at
+all, zero of twenty-one. But roughly **one in four** adjacent false affirmations
+*is* grounded in the person's real work, so the interpretation defence survives
+in the middle of the table and dies only at the extreme.
+([D044](docs/DECISIONS.md))
+
 **False merges run backwards.** H2 predicted confidently-wrong identities would
 rise with name-collision degree. They fall:
 
@@ -202,7 +221,7 @@ Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
 | [`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md) · [`-EXPERTISE`](docs/PRE-REGISTRATION-EXPERTISE.md) | Frozen before `src/`, hashes published. Never edited. |
 | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) | The two formal retractions. Committed at W0, before any measurement. |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 43 entries, each with the counterfactual. One (D042) corrects another. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 45 entries, each with the counterfactual. Two (D042, D044) correct earlier ones. |
 | [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 7 carried LIVE, 2 open, 1 bounded by a control tier. |
 | [`docs/BENCHMARK.md`](docs/BENCHMARK.md) · [`RUBRIC`](docs/RUBRIC.md) · [`COVERAGE`](docs/COVERAGE.md) | Results, the independent read (74/90 against a 78/90 self-score), and what this cannot see. |
 | [`docs/MARKET.md`](docs/MARKET.md) | Where an attestation layer would sell, with the case against it. |

@@ -175,26 +175,34 @@ label is the circularity D022 bans.
 
 `scripts/a12_citation_audit.py` does this and spends $0.
 
-**It has produced a partial number, and it points one way** (D043). Of 225
-affirmations audited before the OpenAlex budget ran out a second time:
+**The audit is complete: 399 of 399 affirmations, $0** (D043, corrected by
+D044). For each affirmation, up to three cited titles were resolved against
+OpenAlex, asking whether any is a work that author actually wrote.
 
 | Stratum | n | cites a real work by that author |
 |---|---|---|
 | `ATTESTED` | 150 | **0.5733 [0.4933, 0.6497]** |
-| `FALSE_far` | 33 | 0.1515 [0.0665, 0.3092] |
-| `FALSE_near` | 42 | 0.1429 [0.0672, 0.2784] |
+| `FALSE_far` | 102 | 0.2843 [0.2058, 0.3784] |
+| `FALSE_near` | 126 | 0.2302 [0.1653, 0.3110] |
+| **`CONTROL`** | 21 | **0.0000 [0.0000, 0.1546]** |
 
-The attested interval overlaps neither false interval. If the mechanism were
-loose-but-reasonable reading, a false affirmation should still be **grounded** -
-real work by that person, merely on an adjacent topic. It is roughly four times
-less likely to cite any verifiable work by them at all.
+**The control arm now fails two independent tests at once.** It was already the
+arm no generous reading of the prompt explains, which put a floor of 8.4 points
+under the false-affirmation rate. It is also the arm that cites **nothing
+verifiable whatsoever** - zero of twenty-one. Two different instruments, the
+same twenty-one answers, the same direction.
 
-**This does not close A12**, for four reasons stated in D043: it is 225 of 399
-with the `CONTROL` arm entirely unaudited; the subset is processed in dict order
-rather than sampled at random; "no resolvable title" conflates a profile-page
-citation with a resolver miss; and "backed" allows a real work on the *wrong*
-topic. **A12 stays LIVE, now bounded from two sides**, and the remaining 174
-affirmations cost $0 once the quota resets.
+**A12 is not closed, and the honest reason is the middle of the table.** Roughly
+**one in four** adjacent false affirmations *is* grounded in a real work by that
+person, presumably on another topic. For adjacent topics the
+loose-but-reasonable-reading defence keeps that much support. It is at the
+extreme, where the topic is a wholly different OpenAlex domain, that it has
+nothing left to stand on.
+
+**Status: BOUNDED at the extreme, LIVE in the middle.** An earlier partial run
+of this same audit reported the false strata about ten points lower; it was
+processed in dict order rather than sampled, and D044 records the correction
+because an interval is no protection against a biased sample.
 
 ## A13. "The negatives are still constructed by you." · MITIGATED, not eliminated
 

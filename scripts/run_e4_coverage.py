@@ -221,7 +221,52 @@ def main() -> int:
             "correct_rate": round(sum(r["correct"] for r in scored) / ns, 4) if ns else None,
         }
     # Unpaired: the two populations are different people, so the difference is
-    # a between-population contrast, not a within-task one. No paired bootstrap.
+    # a between-population contrast, not a within-task one. Resampling each arm
+    # independently is correct HERE and would be wrong for E2, where the arms
+    # see the identical tasks and the pairing is what buys the precision.
+    # A verdict needs an arm, not a token. The first version of this guard only
+    # checked n_scored was non-zero, and on a run where OpenAlex scored 2 of 250
+    # scholar rows it emitted "E4 SUPPORTED: the interval excludes zero" from a
+    # 250-versus-2 comparison. A confident verdict computed from nothing is the
+    # defect this repository is about, so the floor is explicit.
+    MIN_SCORED = 100
+    pops = report["populations"]
+    thin = {k: v.get("n_scored", 0) for k, v in pops.items()
+            if (v.get("n_scored") or 0) < MIN_SCORED}
+    if thin:
+        report["difference_scholar_minus_sec"] = {
+            "verdict": "NO VERDICT",
+            "reason": (f"arms scored too thin for a between-population claim: "
+                       f"{thin}, minimum {MIN_SCORED}. Scoring the scholar arm "
+                       f"needs OpenAlex; re-run when its budget resets. The "
+                       f"provider responses are cached, so it costs $0."),
+            "scored": {k: v.get("n_scored") for k, v in pops.items()}}
+    elif len(pops) == 2:
+        import statistics as _st
+        rng2 = random.Random(11)
+        arms = {}
+        for pop in ("sec", "scholar"):
+            rs = [r for r in recs if r["population"] == pop and r["correct"] is not None]
+            arms[pop] = [1.0 if r["correct"] else 0.0 for r in rs]
+        diffs = []
+        for _ in range(10_000):
+            d = []
+            for pop in ("scholar", "sec"):
+                v = arms[pop]
+                d.append(_st.fmean([v[rng2.randrange(len(v))] for _ in range(len(v))]))
+            diffs.append(d[0] - d[1])
+        diffs.sort()
+        lo, hi = diffs[250], diffs[9750]
+        point = _st.fmean(arms["scholar"]) - _st.fmean(arms["sec"])
+        report["difference_scholar_minus_sec"] = {
+            "point": round(point, 4), "ci": [round(lo, 4), round(hi, 4)],
+            "resamples": 10_000, "seed": 11,
+            "contains_zero": bool(lo <= 0.0 <= hi),
+            "verdict": ("E4 FALSIFIED: the difference interval contains zero, so "
+                        "the same provider resolves the two populations at rates "
+                        "this design cannot distinguish."
+                        if lo <= 0.0 <= hi else
+                        "E4 SUPPORTED: the interval excludes zero.")}
     (ROOT / "results" / args.out).write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report["populations"], indent=2))
     return 0
