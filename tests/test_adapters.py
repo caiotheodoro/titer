@@ -456,3 +456,49 @@ class TestE2Arms:
         # the default (non-E2) arm set is unchanged
         assert sorted(build_arms(False, {"exa", "ploid", "webfloor"})) == [
             "exa", "ploid", "webfloor"]
+
+
+class TestCredentialLoading:
+    """A tool that quietly does something weaker than asked.
+
+    Every credential path reads os.environ, which is right - a credential must
+    never come from a tracked file. But nothing loaded the gitignored .env, so
+    running a script from a plain shell silently used NO key. Measured
+    2026-09-04: the keyless OpenAlex pool was exhausted and 429ing while the
+    key had budget, so an unsourced shell did not fail, it crawled - auditing
+    18 rows where the key did hundreds, and blaming the environment.
+    """
+
+    def test_env_file_populates_missing_keys(self, tmp_path, monkeypatch):
+        import titer.creds as creds
+        (tmp_path / ".env").write_text(
+            '# a comment\nFOO_KEY=abc123\nBAR_KEY="quoted"\n\nMALFORMED\n')
+        monkeypatch.delenv("FOO_KEY", raising=False)
+        monkeypatch.delenv("BAR_KEY", raising=False)
+        monkeypatch.setattr(creds, "_LOADED", False)
+        creds.load_env(tmp_path)
+        import os
+        assert os.environ["FOO_KEY"] == "abc123"
+        assert os.environ["BAR_KEY"] == "quoted"
+
+    def test_an_exported_value_always_wins(self, tmp_path, monkeypatch):
+        """`KEY=x python script.py` must never be overridden by the file."""
+        import os
+
+        import titer.creds as creds
+        (tmp_path / ".env").write_text("FOO_KEY=from_file\n")
+        monkeypatch.setenv("FOO_KEY", "from_shell")
+        monkeypatch.setattr(creds, "_LOADED", False)
+        creds.load_env(tmp_path)
+        assert os.environ["FOO_KEY"] == "from_shell"
+
+    def test_missing_env_file_is_not_an_error(self, tmp_path, monkeypatch):
+        import titer.creds as creds
+        monkeypatch.setattr(creds, "_LOADED", False)
+        assert creds.load_env(tmp_path) == {}
+
+    def test_the_credential_paths_actually_call_it(self):
+        import titer.adapters.http as http
+        import titer.corpus.scholar as sch
+        assert "load_env()" in open(http.__file__).read()
+        assert "load_env()" in open(sch.__file__).read()

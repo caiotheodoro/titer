@@ -71,6 +71,9 @@ def _auth_headers() -> dict[str, str]:
     string - and a credential does not belong in any of those.
     """
     import os
+
+    from titer.creds import load_env
+    load_env()
     key = os.environ.get("OPENALEX_API_KEY", "").strip()
     return {"Authorization": f"Bearer {key}"} if key else {}
 

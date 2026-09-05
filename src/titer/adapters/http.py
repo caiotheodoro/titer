@@ -19,6 +19,8 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any
 
+from titer.creds import load_env
+
 CLIENT_UA = "titer/0.1 (+https://github.com/caiotheodoro/titer)"
 
 # Per-provider request spacing, from each provider's PUBLISHED limit - not a
@@ -93,6 +95,7 @@ class HTTPTransport:
 
 
 def ploid_transport() -> HTTPTransport:
+    load_env()
     key = os.environ.get("PLOID_API_KEY", "").strip()
     if not key:
         raise RuntimeError("PLOID_API_KEY is unset; put it in .env (gitignored)")
@@ -101,6 +104,7 @@ def ploid_transport() -> HTTPTransport:
 
 
 def exa_transport() -> HTTPTransport:
+    load_env()
     key = os.environ.get("EXA_API_KEY", "").strip()
     if not key:
         raise RuntimeError("EXA_API_KEY is unset; put it in .env (gitignored)")
