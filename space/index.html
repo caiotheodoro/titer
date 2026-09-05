@@ -132,8 +132,8 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
     <table>
       <thead><tr><th>#</th><th>The number</th><th>What it actually was</th></tr></thead>
       <tbody>
-        <tr><td class="num">1</td><td>Ploid 0/21</td><td>Company packed into the free-text query instead of the documented <code>filters</code></td></tr>
-        <tr><td class="num">2</td><td>Ploid 0/21 again</td><td>The company filter selects people <em>currently</em> there, so the anchor always came back</td></tr>
+        <tr><td class="num">1</td><td>A 0/21 against a people index</td><td>We packed the company into the free-text query instead of the documented <code>filters</code>, so it scored our wire format</td></tr>
+        <tr><td class="num">2</td><td>0/21 again, through the &ldquo;fix&rdquo;</td><td>Our filter selects people <em>currently</em> there, so the anchor always came back</td></tr>
         <tr><td class="num">3</td><td>Web floor 0/300</td><td>Our parser read person names out of page titles like <code>FORM 8-K 10.04.2013</code></td></tr>
         <tr><td class="num">4</td><td>Expertise 17–21%</td><td>13.3% of "false" claims were true. OpenAlex topics is a top-N summary, not a record</td></tr>
         <tr><td class="num">5</td><td>Lag 7,360 days</td><td>Isotonic regression forcing monotonicity onto a non-monotone curve</td></tr>
@@ -303,15 +303,26 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
   <section class="section" data-fade>
     <h2>The retraction record<span class="count" style="margin-left:10px">2 formal</span></h2>
     <div class="card">
-      <div class="t">R001: the Ploid arm</div>
-      <p>Five runs and five budgets, none of them a number. Every failure was a defect in our
-      harness, so <strong>no number about Ploid is claimed anywhere</strong>. The
-      seventh defect was found on the last $0.40: the anchor company tokens displace
-      the person they were meant to disambiguate. Asking for "Michael Anzilotti
-      Access National" returns two other people at that company; asking for "Michael
-      Anzilotti" returns him at rank 1. What it would cost to know is published
-      instead: n=49 for a &plusmn;0.10 half-width, $9.80 at the measured $0.20 per
-      search.</p>
+      <div class="t">R001: the people-index arm</div>
+      <p>Five budgets produced seven defects in <em>our own harness</em> and no valid
+      observation, so <strong>no accuracy number is claimed for any people-search
+      index here</strong> &mdash; not a poor one, not any. Publishing a void score
+      with a footnote is what R001 forbids: the number travels and the footnote does
+      not.</p>
+      <p>What the runs did establish is about query construction. Asked properly, the
+      index finds the person: <code>{"query": "George Reyes", "filters": {"company":
+      "Google"}}</code> returns the right one at the top, so our early failures were
+      malformed queries rather than missing people. The documented company filter
+      resolved 3 of 12 colliding names where a bare name resolved 0. And extra
+      context can cost precision &mdash; appending company tokens displaced the
+      target, while the bare name returned him at rank 1.</p>
+      <p>What a real measurement would cost is published instead of guessed:
+      <strong>n=49 per arm for a &plusmn;0.10 half-width, $9.80</strong>.</p>
+      <p>The index is <a href="https://ploid.com">Ploid</a>, named because hiding
+      which surface we failed to measure would be its own kind of dishonesty. Their
+      Terms are the most permissive of the five vendors surveyed and expressly permit
+      automated access through documented APIs, which is why this was the arm we
+      could attempt at all.</p>
     </div>
     <div class="card">
       <div class="t">R002: the raw expertise rates</div>
