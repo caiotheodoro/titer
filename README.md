@@ -167,11 +167,8 @@ What the runs did establish is about query construction, and it is useful:
 What a real measurement would cost is published instead of guessed: **n=49 per
 arm for a ±0.10 half-width, $9.80** at the measured $0.20 per search.
 
-The index in question is [Ploid](https://ploid.com), named here because hiding
-which surface we failed to measure would be its own kind of dishonesty. Their
-Terms are the most permissive of the five vendors surveyed and expressly allow
-automated access through documented APIs, which is why they were the arm we
-could attempt at all. The full record, defects included, is in
+The index was Ploid, named because hiding which surface we failed to measure
+would be its own kind of dishonesty. The full record, defects included, is in
 [R001](docs/RETRACTIONS.md), [D028](docs/DECISIONS.md),
 [D035](docs/DECISIONS.md) and [D040](docs/DECISIONS.md).
 
