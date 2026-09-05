@@ -15,11 +15,14 @@ simulator and clears the seed gate (0.0461 vs -0.1000, across-seed SD 0.0122 =
 0.08x the margin, 6 seeds); it learned selectivity, not calibration. Five
 environment defects were found before training, three of them reward hacks, and
 the previously published R4 floors were wrong. E4 is not measurable at this
-budget when it was first attempted (D038); the blocker is now resolved via
-OpenAlex institution lineage and the run is in progress. H2 is FALSIFIED and
+budget when first attempted (D038); the blocker is resolved via OpenAlex
+institution lineage and the data is bought, with scoring PRELIMINARY at 203/250
+scholar rows: SEC 0.1800 against scholar 0.2069, difference +0.0269
+[-0.0464,+0.1014], containing zero (D045). A12's citation audit is COMPLETE at
+399/399 for $0: attested affirmations cite a real work by that author 0.5733,
+adjacent-false ones about a quarter, and CONTROL ones 0.0000 - zero of
+twenty-one (D044). H2 is FALSIFIED and
 inverted - false merges are likeliest where names do NOT collide (D041, D042).
-A12 is bounded from a second side: attested affirmations cite a real work by
-that author 57.3% of the time against ~14-15% for false ones (D043, partial).
 Five budgets, still no Ploid accuracy number.
 
 Headline: Exa confirms attested expertise at 0.9600 [0.9279, 0.9781] and affirms

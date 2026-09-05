@@ -17,22 +17,19 @@
     },
     "scholar": {
       "n_returned": 250,
-      "n_scored": 2,
-      "unscored_openalex_unavailable": 248,
+      "n_scored": 4,
+      "unscored_openalex_unavailable": 246,
       "named_someone": "1.0000 [0.9849, 1.0000] n=250",
-      "correct": "0.0000 [0.0000, 0.6576] n=2",
-      "correct_rate": 0.0
+      "correct": "0.2500 [0.0456, 0.6994] n=4",
+      "correct_rate": 0.25
     }
   },
   "difference_scholar_minus_sec": {
-    "point": -0.18,
-    "ci": [
-      -0.228,
-      -0.136
-    ],
-    "resamples": 10000,
-    "seed": 11,
-    "contains_zero": false,
-    "verdict": "E4 SUPPORTED: the interval excludes zero."
+    "verdict": "NO VERDICT",
+    "reason": "arms scored too thin for a between-population claim: {'scholar': 4}, minimum 100. Scoring the scholar arm needs OpenAlex; re-run when its budget resets. The provider responses are cached, so it costs $0.",
+    "scored": {
+      "sec": 250,
+      "scholar": 4
+    }
   }
 }

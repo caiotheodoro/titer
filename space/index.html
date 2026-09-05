@@ -226,6 +226,34 @@ footer{border-top:1px solid var(--border);margin-top:3rem;padding-top:1.5rem;
   </section>
 
   <section class="section" data-fade>
+    <h2>A false answer usually cites nothing real</h2>
+    <p>The provider returns citations with every answer. For all <strong>399</strong>
+    affirmations we resolved those citations against OpenAlex and asked a
+    mechanical question: is any of them a work this author actually wrote? No model
+    read the evidence. It cost <strong>$0</strong> &mdash; the citations were
+    already cached.</p>
+    <table>
+      <thead><tr><th>Claim affirmed</th><th>n</th><th>Cites a real work by that author</th></tr></thead>
+      <tbody>
+        <tr><td>Attested</td><td class="num">150</td><td class="num hi">0.5733 [0.4933, 0.6497]</td></tr>
+        <tr><td>False, adjacent field</td><td class="num">102</td><td class="num">0.2843 [0.2058, 0.3784]</td></tr>
+        <tr><td>False, adjacent subfield</td><td class="num">126</td><td class="num">0.2302 [0.1653, 0.3110]</td></tr>
+        <tr><td><b>False, different domain</b></td><td class="num">21</td><td class="num hi"><b>0.0000 [0.0000, 0.1546]</b></td></tr>
+      </tbody>
+    </table>
+    <p>The strongest objection to our headline was that the provider might be reading
+    &ldquo;expertise in T&rdquo; loosely as &ldquo;works near T&rdquo; &mdash; wrong
+    question, not wrong answer. The control arm now fails two separate tests: it is
+    the arm no generous reading explains, <em>and</em> the arm citing nothing
+    verifiable at all, <strong>zero of twenty-one</strong>.</p>
+    <p><strong>But the middle of that table is why the objection survives.</strong>
+    Roughly <strong>one in four</strong> adjacent false affirmations <em>is</em>
+    grounded in the person&rsquo;s real work, just on another topic. The defence
+    holds for near misses and collapses only at the extreme. We are reporting the
+    half that argues against us.</p>
+  </section>
+
+  <section class="section" data-fade>
     <h2>False merges run backwards</h2>
     <p>We predicted that confidently-wrong identities would rise as names get more
     common. They fall.</p>

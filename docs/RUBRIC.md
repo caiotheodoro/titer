@@ -17,7 +17,7 @@ unavailable because no results existed. They exist now.
 | 4 | Pre-registration frozen before `src/`, publicly hashed | 10 | **10** | Two, both hash-published, both gated, the gate verified to fire. |
 | 5 | Unflattering findings lead | 10 | **10** | The README leads with five artefacts. `RETRACTIONS.md` carries two entries; `MEASUREMENT_CARD.json` names eight unmet claims. |
 | 6 | Coverage stated in someone else's vocabulary | 5 | **5** | PeopleSearchBench's four scenarios; the expertise gaps in a buyer's terms. |
-| 7 | Red team attacks own claims, LIVE ones kept | 5 | **5** | 17 attacks; 7 carried LIVE, 2 open, and A12 bounded by the control arm rather than closed. "One provider is not a benchmark" stays LIVE. |
+| 7 | Red team attacks own claims, LIVE ones kept | 5 | **5** | 17 attacks; 7 carried LIVE, 2 open. A12 is now attacked from two sides - the control arm floors it at 8.4 points, and a $0 audit of all 399 affirmations shows control affirmations cite a real work by that author **zero of twenty-one** times. It stays LIVE in the middle, where ~1 in 4 adjacent false affirmations IS grounded. "One provider is not a benchmark" stays LIVE. |
 | 8 | Cost asymmetry modelled, ranking stability reported | 10 | **6** | Five profiles including `expert_sourcing` at 150×. **No ranking is reported at all**, only one provider survived, so stability across profiles is untestable. |
 | 9 | Environment health gate before any training | 10 | **8** | Run on real data: solve rate 0.37, in band. Loses 2 for the `high` collision band having **zero** observations. |
 | 10 | Across-seed spread published for every trained arm | 10 | **9** | Trained, 6 seeds, frozen split: mean **0.0461** against `abstain_always` **-0.1000**, margin 0.1461, across-seed **SD 0.0122 (0.08x the margin)** -> CLAIM. Loses 1: the policy is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036). |
@@ -68,7 +68,13 @@ read had not caught. A third, `gate_no_placeholders`, was later widened to
 > category.
 
 That is the honest description of this work. It measured one provider at
-n=1,000 across four strata and produced one surviving number; a second
-provider consumed five budgets and produced seven harness defects and no
-measurement. What it
+n=1,000 across four strata and produced one surviving number; a second provider
+consumed five budgets and produced seven harness defects and no measurement.
+
+Since that read, four pre-registered hypotheses were resolved and **three of
+them were falsified, two of those being our own** - D029 (a capability
+constraint does disambiguate), H2 (false merges run backwards, not upwards),
+and E4 preliminarily (no detectable coverage difference). A policy was trained
+and cleared the seed gate. The methodology-exemplar half of the reviewer's
+summary is the half that grew. What it
 demonstrates well is a process for not publishing the other five.

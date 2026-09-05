@@ -93,7 +93,19 @@ def matches_sec(returned: str | None, truth_cik: str, issuer_index) -> bool:
     return resolve_issuer(returned, issuer_index) == truth_cik
 
 
-_INST_CACHE: dict = {}
+#: Institution resolutions, persisted. Without this every run started from
+#: nothing, so a run that got 203 of 250 scholar rows scored and then hit the
+#: OpenAlex wall threw all 203 lookups away, and the next run re-bought them
+#: from a budget that was already gone. Now each run keeps what it resolved and
+#: the next one continues, which is the same checkpoint discipline the A12
+#: audit needed for the same reason.
+_INST_PATH = ROOT / "data" / "institution_cache.json"
+_INST_CACHE: dict = (json.loads(_INST_PATH.read_text())
+                     if _INST_PATH.is_file() else {})
+
+
+def _save_inst_cache() -> None:
+    _INST_PATH.write_text(json.dumps(_INST_CACHE, indent=0, sort_keys=True))
 
 
 def matches_scholar(returned: str | None, truth: str, ua: str) -> bool | None:
@@ -110,9 +122,14 @@ def matches_scholar(returned: str | None, truth: str, ua: str) -> bool | None:
     from titer.corpus.scholar import OpenAlexError, resolve_institution
 
     def look(name):
-        if name not in _INST_CACHE:
-            _INST_CACHE[name] = resolve_institution(name, ua)
-        return _INST_CACHE[name]
+        key = name or ""
+        if key not in _INST_CACHE:
+            rid, lin = resolve_institution(name, ua)
+            _INST_CACHE[key] = [rid, lin]
+            if len(_INST_CACHE) % 20 == 0:
+                _save_inst_cache()
+        v = _INST_CACHE[key]
+        return (v[0], v[1]) if isinstance(v, list) else v
 
     try:
         rid, rlin = look(returned)
@@ -267,6 +284,7 @@ def main() -> int:
                         "this design cannot distinguish."
                         if lo <= 0.0 <= hi else
                         "E4 SUPPORTED: the interval excludes zero.")}
+    _save_inst_cache()
     (ROOT / "results" / args.out).write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report["populations"], indent=2))
     return 0

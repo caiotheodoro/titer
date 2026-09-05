@@ -248,6 +248,66 @@ mostly fails to name anyone resolvable rather than naming the wrong one. A
 surface that answered more confidently could behave differently, and that is not
 measured here.
 
+## A12: what the provider's own citations say
+
+For each of the **399** affirmations across every stratum, up to three of the
+provider's returned citations were resolved against OpenAlex, asking whether any
+is a work that author actually wrote. No model reads the evidence string. **Cost
+$0** - the citations were already in the replay cache.
+
+| Stratum | n | grounded in a real work by that author |
+|---|---|---|
+| `ATTESTED` | 150 | **0.5733 [0.4933, 0.6497]** |
+| `FALSE_far` | 102 | 0.2843 [0.2058, 0.3784] |
+| `FALSE_near` | 126 | 0.2302 [0.1653, 0.3110] |
+| **`CONTROL`** | 21 | **0.0000 [0.0000, 0.1546]** |
+
+**The control arm fails two independent tests.** It was already the arm no
+generous reading of the prompt explains, which floors the false-affirmation rate
+at 8.4 points. It is also the arm citing **nothing verifiable at all** - zero of
+twenty-one. Two instruments, the same answers, the same direction.
+
+**And the middle of the table is why A12 stays LIVE.** Roughly **one in four**
+adjacent false affirmations *is* grounded in the person's real work, presumably
+on another topic. For adjacent topics the loose-but-reasonable-reading defence
+keeps that much support; only at the extreme does it have nothing left.
+
+"Grounded" is a weak bar on purpose: a real work by the right author on the
+*wrong* topic still counts, so these are upper bounds. `no_resolvable_title`
+also conflates a citation that is a profile page with a resolver miss.
+
+An earlier partial run of this same audit put the false strata about ten points
+lower. It was processed in dict order rather than sampled, and D044 records the
+correction: **an interval is no protection against a biased sample.**
+
+## E4: preliminary, and pointing at no difference
+
+Identical instrument - the name-only question - asked of both populations.
+Scoring resolves to an ID rather than a string: an SEC employer to a CIK, a
+scholar affiliation to an OpenAlex institution id with lineage containment.
+
+| Population | n scored | correct |
+|---|---|---|
+| SEC | 250/250 | 0.1800 [0.1373, 0.2324] |
+| Scholar | 203/250 | 0.2069 [0.1569, 0.2678] |
+
+Unpaired difference, scholar − SEC, 10,000 resamples, seed 11:
+**+0.0269 [−0.0464, +0.1014]**, which **contains zero** - E4's pre-registered
+falsification condition. Both populations returned an organisation on **every**
+query, so the discriminating quantity is correctness, not whether it answers.
+
+**This is preliminary and must not be quoted as final.** 47 scholar rows are
+unscored because the OpenAlex budget keeps running out, and the A12 audit above
+just demonstrated an incomplete subset moving a rate by more than this
+interval's half-width. The 500 provider responses are cached, so completing it
+costs **$0**.
+
+**One asymmetry makes the null more interesting, not less.** Only OpenAlex
+publishes hierarchy, so a scholar named at a sub-unit of the right body scores
+correct while an executive named at a subsidiary of the right issuer scores
+wrong. The scholar arm is scored *generously* relative to SEC, and the two are
+still indistinguishable.
+
 ## What does NOT hold
 
 ### The web floor is not measured. It is a parser artefact.
