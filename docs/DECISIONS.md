@@ -2240,3 +2240,66 @@ It dates nothing about the pre-registrations; their commits are the only clock o
 
 **Reversal.** The file cannot change; the metadata can. A later entry corrects any statement on the
 record found wrong, and a corrected paper goes up as a new version under the same DOI.
+
+---
+
+## D049 - Paper v2 revamp plan and zero-spend post-hoc statistical analyses, written before running them (2026-11-23)
+
+**Decision.** Revise `paper/titer.tex` to v2 so it leads with the surviving empirical findings,
+presents the five measurement defects as a concise methodological taxonomy rather than confessional
+framing, moves pre-registration outcomes and audit records to an appendix, states each limitation
+once, and adds two zero-spend post-hoc statistical analyses computed solely from the committed
+artifacts `results/expertise_e1_v2.json` and `results/expertise_control.json`.
+
+**What stays untouched.** `CONTRACTS.md`, `docs/PRE-REGISTRATION.md`,
+`docs/PRE-REGISTRATION-EXPERTISE.md`, all committed measurement files in `results/`, the two formal
+retractions in `docs/RETRACTIONS.md`, the Provider P anonymisation (D047), and every hard rule in
+`AGENTS.md` (no live API calls, no model-assigned ground truth, no Provider P accuracy claim).
+
+**Planned post-hoc analyses (zero API spend, committed artifacts only):**
+
+- **A. Unpaired distance-gradient and cross-run baseline tests.** Using the committed false-claim
+  affirmation counts across NEAR (`42/250`), FAR (`33/250`), and CONTROL (`21/250`):
+  1. Pearson $\chi^2$ test of homogeneity ($df = 2$, two-sided $p$).
+  2. Cochran--Armitage linear trend test (Cochran 1954; Armitage 1955) with equal ordinal scores
+     `(2, 1, 0)` for `(NEAR, FAR, CONTROL)`, reporting two-sided $z$ and $p$.
+  3. Two-sided Fisher's exact test for NEAR versus CONTROL (`42/250` vs `21/250`).
+  4. Two-sided Fisher's exact test and Newcombe 95\% difference interval comparing the main-run
+     attested arm (`240/250`) against the control-run attested arm (`246/250`) to quantify any
+     cross-run shift on the shared polarity.
+  - **Fixed caveat.** NEAR and FAR come from `results/expertise_e1_v2.json` and CONTROL from
+    `results/expertise_control.json` on independent draws of authors and topics. These tests treat
+    the strata as independent binomial samples and do not account for cross-run variance or
+    unpaired author-draw effects.
+- **B. Murphy (1973) binned Brier score decomposition and Brier Skill Score.** From the committed
+  10-bin calibration summaries (`calibration.bins`) and exact unbinned Brier scores
+  (`calibration.brier`) in `results/expertise_e1_v2.json` ($n = 750$) and
+  `results/expertise_control.json` ($n = 500$), compute:
+  - `uncertainty` $= \bar{y}(1 - \bar{y})$ (the exact Brier score of a hindsight constant forecast
+    at the pooled accuracy),
+  - `reliability` $= \frac{1}{N}\sum_k n_k (\bar{p}_k - \bar{y}_k)^2$,
+  - `resolution` $= \frac{1}{N}\sum_k n_k (\bar{y}_k - \bar{y})^2$,
+  - `within_bin_residual` $= \text{brier} - (\text{reliability} - \text{resolution} + \text{uncertainty})$,
+  - `brier_skill_score` $= 1 - \text{brier} / \text{uncertainty}$.
+  - Expectation written before computation: reliability penalty exceeds resolution and the Brier
+    Skill Score is negative in both runs, confirming that ceiling overconfidence makes the stated
+    confidence worse than a constant forecast.
+
+**Fixed now, regardless of output.** Both A and B are post hoc with no pre-registered criterion.
+No pre-registered verdict depends on either, and both will be labelled post hoc in the paper and
+emitted to `results/posthoc_stats.json` by `scripts/posthoc_stats.py` with verification tests in
+`tests/test_posthoc_stats.py`.
+
+**Seen before writing this.** The stratum counts (`240/250`, `42/250`, `33/250`, `21/250`,
+`246/250`), the 10-bin calibration arrays, and the Brier scores (`0.1191`, `0.0604`) in
+`results/expertise_e1_v2.json` and `results/expertise_control.json`. **Not seen:** any test
+statistic, $p$-value, Murphy decomposition component, or Brier Skill Score from A or B.
+
+**Not done, and why.** Test--retest on the 1,250 tasks, blind two-reader adjudication of all 75
+NEAR and FAR affirmations, multi-prompt wording sweeps, a paired three-distance draw over the same
+authors, a second answer endpoint, the Provider P arm at registered size ($n = 49$/arm), and legal
+resolution of Exa ToS §4.2(a) plus vendor right-of-reply all require new spend, human annotators,
+or vendor/legal steps. These are specified as a next-phase protocol in `docs/DESIGN-V2.md`.
+
+**Reversal.** If any formula or interpretation in A or B is found erroneous, a later dated entry
+supersedes it and regenerates `results/posthoc_stats.json`.
