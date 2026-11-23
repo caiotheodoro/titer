@@ -46,7 +46,7 @@ measurement, and here it was measurably so.
 A third tier settled it. `FAR_DOMAIN` is a **control**, not a difficulty step: a
 topic from a wholly different OpenAlex domain, so an organometallic chemist is
 asked about historical studies on Spain. n=250, matched `ATTESTED` arm on the
-same authors at 0.9840 [0.9596, 0.9938].
+authors drawn from the same 300-author pool at 0.9840 [0.9596, 0.9938].
 
 | Tier | False affirmation |
 |---|---|
@@ -59,10 +59,7 @@ distance changes the rate; D031's two tiers were too close together to resolve
 it, not wrong in principle. FAR still does not separate from the control, so the
 gradient is only visible at the extremes.
 
-**And the control is not zero: 21 of 250 absurd claims were affirmed, one in
-twelve.** No generous reading of the prompt explains those 21 affirmations, so at
-least 8.4 of the 16.8 NEAR points are genuine error. That bounds RED-TEAM A12
-rather than leaving it open.
+**And the control is not zero: 21 of 250 different-domain claims were affirmed, one in twelve.** An earlier version of this file said no reading of the prompt explains those 21 and so at least 8.4 of the 16.8 NEAR points are genuine error. That is withdrawn (D046): reading the cached evidence behind all 21 (`results/control_affirmations_read.json`, a judgement, not a label), 6 are clearly the endpoint's error, 6 are broad topic labels with a loose match, and 9 cite work in the topic by a same-name person or someone at the same institution that is not in the author's OpenAlex record, which is what a split profile, a homonym or a classifier gap looks like. RED-TEAM A12 is back to LIVE.
 
 An earlier version of this file said "negative difficulty does not detectably
 change the false-affirmation rate". That was true of NEAR versus FAR and wrong
@@ -226,9 +223,10 @@ hold two registrations; a unique name has no such ambiguity, so nothing is
 subtracted from its interval.
 
 **H2 is falsified on "flat in `d`", which the pre-registration makes sufficient
-on its own.** But the rate is not flat - it is **inverted**: 0.0375, 0.0000,
-0.0125, 0.0000. False merges are most likely where names **do not collide**, and
-effectively absent where they do.
+on its own.** The rate does not rise: 0.0375, 0.0000, 0.0125, 0.0000, on 3, 0, 1
+and 0 events. The point estimates are highest where names **do not collide**, but
+the intervals overlap, so this shows no rise and does not show a fall (D046
+withdraws the word "inverted").
 
 The mechanism is in the resolution column. On a colliding name the provider
 mostly cannot name anyone the resolver can pin, so the outcome is `MISS` rather
@@ -262,10 +260,7 @@ $0** - the citations were already in the replay cache.
 | `FALSE_near` | 126 | 0.2302 [0.1653, 0.3110] |
 | **`CONTROL`** | 21 | **0.0000 [0.0000, 0.1546]** |
 
-**The control arm fails two independent tests.** It was already the arm no
-generous reading of the prompt explains, which floors the false-affirmation rate
-at 8.4 points. It is also the arm citing **nothing verifiable at all** - zero of
-twenty-one. Two instruments, the same answers, the same direction.
+**The control arm cites no work by the author: zero of twenty-one.** An earlier version called this a second independent test of the 8.4-point floor. It is not independent: the audit and the oracle that scored the claims both rest on the same OpenAlex author profile, and the adjacent rows include affirmations from the retracted run (D046).
 
 **And the middle of the table is why A12 stays LIVE.** Roughly **one in four**
 adjacent false affirmations *is* grounded in the person's real work, presumably
@@ -280,33 +275,27 @@ An earlier partial run of this same audit put the false strata about ten points
 lower. It was processed in dict order rather than sampled, and D044 records the
 correction: **an interval is no protection against a biased sample.**
 
-## E4: preliminary, and pointing at no difference
+## E4: no result (withdrawn, D046)
 
 Identical instrument - the name-only question - asked of both populations.
 Scoring resolves to an ID rather than a string: an SEC employer to a CIK, a
 scholar affiliation to an OpenAlex institution id with lineage containment.
 
+`results/e4_coverage.json`, the only committed artifact, records:
+
 | Population | n scored | correct |
 |---|---|---|
 | SEC | 250/250 | 0.1800 [0.1373, 0.2324] |
-| Scholar | 203/250 | 0.2069 [0.1569, 0.2678] |
+| Scholar | 4/250 | 0.2500 [0.0456, 0.6994] |
 
-Unpaired difference, scholar − SEC, 10,000 resamples, seed 11:
-**+0.0269 [−0.0464, +0.1014]**, which **contains zero** - E4's pre-registered
-falsification condition. Both populations returned an organisation on **every**
-query, so the discriminating quantity is correctness, not whether it answers.
-
-**This is preliminary and must not be quoted as final.** 47 scholar rows are
-unscored because the OpenAlex budget keeps running out, and the A12 audit above
-just demonstrated an incomplete subset moving a rate by more than this
-interval's half-width. The 500 provider responses are cached, so completing it
-costs **$0**.
-
-**One asymmetry makes the null more interesting, not less.** Only OpenAlex
-publishes hierarchy, so a scholar named at a sub-unit of the right body scores
-correct while an executive named at a subsidiary of the right issuer scores
-wrong. The scholar arm is scored *generously* relative to SEC, and the two are
-still indistinguishable.
+and `NO VERDICT`: the scorer refuses a between-population contrast below 100
+scored rows per arm. An earlier version of this section reported 203 of 250
+scholar rows at 0.2069 and a difference of +0.0269 [-0.0464, +0.1014] (D045).
+That figure came from a run whose output was overwritten by a later run that hit
+the OpenAlex budget wall, and no committed file holds it. It is withdrawn, not
+corrected: this repository does not quote a number it cannot trace. The 500
+provider responses are cached, and completing the scoring needs only an OpenAlex
+API key (free); the paper does not report E4.
 
 ## What does NOT hold
 
@@ -393,7 +382,7 @@ active floors, so the numbers published before this were wrong:
 
 `never_verify` still beats `always_deep_verify`, so **"spending 3x more bought
 marginally fewer correct answers" survives the correction**. What does not
-survive is the ordering against doing nothing: at a 37% solve rate under
+survive is the ordering against doing nothing: at a 38% solve rate under
 `gtm_outbound`, answering is negative expected value and **`abstain_always` is
 the floor to beat**.
 
@@ -421,7 +410,7 @@ not comparable across profiles** - the reward normalises by
 every term - but the sign and the within-profile ordering are.
 
 **What it learned, and what it did not.** It queries once, then **abstains on
-41.7%** of tasks, lifting precision on the answered subset from the 37% base rate
+41.7%** of tasks, lifting precision on the answered subset from the 38% base rate
 to **64%**. That is genuine selectivity.
 
 It then states **confidence 1.0 on every answer it gives**, at 64% accuracy.

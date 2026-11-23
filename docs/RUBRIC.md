@@ -17,9 +17,9 @@ unavailable because no results existed. They exist now.
 | 4 | Pre-registration frozen before `src/`, publicly hashed | 10 | **10** | Two, both hash-published, both gated, the gate verified to fire. |
 | 5 | Unflattering findings lead | 10 | **10** | The README leads with five artefacts. `RETRACTIONS.md` carries two entries; `MEASUREMENT_CARD.json` names eight unmet claims. |
 | 6 | Coverage stated in someone else's vocabulary | 5 | **5** | PeopleSearchBench's four scenarios; the expertise gaps in a buyer's terms. |
-| 7 | Red team attacks own claims, LIVE ones kept | 5 | **5** | 17 attacks; 7 carried LIVE, 2 open. A12 is now attacked from two sides - the control arm floors it at 8.4 points, and a $0 audit of all 399 affirmations shows control affirmations cite a real work by that author **zero of twenty-one** times. It stays LIVE in the middle, where ~1 in 4 adjacent false affirmations IS grounded. "One provider is not a benchmark" stays LIVE. |
+| 7 | Red team attacks own claims, LIVE ones kept | 5 | **5** | 17 attacks; 8 carried LIVE, 2 open (A12 reopened by D046). A12 was attacked with a control tier and a $0 citation audit; reading the 21 control affirmations (D046) showed neither bounds it, so it is LIVE again. "One provider is not a benchmark" stays LIVE. |
 | 8 | Cost asymmetry modelled, ranking stability reported | 10 | **6** | Five profiles including `expert_sourcing` at 150×. **No ranking is reported at all**, only one provider survived, so stability across profiles is untestable. |
-| 9 | Environment health gate before any training | 10 | **8** | Run on real data: solve rate 0.37, in band. Loses 2 for the `high` collision band having **zero** observations. |
+| 9 | Environment health gate before any training | 10 | **8** | Run on real data: solve rate 0.38, in band. Loses 2 for the `high` collision band having **zero** observations. |
 | 10 | Across-seed spread published for every trained arm | 10 | **9** | Trained, 6 seeds, frozen split: mean **0.0461** against `abstain_always` **-0.1000**, margin 0.1461, across-seed **SD 0.0122 (0.08x the margin)** -> CLAIM. Loses 1: the policy is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036). |
 | 11 | Ethics enforced mechanically, not asserted | 5 | **5** | `make privacy-gate` inside `make validate`; it has caught three real violations, including in my own commits. |
 
@@ -33,7 +33,7 @@ unavailable because no results existed. They exist now.
   `cannot_separate` branch forbids ranking language and there is nothing to rank.
 - **The hardest collision band is empty** in the fitted environment.
 - **The trained policy learned selectivity, not calibration.** It abstains
-  on 41.7% of tasks, lifting precision from 37% to 64%, then states
+  on 41.7% of tasks, lifting precision from 38% to 64%, then states
   confidence 1.0 on every answer at 64% accuracy - the same failure E3
   measured in the provider, reproduced in our own policy.
 
@@ -69,12 +69,12 @@ read had not caught. A third, `gate_no_placeholders`, was later widened to
 
 That is the honest description of this work. It measured one provider at
 n=1,000 across four strata and produced one surviving number; a second provider
-consumed five budgets and produced seven harness defects and no measurement.
+consumed five budgets and produced eight query-construction defects and no measurement.
 
 Since that read, four pre-registered hypotheses were resolved and **three of
 them were falsified, two of those being our own** - D029 (a capability
-constraint does disambiguate), H2 (false merges run backwards, not upwards),
-and E4 preliminarily (no detectable coverage difference). A policy was trained
+constraint does disambiguate), H2 (false merges do not rise with collision),
+and E4, which has no surviving artifact (D046). A policy was trained
 and cleared the seed gate. The methodology-exemplar half of the reviewer's
 summary is the half that grew. What it
 demonstrates well is a process for not publishing the other five.

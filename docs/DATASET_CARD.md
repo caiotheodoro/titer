@@ -1,7 +1,7 @@
 # DATASET CARD: titer-edgar-officers
 
-**Status: not released.** Scheduled for W1. This card is written first so the
-release cannot outrun its own documentation.
+**Status: released** on Hugging Face (`caiotheodoro/titer-edgar-officers`, CC0). This
+card was written first so the release could not outrun its own documentation.
 
 ## What it is
 

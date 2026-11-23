@@ -13,13 +13,14 @@ statistic.**
 
 ## Why five-of-six is the finding
 
-[`docs/SURVEY.md`](docs/SURVEY.md) records the same B2B data vendor at **42.4%**
-in one published comparison and **78%** in another. Neither publishes a
-methodology. The category's own numbers put average accuracy near 50% against
-95%+ marketing claims.
+Vendor accuracy comparisons in this category rarely state a method or an
+interval ([`docs/SURVEY.md`](docs/SURVEY.md)). An earlier version of this page
+quoted one provider at 42.4% in one comparison and 78% in another; no source for
+either figure could be found again, so it is withdrawn ([D046](docs/DECISIONS.md)).
 
-Harness design moves a vendor number further than vendor quality does. This
-repository is a worked example of how far: five times, under conditions where we
+A harness defect can move a vendor number by more than any difference between
+vendors this repository could have measured. It is a worked example of how it
+happens, not a measurement of how large the effect is in general: five times, under conditions where we
 were *specifically watching for it*, a defect in the measurer produced a number
 that looked publishable.
 
@@ -52,14 +53,12 @@ OpenAlex `/works` *before* the provider was asked.
 | False, different domain (CONTROL) | 250 | 0.9160 | **0.0840 [0.0556, 0.1250]** |
 
 The control ran separately, with its own matched attested arm at 0.9840 [0.9596,
-0.9938] on the same authors. It confirms real expertise 96% of the time and
+0.9938], drawn independently from the same 300-author pool. It confirms real expertise 96% of the time and
 affirms topics the person has **never published in** one time in six. It is bad
 at saying *no*.
 
 **NEAR is 2.00× the control and the intervals do not overlap**, so topic distance
-moves the rate. The control also refuses to go to zero: 21 of 250 absurd claims
-were affirmed, one in twelve, which puts a floor of at least 8.4 points under the
-16.8 that no generous reading of the prompt explains.
+moves the rate. The control is not zero: 21 of 250 different-domain claims were affirmed. Reading those 21 ([D046](docs/DECISIONS.md), `results/control_affirmations_read.json`): 6 are clearly the endpoint's error (0.0240 of 250), 6 are broad topic labels, and 9 cite work that may belong to the author under another OpenAlex profile. So the control is not a clean floor, and the earlier claim that it put 8.4 points of error under the NEAR rate is withdrawn.
 
 **Calibration.** 686 of 750 answers (91.5%) sit in the 0.9–1.0 confidence bin at
 mean confidence **0.987** against accuracy **0.889**. Confidence is pinned at
@@ -94,21 +93,18 @@ already cached.
 | False, adjacent subfield | 0.2302 [0.1653, 0.3110] |
 | **False, different domain** | **0.0000 [0.0000, 0.1546]** |
 
-The control arm now fails two independent tests: it is the arm no generous
-reading of the prompt explains, **and** the arm that cites nothing verifiable at
-all, zero of twenty-one. But roughly **one in four** adjacent false affirmations
-*is* grounded in the person's real work, so the interpretation defence survives
-in the middle of the table and dies only at the extreme.
-([D044](docs/DECISIONS.md))
+Roughly **one in four** adjacent false affirmations cites a real work by that author, so the interpretation defence keeps some force for adjacent topics. This audit is an upper bound, not a second independent test: its adjacent rows include affirmations from the retracted run (D046), and it rests on the same OpenAlex author profile as the oracle, so a split profile or a homonym looks the same to both. ([D044](docs/DECISIONS.md))
 
-**False merges run backwards.** H2 predicted confidently-wrong identities would
-rise with name-collision degree. They fall:
+**False merges do not rise with collision.** H2 predicted confidently-wrong
+identities would rise with name-collision degree. The point estimates fall, on
+3, 0, 1 and 0 events, and the intervals overlap, so the data show no rise and
+do not show a fall:
 
 | collision degree | 1 | 2–3 | 4–9 | ≥10 |
 |---|---|---|---|---|
 | false merge, n=80 each | **0.0375** | 0.0000 | 0.0125 | 0.0000 |
 
-False merges are likeliest where names **don't** collide. On a colliding name the
+The highest estimate is where names **don't** collide. On a colliding name the
 provider mostly cannot name anyone resolvable, so the outcome is a miss rather
 than a wrong identity: it never gets the chance to be confidently wrong. The risk
 sits where nobody stratifies for it. H2 is falsified, and it cost **$0**. The
@@ -121,9 +117,9 @@ the pre-registered estimator was withdrawn. The fall is most likely *our oracle*
 ageing out rather than the index regressing.
 
 **The environment, and a trained policy.** Fitted to 485 real observations, solve
-rate 0.37, inside the 10–80% band. `never_verify` (−0.2292) still beats
+rate 0.38, inside the 10–80% band. `never_verify` (−0.2292) still beats
 `always_deep_verify` (−0.2574), so spending 3× more still bought marginally fewer
-correct answers. But both are beaten by **doing nothing**: at a 37% solve rate,
+correct answers. But both are beaten by **doing nothing**: at a 38% solve rate,
 answering is negative expected value and `abstain_always` (−0.1000) is the floor
 to beat. Those numbers are corrected; the ones published before were inflated by
 two reward defects ([D037](docs/DECISIONS.md)).
@@ -138,7 +134,7 @@ A policy trained on the simulator clears it, over 6 seeds on a frozen split:
 | across-seed SD | **0.0122**, 0.08× the margin |
 
 It **learned when to answer and not how sure to be**: it abstains on 41.7% of
-tasks, lifting precision from the 37% base rate to **64%**, then states
+tasks, lifting precision from the 38% base rate to **64%**, then states
 confidence **1.0 on every answer it gives**. That is the same failure E3 measured
 in the provider, reproduced by our own policy in an environment that prices it.
 ([D036](docs/DECISIONS.md))
@@ -146,7 +142,7 @@ in the provider, reproduced by our own policy in an environment that prices it.
 ## What does not survive
 
 **The people-index arm is unmeasured, and that is a statement about us.** Five
-budgets produced seven defects in our own harness and no valid observation, so
+budgets produced eight query-construction defects in our own harness and no valid observation, so
 **no accuracy number is claimed for any people-search index here**, not a poor
 one and not any. Publishing a void score with a footnote is precisely what
 [R001](docs/RETRACTIONS.md) forbids, because the number travels and the footnote
@@ -187,23 +183,25 @@ DOIs, so the researcher is never the source.
 **False claims are constructed.** A person's attested topics come from their
 works, so a false expertise claim is a topic with **zero** works, drawn
 mechanically from an adjacent field and verified exhaustively. No model
-participates in any label, anywhere, including title normalisation.
+in this repository participates in any label, including title normalisation. The
+topics themselves are an OpenAlex classifier's output, so "zero works in this
+topic" is relative to that classifier.
 
 **Errors are priced.** Five cost profiles. Under `expert_sourcing` a fake expert
 admitted costs 150× a miss, grounded in observed sourcing bounties of
 $250–$15,000 against a documented infiltration incident.
 
-**Everything replays.** The cache stores raw provider bodies, so a parser fix
-costs nothing and every table regenerates with no keys and no spend.
+**The results regenerate; the provider responses do not ship.** The replay cache
+stores raw provider bodies, so a parser fix costs nothing, but it is a local file
+and is not committed (it is a provider's output). Held locally, E1 reproduces
+byte for byte from it (pass `--window 2026-09`). From a clone, `results/*.json`
+regenerate every table and figure in the paper, and the gates and tests run.
 
 ## The limitations, up front
 
 - **One provider.** Every surviving number describes Exa. Nothing here supports a
   claim about the category.
-- **Part of the 16.8% may be prompt interpretation.** The confirmatory run
-  removed contaminated negatives; it cannot remove *adjacent* ones. The control
-  bounds this: at least 8.4 points are error under any reading.
-  ([RED-TEAM A12](docs/RED-TEAM.md))
+- **Part of the 16.8% may be prompt interpretation or oracle error.** The confirmatory run removed contaminated negatives; it cannot remove *adjacent* ones or a second author profile. The control does not bound this: of its 21 affirmations only 6 are clearly error (D046). ([RED-TEAM A12](docs/RED-TEAM.md))
 - **Publication record is not expertise.** Engineers, practising clinicians and
   lawyers leave no bibliographic trace and are invisible here, which is most of
   who an expert platform actually hires.
@@ -222,10 +220,11 @@ uv run --extra dev pytest tests
 uv run python scripts/env_health.py --real
 ```
 
-Every measurement regenerates from the replay cache without an API key.
-Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
+The paper's tables and figures regenerate from `results/` (`make paper`). Replaying a
+measurement needs the local replay cache and `--window 2026-09`; a fresh clone does
+not have it. Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
-**268 tests green.** Total spend to produce all of the above: **$41.35**.
+**282 tests green.** Total spend to produce all of the above: **$41.35**.
 
 ## Layout
 
@@ -237,8 +236,8 @@ Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
 | [`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md) · [`-EXPERTISE`](docs/PRE-REGISTRATION-EXPERTISE.md) | Frozen before `src/`, hashes published. Never edited. |
 | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) | The two formal retractions. Committed at W0, before any measurement. |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 45 entries, each with the counterfactual. Two (D042, D044) correct earlier ones. |
-| [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 7 carried LIVE, 2 open, 1 bounded by a control tier. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 46 entries, each with the counterfactual. Two (D042, D044) correct earlier ones. |
+| [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 8 carried LIVE, 2 open. |
 | [`docs/BENCHMARK.md`](docs/BENCHMARK.md) · [`RUBRIC`](docs/RUBRIC.md) · [`COVERAGE`](docs/COVERAGE.md) | Results, the independent read (74/90 against a 78/90 self-score), and what this cannot see. |
 | [`docs/MARKET.md`](docs/MARKET.md) | Where an attestation layer would sell, with the case against it. |
 
@@ -248,7 +247,23 @@ If you appear in a corpus and want out, write to the address in
 [`docs/ETHICS.md`](docs/ETHICS.md) §6. Honoured within 7 days, no justification
 required, recorded as a count and never as an identity.
 
-## Licence
+## Paper
 
-MIT. Corpora derive from US Government public-domain records and CC0 sources,
-published as pointers, never as assembled records.
+[`paper/titer.tex`](paper/titer.tex) (`make paper`, needs tectonic): the five
+defects, the surviving measurement with its limits, and the defects found in this
+repository while writing it. Every number in it is generated from `results/` by
+`scripts/export_paper_tables.py` and checked by `tests/test_paper.py`.
+
+## Data and licence
+
+- Code and results: MIT ([`LICENSE`](LICENSE)).
+- Paper: CC BY 4.0.
+- Datasets on Hugging Face (pointers, never assembled records):
+  [`titer-edgar-officers`](https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers) and
+  [`titer-expertise-claims`](https://huggingface.co/datasets/caiotheodoro/titer-expertise-claims), both CC0.
+  They derive from US Government public-domain records and open scholarly metadata.
+- Not shipped: the replay cache of raw provider responses, and any list pairing a
+  named person with a constructed-false claim.
+- Written with an AI coding assistant under the author's direction and review. The
+  author works at a commercial AI gateway company; nothing from that product is used,
+  and all data are public or synthetic.

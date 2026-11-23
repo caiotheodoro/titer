@@ -60,9 +60,9 @@ if it does not the harness has a bug.
 
 ## Why an interval, and why the power rule is pre-committed
 
-The published comparisons in this category put the same provider at 42.4% in one
-study and 78% in another. Neither reports an interval. Both were published by
-competitors.
+Public accuracy comparisons in this category rarely report an interval or say how
+a match was scored. (An earlier version of this file quoted two specific figures;
+no source for them could be found again and they are withdrawn, D046.)
 
 The budget here is $5. That is a real constraint and it cannot be argued away,
 so `docs/PRE-REGISTRATION.md` section 3 fixes **in advance** what we are

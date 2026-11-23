@@ -101,39 +101,43 @@ def main() -> int:
                 "Negatives verified against /works before asking. Survived a post-hoc "
                 "and a confirmatory test."),
             "E1_distance_gradient": (
-                "NEAR is 2.00x CONTROL with non-overlapping intervals, so topic distance "
-                "moves the rate. FAR does not separate from CONTROL: the gradient is "
-                "visible only at the extremes. See docs/DECISIONS.md D034."),
+                "NEAR is 2.00x CONTROL; the Wilson intervals do not overlap and the Newcombe "
+                "interval for the difference is [0.0258, 0.1426]. FAR does not separate "
+                "from CONTROL (Newcombe [-0.0069, 0.1034]): the gradient is visible only "
+                "at the extremes. See docs/DECISIONS.md D034, D046."),
             "E1_control_floor": (
                 "The CONTROL arm does not reach zero: 21 of 250 claims about a wholly "
-                "different OpenAlex domain were affirmed. At least 8.4 of the 16.8 NEAR "
-                "points are error no reading of the prompt explains, which bounds "
-                "RED-TEAM A12 rather than leaving it open."),
+                "different OpenAlex domain were affirmed. Reading them (D046, "
+                "results/control_affirmations_read.json): 6 are clearly the endpoint's "
+                "error, 6 are broad topic labels, 9 may be work by the author under "
+                "another OpenAlex profile. The earlier 8.4-point floor claim is withdrawn "
+                "and RED-TEAM A12 is LIVE."),
             "E3_calibration": (
                 "686 of 750 answers (91.5%) in the 0.9-1.0 confidence bin at mean 0.987 "
                 "against accuracy 0.889; ECE 0.1153, Brier 0.1191."),
             "R4_environment": (
-                "Simulator fitted to 500 real observations; solve rate 0.37, inside the "
-                "10-80% band. never_verify (0.0455) beats always_deep_verify (0.0277): "
-                "3x the spend bought marginally fewer correct answers."),
+                "Simulator fitted to 485 real observations; solve rate 0.38, inside the "
+                "10-80% band. Corrected floors (D037): never_verify -0.2292, "
+                "always_deep_verify -0.2574, abstain_always -0.1000. 3x the spend "
+                "bought marginally fewer correct answers, and doing nothing beats both."),
         },
         "superseded": {
             "W3_exa_employment_n299": (
                 "0.5886 [0.5321,0.6429] correct, false-merge <0.0127. Measured under the "
                 "pre-D028 dated prompt on the unrestricted task set, so it is not "
                 "comparable to anything measured afterwards. Retained as record."),
-            "E1_raw_rates": "0.1875 / 0.2212 - retracted, see docs/RETRACTIONS.md R002.",
+            "E1_raw_rates": "0.1725 (FAR) / 0.2100 (NEAR), n=400 each - retracted, see docs/RETRACTIONS.md R002.",
         },
         "unmet_claims": [
             "One provider. Every surviving number describes Exa; nothing supports a "
             "claim about the category.",
-            "A12 partly answered (D044). A citation audit of all 399 affirmations, $0: a TRUE affirmation cites a real work by that author 0.5733 [0.4933,0.6497] of the time, an adjacent-false one about a quarter, and a CONTROL one (wholly different domain) 0.0000 [0.0000,0.1546] - zero of twenty-one. At the extreme the interpretation defence has nothing to stand on; for adjacent topics roughly 1 in 4 false affirmations IS grounded in real work, and there A12 stays LIVE.",
+            "A12 is LIVE (D044, reopened by D046). A citation audit of the false affirmations of both E1 runs, the retracted one included, plus 150 attested:  A citation audit of all 399 affirmations, $0: a TRUE affirmation cites a real work by that author 0.5733 [0.4933,0.6497] of the time, an adjacent-false one about a quarter, and a CONTROL one (wholly different domain) 0.0000 [0.0000,0.1546] - zero of twenty-one. At the extreme the interpretation defence has nothing to stand on; for adjacent topics roughly 1 in 4 false affirmations IS grounded in real work, and there A12 stays LIVE.",
             "E1 difficulty axis (D031): PARTIALLY SUPPORTED - NEAR separates from CONTROL, FAR does not. D031's two tiers were too close ""together to resolve it.",
             "E2: RUN, and it FALSIFIED D029 on an answer engine - a free-text capability constraint does disambiguate (C > A in all three colliding bands, paired intervals excluding zero). D029 survives only in scope: it was a claim about indexes with structured filters.",
-            "E4 PRELIMINARY, and it points at FALSIFIED. 500 responses collected ($2.50, cached). SEC scored 250/250 at 0.1800 [0.1373,0.2324]. The best scholar scoring achieved so far is 203/250 at 0.2069 [0.1569,0.2678], giving an unpaired difference of +0.0269 [-0.0464,+0.1014] which CONTAINS ZERO - E4's falsification condition. NOT final: 47 scholar rows are unscored and the scorer needs OpenAlex, whose budget keeps running out. A complete re-score costs $0.",
+            "E4: NO RESULT. 500 responses were collected ($2.50) but the committed results/e4_coverage.json records 4 of 250 scholar rows scored and NO VERDICT. The 203/250 figures quoted in earlier text (D045) have no surviving artifact and are withdrawn until the scholar arm is re-scored (D046). SEC arm: 250/250 scored at 0.1800 [0.1373,0.2324].",
             "H1 staleness: mis-specified - non-monotone, so no half-life exists (D033).",
-            "H2: RUN and FALSIFIED (D041, corrected by D042). FALSE_MERGE is not increasing in collision degree - it is INVERTED: 0.0375 / 0.0000 / 0.0125 / 0.0000 across unique/low/medium/high, n=80 each. False merges are most likely where names do NOT collide, because on a colliding name the provider mostly cannot name anyone resolvable and the outcome is MISS rather than a wrong identity. Never a budget problem: the W3 random draw left three of four bands empty (D027) and E2's stratified draw resolved it for $0.",
-            "Ploid: unmeasured after FIVE budgets (R001, D028, D035, D040). Seven harness defects, then a fifth arm too small to claim: 0 of 12 on both renderings. No accuracy number is claimed. What it would cost to know is published instead: n=49 per arm for a +/-0.10 half-width, $9.80 per arm at the measured $0.20 per search.",
+            "H2: RUN and FALSIFIED as predicted (D041, corrected by D042, wording corrected by D046). FALSE_MERGE does not rise with collision degree: 0.0375 / 0.0000 / 0.0125 / 0.0000 across unique/low/medium/high, n=80 each (3, 0, 1, 0 events). The Wilson intervals overlap, so the data show no rise, not a fall. A plausible reason is that on a colliding name the provider mostly cannot name anyone resolvable and the outcome is MISS rather than a wrong identity. Never a budget problem: the W3 random draw left three of four bands empty (D027) and E2's stratified draw resolved it for $0.",
+            "Ploid: unmeasured after FIVE budgets (R001, D028, D035, D040). Eight query-construction defects (D046 recount), then a fifth arm too small to claim: 0 of 12 on both renderings. No accuracy number is claimed. What it would cost to know is published instead: n=49 per arm for a +/-0.10 half-width, $9.80 per arm at the measured $0.20 per search.",
             "Trivial floor: withdrawn as a parser artefact, never validly measured.",
             "R4: a policy IS trained and clears the seed gate (0.0461 vs -0.1000, SD 0.0122 = 0.08x the margin, 6 seeds). It is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036), and it learned selectivity but not calibration - it states confidence 1.0 on every answer at 64% accuracy.",
         ],

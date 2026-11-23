@@ -81,6 +81,11 @@ not in a results table is that the retraction step was built before the
 measurement was.
 
 
+> Note, 2026-11-23 (D046): the sentence below that cites the same provider "at 42.4% and 78%"
+> in two published comparisons is withdrawn. No source for either figure could be found
+> again. The argument of this entry does not depend on it: the defect is the one described,
+> and it was found as described.
+
 ## R002 - The raw E1 false-affirmation rates are retracted; the NET rates stand (2026-09-03)
 
 **Originally measured:** Exa affirmed constructed-false expertise claims at

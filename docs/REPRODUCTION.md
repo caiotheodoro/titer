@@ -1,8 +1,19 @@
 # REPRODUCTION
 
-Every published number regenerates from the replay cache **with no API key and
-no spend**. The cache stores raw provider bodies, so even a parser fix replays
-free.
+Two levels, and they are different:
+
+1. **From a clone.** The committed `results/*.json` regenerate every table, figure
+   and macro in the paper (`make paper-tables`, then `make paper`), and the gates
+   and tests run (`make validate`, `uv run --extra dev pytest tests`). No key, no
+   cache, no spend.
+2. **From the replay cache.** The cache stores raw provider bodies, so a parser fix
+   replays free. It is a local file (`data/replay.jsonl`), gitignored and **not
+   published**: it is a provider's output and carries person-level content. A fresh
+   clone does not have it. The cache key includes the calendar month, so replaying
+   the September 2026 measurements needs `--window 2026-09` (D046); without it every
+   task is a cache miss and the run reports n=0. Checked 2026-11-23: with the cache
+   and `--window 2026-09`, `run_expertise.py` reproduces `results/expertise_e1_v2.json`
+   field for field (only `dry_run` differs, because the original run was live).
 
 ## Prerequisites
 
@@ -37,16 +48,17 @@ uv run --extra dev python scripts/env_health.py --real
 
 # E1 + E3 (expertise). Replays from cache; --spend is required for live calls.
 uv run --extra dev python scripts/run_expertise.py \
-    --tasks expert_tasks_v2.jsonl --out expertise_e1_v2.json --per-stratum 250
+    --tasks expert_tasks_v2.jsonl --out expertise_e1_v2.json --per-stratum 250 \
+    --window 2026-09
 
 # Employment identity, stratified by elapsed time (H1).
 uv run --extra dev python scripts/full_run.py \
-    --providers exa --strategy elapsed --n 500 --out h1_elapsed.json
+    --providers exa --strategy elapsed --n 500 --out h1_elapsed.json --window 2026-09
 ```
 
 Each writes to `results/`. Without `--spend` nothing is billed and anything not
-already cached is skipped, so a fresh clone reproduces exactly the cached
-subset, which is every number in `docs/BENCHMARK.md`.
+already cached is skipped. A machine without the cache therefore reproduces
+nothing; one with it reproduces the cached subset.
 
 ## Rebuild the corpora from source (slow, free, needs the env vars)
 

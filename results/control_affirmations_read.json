@@ -1,0 +1,132 @@
+{
+  "what": "A reading of the 21 CONTROL affirmations of the main control run (results/expertise_control.json), made 2026-11-23 from the cached evidence strings. It is a judgement, not a label: it was made by the AI coding assistant under the author's direction and has not been independently re-read. No model score, no name. Categories: broad_label = the topic label is generic enough that the evidence supports a loose match; plausible_same_person = the evidence describes work in the topic attributed to a same-name person or the same institution that is not in the author's OpenAlex works list, so it could be a split profile, a homonym or a classifier gap; unsupported_or_other_person = the evidence names a different person, has no author, or does not support the topic.",
+  "n": 21,
+  "items": [
+    {
+      "i": 1,
+      "topic": "Safety and Risk Management",
+      "category": "broad_label",
+      "note": "evidence is a stated research interest in environmental risk assessment"
+    },
+    {
+      "i": 2,
+      "topic": "Cultural, Linguistic, Economic Studies",
+      "category": "broad_label",
+      "note": "evidence is a paper whose title shares keywords with the topic, in an unrelated clinical area"
+    },
+    {
+      "i": 3,
+      "topic": "Gender and Feminist Studies",
+      "category": "plausible_same_person",
+      "note": "evidence cites a real meta-analysis on gender and hiring attributed to a same-name person; not in the author's OpenAlex works"
+    },
+    {
+      "i": 4,
+      "topic": "Sustainable Development and Environmental Management",
+      "category": "plausible_same_person",
+      "note": "evidence cites agricultural policy papers attributed to a same-name person"
+    },
+    {
+      "i": 5,
+      "topic": "Consumer Retail Behavior Studies",
+      "category": "broad_label",
+      "note": "evidence is consumer-product safety research, tangential to the topic"
+    },
+    {
+      "i": 6,
+      "topic": "Government, Law, and Information Management",
+      "category": "plausible_same_person",
+      "note": "evidence describes a law doctorate and IT publications of a same-name person"
+    },
+    {
+      "i": 7,
+      "topic": "Impact of AI and Big Data on Business and Society",
+      "category": "plausible_same_person",
+      "note": "evidence cites AI-assisted pathology tooling, tangential to the topic"
+    },
+    {
+      "i": 8,
+      "topic": "Health and Well-being Studies",
+      "category": "broad_label",
+      "note": "evidence is cardiovascular and metabolic health research under a generic topic label"
+    },
+    {
+      "i": 9,
+      "topic": "Journalism and Media Studies",
+      "category": "plausible_same_person",
+      "note": "evidence describes a media-studies professor of the same name"
+    },
+    {
+      "i": 10,
+      "topic": "Cerebrovascular and genetic disorders",
+      "category": "plausible_same_person",
+      "note": "evidence describes neurosurgical coverage of cerebrovascular disease"
+    },
+    {
+      "i": 11,
+      "topic": "Education and Digital Technologies",
+      "category": "broad_label",
+      "note": "evidence is medical-education and telemedicine papers, loosely on the topic"
+    },
+    {
+      "i": 12,
+      "topic": "Privacy, Security, and Data Protection",
+      "category": "plausible_same_person",
+      "note": "evidence cites privacy-preserving learning papers attributed to a same-name person"
+    },
+    {
+      "i": 13,
+      "topic": "Image Enhancement Techniques",
+      "category": "plausible_same_person",
+      "note": "evidence cites an image-enhancement paper from the same institution under the same name"
+    },
+    {
+      "i": 14,
+      "topic": "Society, Economy, and Ethics Research",
+      "category": "plausible_same_person",
+      "note": "evidence cites a regional-economy paper from an institution named in the claim"
+    },
+    {
+      "i": 15,
+      "topic": "Education, Management, Technology, Human Resources",
+      "category": "broad_label",
+      "note": "evidence is a management-information-systems profile with loosely related interests"
+    },
+    {
+      "i": 16,
+      "topic": "FOXO transcription factor regulation",
+      "category": "unsupported_or_other_person",
+      "note": "evidence is a dissertation by a different person with a similar name"
+    },
+    {
+      "i": 17,
+      "topic": "Smoking Behavior and Cessation",
+      "category": "unsupported_or_other_person",
+      "note": "evidence describes a different, better-known person with the same name"
+    },
+    {
+      "i": 18,
+      "topic": "Food composition and properties",
+      "category": "unsupported_or_other_person",
+      "note": "evidence is a bare title with no author"
+    },
+    {
+      "i": 19,
+      "topic": "Patient Satisfaction in Healthcare",
+      "category": "unsupported_or_other_person",
+      "note": "evidence is a bare title with no author"
+    },
+    {
+      "i": 20,
+      "topic": "Photovoltaic System Optimization Techniques",
+      "category": "unsupported_or_other_person",
+      "note": "evidence concerns pathology scanning and does not support the topic"
+    },
+    {
+      "i": 21,
+      "topic": "Engineering and Material Science Research",
+      "category": "unsupported_or_other_person",
+      "note": "evidence describes a different person with the same name"
+    }
+  ]
+}

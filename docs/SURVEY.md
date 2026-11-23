@@ -37,10 +37,11 @@ number either. Nobody publishes both, and nobody publishes an interval.
   not measure identity resolution, false merges, or cost.
 - **openbenchmarks.com/company-enrichment**: 282 companies, human-verified,
   independent, public repo, no intervals, companies not people.
-- **Vendor "studies"**: mutually contradictory. The same provider at 42.4% in
-  one and 78% in another; a third puts the category average near 50% real
-  accuracy against 95%+ marketing claims. No methodology, no intervals, and the
-  publisher is usually a competitor.
+- **Vendor "studies"**: this file once quoted one provider at 42.4% in one
+  comparison and 78% in another, and a category average near 50% against 95%+
+  marketing claims. No source for those figures could be found on 2026-11-23, so
+  they are withdrawn (D046). What a search does find are vendor-published accuracy
+  claims and blog comparisons, most without a stated method or an interval.
 
 ## The gap this repository targets
 

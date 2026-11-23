@@ -142,7 +142,7 @@ that implies otherwise.
 
 # Attacks on the expertise findings (added 2026-09-03)
 
-## A12. "Your 16.8% is prompt interpretation, not error." · BOUNDED
+## A12. "Your 16.8% is prompt interpretation, not error." · LIVE
 
 The prompt asks *"Does X have published research expertise in T?"* A provider
 may reasonably read that as "does X work in an area close to T", in which case
@@ -199,10 +199,20 @@ loose-but-reasonable-reading defence keeps that much support. It is at the
 extreme, where the topic is a wholly different OpenAlex domain, that it has
 nothing left to stand on.
 
-**Status: BOUNDED at the extreme, LIVE in the middle.** An earlier partial run
+**Status (superseded by the addendum below): BOUNDED at the extreme, LIVE in the middle.** An earlier partial run
 of this same audit reported the false strata about ten points lower; it was
 processed in dict order rather than sampled, and D044 records the correction
 because an interval is no protection against a biased sample.
+
+**Addendum 2026-11-23 (D046): back to LIVE.** Reading the cached evidence behind all 21 control
+affirmations (`results/control_affirmations_read.json`, a judgement and not a label): 6 are clearly
+the endpoint's error, 6 are broad topic labels with a loose match, 9 cite work in the topic by a
+same-name person or someone at the same institution that is not in the author's OpenAlex record.
+So the control is not a clean negative control: a nonzero control is also what oracle error looks
+like (a split author profile, a homonym, a classifier gap). The "floor of 8.4 points" and the
+claim that the citation audit was a second independent test are withdrawn; the audit rests on the
+same OpenAlex author profile as the oracle, and its adjacent rows include affirmations from the
+retracted run.
 
 ## A13. "The negatives are still constructed by you." · MITIGATED, not eliminated
 
