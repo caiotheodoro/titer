@@ -2173,3 +2173,7 @@ the date it is actually published, and this entry is not edited to claim an earl
 reinstated by a new entry that cites the committed file. If a source for the 42.4%/78%
 figures is produced, the sentence may return with that source. If the Zenodo draft is
 never published, the paper stays in `paper/` and nothing else here depends on it.
+
+**Addendum, 2026-11-23: the draft.** The Zenodo draft is record 24454863, unpublished, uploaded from
+`paper/titer.pdf` built by `make paper`, metadata from `.zenodo.json`. It has no DOI yet; none is
+claimed. Publishing it is a separate act and, if it happens, gets its own entry with its real date.
