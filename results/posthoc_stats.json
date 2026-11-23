@@ -1,0 +1,89 @@
+{
+  "decision": "D049",
+  "post_hoc": true,
+  "spend_usd": 0.0,
+  "sources": [
+    "results/expertise_e1_v2.json",
+    "results/expertise_control.json"
+  ],
+  "distance_gradient": {
+    "caveat": "Unpaired cross-run comparison: NEAR and FAR come from results/expertise_e1_v2.json and CONTROL from results/expertise_control.json on independent draws of authors and topics. All p-values assume independent binomial samples and do not absorb run-to-run or draw-to-draw variance.",
+    "strata": {
+      "NEAR": {
+        "k": 42,
+        "n": 250,
+        "rate": 0.168,
+        "score": 2
+      },
+      "FAR": {
+        "k": 33,
+        "n": 250,
+        "rate": 0.132,
+        "score": 1
+      },
+      "CONTROL": {
+        "k": 21,
+        "n": 250,
+        "rate": 0.084,
+        "score": 0
+      }
+    },
+    "pearson_chi2": {
+      "chi2": 7.9558486238532105,
+      "df": 2,
+      "p_value": 0.018724465177676283
+    },
+    "cochran_armitage": {
+      "z": 2.811066148262658,
+      "chi2_trend": 7.902092889908256,
+      "p_value": 0.004937763321467871
+    },
+    "fisher_exact_near_vs_control": {
+      "p_value": 0.006667691971950417,
+      "odds_ratio": 2.2019230769230766
+    },
+    "attested_cross_run_check": {
+      "main_k": 240,
+      "main_n": 250,
+      "control_k": 246,
+      "control_n": 250,
+      "diff_main_minus_control": -0.02400000000000002,
+      "newcombe_95": [
+        -0.057505967337168035,
+        0.006406231294296436
+      ],
+      "fisher_exact_p": 0.1734068475363862
+    }
+  },
+  "brier_decomposition": {
+    "method": "Murphy (1973) 10-bin decomposition: Brier_binned = Reliability - Resolution + Uncertainty, where Uncertainty = y_bar * (1 - y_bar) is the exact Brier score of a hindsight constant forecaster at the pooled accuracy. within_bin_residual = brier_exact - brier_binned equals within-bin confidence variance minus twice within-bin confidence-outcome covariance.",
+    "main_run": {
+      "n": 750,
+      "mean_accuracy": 0.8866666666666667,
+      "mean_confidence": 0.9516933333333333,
+      "ece": 0.11529333333333332,
+      "brier_exact": 0.11910306666666667,
+      "uncertainty": 0.10048888888888885,
+      "reliability": 0.024403664498942428,
+      "resolution": 0.0023656491167895733,
+      "brier_binned": 0.12252690427104171,
+      "within_bin_residual": -0.003423837604375035,
+      "brier_excess_over_constant": 0.018614177777777824,
+      "brier_skill_score": -0.1852361786819996
+    },
+    "control_run": {
+      "n": 500,
+      "mean_accuracy": 0.95,
+      "mean_confidence": 0.97306,
+      "ece": 0.0594200000000001,
+      "brier_exact": 0.060401,
+      "uncertainty": 0.04750000000000004,
+      "reliability": 0.013576430238095249,
+      "resolution": 0.00023333333333333322,
+      "brier_binned": 0.06084309690476196,
+      "within_bin_residual": -0.0004420969047619558,
+      "brier_excess_over_constant": 0.012900999999999961,
+      "brier_skill_score": -0.27159999999999895
+    }
+  }
+}
