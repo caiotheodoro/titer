@@ -18,3 +18,4 @@ results/*.jsonl
 data/scholar.jsonl
 data/expert_tasks.jsonl
 build/
+paper/*.pdf
