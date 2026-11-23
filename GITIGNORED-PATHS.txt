@@ -19,3 +19,4 @@ data/resolve_index.json
 data/raw/
 docs/private/
 build/
+paper/titer.pdf        built by make paper, never committed
