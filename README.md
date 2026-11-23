@@ -4,10 +4,11 @@
 
 *The concentration you reach by titration: add reagent until you know.*
 
-**Six headline numbers about commercial people-search products. Five were
-artefacts of this instrument, not findings about any vendor. Every one was
-caught by reading the rows the provider returned, never by reading a summary
-statistic.**
+**Six headline numbers about commercial people-search and answer APIs. Five were
+artefacts of this instrument, not findings about any vendor. None was visible in
+the headline number; each surfaced when I read the rows the provider returned, or
+the binned data under a fitted number.** The write-up is
+[`paper/titer.tex`](paper/titer.tex).
 
 ---
 
@@ -18,11 +19,10 @@ interval ([`docs/SURVEY.md`](docs/SURVEY.md)). An earlier version of this page
 quoted one provider at 42.4% in one comparison and 78% in another; no source for
 either figure could be found again, so it is withdrawn ([D046](docs/DECISIONS.md)).
 
-A harness defect can move a vendor number by more than any difference between
-vendors this repository could have measured. It is a worked example of how it
-happens, not a measurement of how large the effect is in general: five times, under conditions where we
-were *specifically watching for it*, a defect in the measurer produced a number
-that looked publishable.
+This repository is a worked example of how a harness defect produces a number
+that looks publishable. It is not a measurement of how large that effect is in
+general: five times, under conditions where we were *specifically watching for it*,
+a defect in the measurer produced one.
 
 | # | The number | What it actually was |
 |---|---|---|
@@ -31,9 +31,9 @@ that looked publishable.
 | 3 | Web floor 0/300 | Our parser read person names out of page titles like `FORM 8-K 10.04.2013`. |
 | 4 | E1 at 17–21% | 13.3% of "false" claims were true. OpenAlex `topics` is a top-N summary, not a record. [R002](docs/RETRACTIONS.md) |
 | 5 | H1 median lag 7,360 days | Isotonic regression forcing monotonicity onto a non-monotone curve. [D033](docs/DECISIONS.md) |
-| 6 | **E1 at 8–17%** | **Survived. Three times.** |
+| 6 | **E1 at 8–17%** | **Survived three attacks**, as the corrected form of number 4. The oracle carries an error of unknown size, so these are upper bounds ([D046](docs/DECISIONS.md)). |
 
-Each was found the same way, by reading what the provider actually returned. In
+Each was found the same way, by looking below the number: at what the provider actually returned. In
 case 4 the affirmations kept looking *correct*: a dermatologic oncologist
 affirmed for "Educational Methods" had in fact co-authored medical education
 research. Correct answers, scored as errors.
