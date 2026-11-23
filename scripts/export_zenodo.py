@@ -16,8 +16,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import export_paper_tables as ex  # noqa: E402
 
-TITLE = ("Reading the Rows: Five Instrument Defects in an Audit of an Answer Endpoint, "
-         "and the One Result That Survived")
+TITLE = ("Reading the Rows: Five Measurement Defects in an Audit of an Answer Endpoint, "
+         "and the One Result That Remained")
 ACCENTS = {r"{\'e}": "é", r"{\"a}": "ä", r"\'e": "é", r"\"a": "ä"}
 
 

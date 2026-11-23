@@ -386,7 +386,7 @@ def tab_h1(m: dict[str, str]) -> str:
     rows = []
     for label, s in h1:
         p, lo, hi, n = parse_interval(s)
-        rows.append(_row(label.replace("-inf", "+").replace("d", " d"), str(n), f"{p:.4f} [{lo:.4f}, {hi:.4f}]"))
+        rows.append(_row(label.replace("-inf", "+").replace("d", " d").replace("-", "--"), str(n), f"{p:.4f} [{lo:.4f}, {hi:.4f}]"))
     return ("\\begin{tabular}{@{}lrl@{}}\n\\toprule\n"
             "Elapsed since filing & $n$ & Reflected, 95\\% Wilson \\\\\n\\midrule\n"
             + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
@@ -406,7 +406,7 @@ def fig_forest(m: dict[str, str]) -> str:
         body.append(f"\\addplot[only marks,mark=*,black] coordinates {{({p:.4f},{i})}};")
     return ("\\begin{tikzpicture}\n"
             "\\begin{axis}[width=0.55\\linewidth,height=4.2cm,xlabel={false claims affirmed (rate, 95\\% Wilson)},"
-            "xmin=0,xmax=0.26,ytick={1,2,3},yticklabels={NEAR (adjacent subfield),FAR (adjacent field),"
+            "xmin=0,xmax=0.26,xtick={0,0.05,0.1,0.15,0.2,0.25},xticklabels={0,0.05,0.10,0.15,0.20,0.25},ytick={1,2,3},yticklabels={NEAR (adjacent subfield),FAR (adjacent field),"
             "CONTROL (different domain)},ymin=0.4,ymax=3.6,y dir=reverse," + _axis_common() + "]\n"
             + "\n".join(body) + "\n\\end{axis}\n\\end{tikzpicture}\n")
 
@@ -435,7 +435,7 @@ def fig_h1(m: dict[str, str]) -> str:
         p, lo, hi, _ = parse_interval(s)
         bars.append(f"\\addplot[black,thick] coordinates {{({i},{lo:.4f}) ({i},{hi:.4f})}};")
         coords.append(f"({i},{p:.4f})")
-    labels = ",".join(l.replace("-inf", "+").replace("d", "\\,d") for l, _ in rows)
+    labels = ",".join(l.replace("-inf", "+").replace("d", "\\,d").replace("-", "--") for l, _ in rows)
     return ("\\begin{tikzpicture}\n"
             "\\begin{axis}[width=0.8\\linewidth,height=5cm,xlabel={elapsed since the filing became public},"
             "ylabel={employer reflected},xtick={1,2,3,4,5},xticklabels={" + labels + "},ymin=0,ymax=1,xmin=0.5,xmax=5.5,"
