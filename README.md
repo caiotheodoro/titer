@@ -255,6 +255,8 @@ defects, the surviving measurement with its limits, and the defects found in thi
 repository while writing it. Every number in it is generated from `results/` by
 `scripts/export_paper_tables.py` and checked by `tests/test_paper.py`.
 
+The paper is deposited on [Zenodo](https://doi.org/10.5281/zenodo.24454863) (D048).
+
 ## Data and licence
 
 - Code and results: MIT ([`LICENSE`](LICENSE)).

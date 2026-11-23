@@ -2212,3 +2212,31 @@ product after the paper had decided not to.
 
 **Reversal.** If a reason appears to name the vendor again, a new entry restores it; the record is
 in git history either way.
+
+## D048 - The paper is deposited on Zenodo (2026-11-23)
+
+**Decision.** The paper, as built from `paper/titer.tex`, is Zenodo record 24454863, DOI
+10.5281/zenodo.24454863 (the DOI for all versions is 10.5281/zenodo.24454862). It was created and
+published on 2026-11-23 at 05:06 UTC, on the owner's instruction in chat to publish it. The
+publication date field reads 2026-11-23, the day of the deposit; the paper had no earlier public
+release.
+
+**What is on the record.** The PDF (md5 `d0511e5af08eaa1e647b5f0639734158`, identical to the built
+`paper/titer.pdf`), type preprint, version `paper-v1.0`, CC BY 4.0, the author with the owner's ORCID
+and no affiliation, 23 reference strings and 22 related works (the repository and two datasets as
+supplements, the cited arXiv papers as cited works).
+
+**Choices the owner made, recorded.** After D046 and D047 the owner asked that the open items
+follow the recommended option: the vendor is named only as Provider P in the paper and the current
+tree (D047); the control-tier reading stays labelled as one unblinded assistant pass, and a human
+re-read of those 21 affirmations is not done; the paper's sentence that the endpoint's vendor was not
+sent the results and offered no reply stands as the author's statement, which this log does not
+verify; the endpoint's self-serve terms restrict publishing information obtained through the service,
+and the paper reports aggregate rates only. The owner published with that clause not resolved; this
+log does not decide whether the paper fits it. These are the author's choices, not findings.
+
+**Not the registration.** This is a deposit of the paper, made after every measurement here ran.
+It dates nothing about the pre-registrations; their commits are the only clock on those.
+
+**Reversal.** The file cannot change; the metadata can. A later entry corrects any statement on the
+record found wrong, and a corrected paper goes up as a new version under the same DOI.
