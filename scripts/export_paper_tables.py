@@ -325,6 +325,32 @@ def numbers() -> dict[str, str]:
     put("tiPolMargin", f4(mean - tp["baseline"]["value"]))
     put("tiPolAbstain", pct1(tp["behaviour_last_seed"]["abstain_rate"]))
     put("tiPolPrec", pct1(tp["behaviour_last_seed"]["precision_when_answering"]))
+
+    # Post-hoc statistical analyses (D049, D050; results/posthoc_stats.json)
+    ph = load("posthoc_stats")
+    dg = ph["distance_gradient"]
+    put("tiPostChiSq", f2(dg["pearson_chi2"]["chi2"]))
+    put("tiPostChiP", f4(dg["pearson_chi2"]["p_value"]))
+    put("tiPostTrendZ", f2(dg["cochran_armitage"]["z"]))
+    put("tiPostTrendP", f4(dg["cochran_armitage"]["p_value"]))
+    put("tiPostFisherNcP", f4(dg["fisher_exact_near_vs_control"]["p_value"]))
+    put("tiPostFisherNcOr", f2(dg["fisher_exact_near_vs_control"]["odds_ratio"]))
+    att_ck = dg["attested_cross_run_check"]
+    put("tiPostAttDiff", tex_signed4(att_ck["diff_main_minus_control"]))
+    put("tiPostAttDiffLo", tex_signed4(att_ck["newcombe_95"][0]))
+    put("tiPostAttDiffHi", tex_signed4(att_ck["newcombe_95"][1]))
+    put("tiPostAttFisherP", f4(att_ck["fisher_exact_p"]))
+
+    bd = ph["brier_decomposition"]
+    for tag, key in (("Main", "main_run"), ("Ctl", "control_run")):
+        d = bd[key]
+        put(f"tiPost{tag}Unc", f4(d["uncertainty"]))
+        put(f"tiPost{tag}Rel", f4(d["reliability"]))
+        put(f"tiPost{tag}Res", f4(d["resolution"]))
+        put(f"tiPost{tag}Resid", tex_signed4(d["within_bin_residual"]))
+        put(f"tiPost{tag}Excess", tex_signed4(d["brier_excess_over_constant"]))
+        put(f"tiPost{tag}Bss", tex_signed4(d["brier_skill_score"]))
+        put(f"tiPost{tag}Acc", f3(d["mean_accuracy"]))
     return m
 
 
@@ -389,6 +415,18 @@ def tab_h1(m: dict[str, str]) -> str:
         rows.append(_row(label.replace("-inf", "+").replace("d", " d").replace("-", "--"), str(n), f"{p:.4f} [{lo:.4f}, {hi:.4f}]"))
     return ("\\begin{tabular}{@{}lrl@{}}\n\\toprule\n"
             "Elapsed since filing & $n$ & Reflected, 95\\% Wilson \\\\\n\\midrule\n"
+            + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_brier(m: dict[str, str]) -> str:
+    rows = [
+        _row("Main (1/3 attested, 2/3 false)", m["tiCalN"], m["tiBrier"], m["tiPostMainUnc"],
+             m["tiPostMainRel"], m["tiPostMainRes"], m["tiPostMainResid"], m["tiPostMainBss"]),
+        _row("Control (1/2 attested, 1/2 false)", m["tiCtlCalN"], m["tiCtlBrier"], m["tiPostCtlUnc"],
+             m["tiPostCtlRel"], m["tiPostCtlRes"], m["tiPostCtlResid"], m["tiPostCtlBss"]),
+    ]
+    return ("\\begin{tabular}{@{}lrrrrrrr@{}}\n\\toprule\n"
+            "Run (task mix) & $n$ & Brier & Constant & Rel. & Res. & Resid. & BSS \\\\\n\\midrule\n"
             + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -461,6 +499,7 @@ def build() -> dict[str, str]:
         "tab_h2.tex": tab_h2(m),
         "tab_e2.tex": tab_e2(m),
         "tab_h1.tex": tab_h1(m),
+        "tab_brier.tex": tab_brier(m),
         "fig_forest.tex": fig_forest(m),
         "fig_reliability.tex": fig_reliability(m),
         "fig_h1.tex": fig_h1(m),

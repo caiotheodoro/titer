@@ -1,4 +1,4 @@
-"""The paper's numbers are tied to the committed results (D046).
+"""The paper's numbers are tied to the committed results (D046, D052).
 
 Four defects this guards, each one that happened somewhere in this project or a sibling:
 
@@ -64,13 +64,16 @@ def test_no_doubled_backslashes_in_prose() -> None:
 def test_every_decimal_literal_in_prose_is_a_generated_value() -> None:
     """A measured number cannot be typed into the paper. Decimals must be produced by the exporter,
     or be on this short list of constants that are not measurements."""
-    allowed = {"0.10",    # the half-width the pre-registered power rule is stated at
-               "0.9", "1.0", "0.3", "0.1",   # confidence-bin edges and axis ranges quoted in words
-               "51.5", "74.5",               # Liu et al. 2023, abstract: other people's measurements
-               "42.4"}                       # a figure quoted from the old README in order to retract it
+    allowed = {
+        "0.9", "1.0",        # confidence-bin edges quoted in words
+        "51.5", "74.5",      # Liu et al. 2023, abstract: other people's measurements
+        "4.0",               # CC BY 4.0 licence identifier
+        "4.2",               # Exa Terms of Service section 4.2(a)
+        "1.0", "2.0",        # paper version tags (paper-v1.0, paper-v2.0)
+    }
     generated = "".join(p.read_text() for p in GEN.glob("*.tex"))
     gen_numbers = set(re.findall(r"\d+\.\d+", generated))
-    # strip macros' own arguments, urls, and the bibliography-style numbering before scanning
+    # strip macros' own arguments, urls, and pgfplots/geometry settings before scanning
     prose = re.sub(r"\\url\{[^}]*\}|\\pgfplotsset\{[^}]*\}", "", _prose())
     prose = re.sub(r"\\(?:ti[A-Z]\w*)\{\}", "", prose)
     typed = set(re.findall(r"(?<![\w.])\d+\.\d+(?![\w.])", prose))
@@ -113,9 +116,10 @@ def test_vendor_language_is_scoped() -> None:
 def test_abstract_states_the_result_and_its_limits() -> None:
     abstract = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", _prose(), re.S).group(1)
     abstract = " ".join(abstract.split())
-    for macro in ("tiAttRate", "tiNearRate", "tiFarRate", "tiCtlRate", "tiNearLo", "tiCtlHi"):
+    for macro in ("tiAttRate", "tiNearRate", "tiFarRate", "tiCtlRate", "tiNearLo", "tiCtlHi",
+                  "tiBrier", "tiBrierBase"):
         assert f"\\{macro}{{}}" in abstract, macro
-    for phrase in ("one endpoint", "one prompt", "drawn once", "third-party classifier", "I claim nothing"):
+    for phrase in ("one endpoint", "one prompt", "one draw", "third-party classifier", "upper bounds"):
         assert phrase in abstract, phrase
 
 
@@ -137,23 +141,26 @@ def test_rendered_pdf_has_no_garbled_text(tmp_path: Path) -> None:
     assert r.returncode == 0, r.stderr[-800:]
     txt = subprocess.run(["pdftotext", "-layout", str(tmp_path / "titer.pdf"), "-"],
                          capture_output=True, text=True).stdout
-    for bad in ("(?)", "[?]", "Citation", "undefined", "Table ?", "Figure ?", "Section ?", "\\ti"):
+    for bad in ("(?)", "[?]", "??", "Citation `", "undefined", "Table ?", "Figure ?", "Section ?", "\\ti"):
         assert bad not in txt, bad
+    assert "undefined" not in r.stderr.lower(), r.stderr[-800:]
     m = ex.numbers()
     # the abstract's numbers survived rendering IN THE ABSTRACT (the same figures also appear in
-    # Table 2, so a whole-document search would not notice an abstract that lost them)
+    # Table 1, so a whole-document search would not notice an abstract that lost them)
     abstract_txt = " ".join(txt.split("Abstract", 1)[1].split("1 Introduction", 1)[0].split())
     for bad in ("tiAttRate", "tiNearRate", "{}"):
         assert bad not in abstract_txt, f"macro text leaked into the rendered abstract: {bad}"
     for key in ("tiAttRate", "tiNearRate", "tiFarRate", "tiCtlRate", "tiNearLo", "tiNearHi", "tiFarLo", "tiFarHi",
-                "tiCtlLo", "tiCtlHi"):
+                "tiCtlLo", "tiCtlHi", "tiBrier", "tiBrierBase"):
         assert m[key] in abstract_txt, f"{key}={m[key]} missing from the rendered abstract"
     assert "95% Wilson" in abstract_txt
     # every table and figure rendered, and the references list is complete
-    for cap in ("Table 1:", "Table 2:", "Table 3:", "Figure 1:", "Figure 2:", "Figure 3:"):
+    for cap in ("Table 1:", "Table 2:", "Table 3:", "Table 4:", "Table 5:", "Table 6:", "Table 7:", "Table 8:",
+                "Figure 1:", "Figure 2:", "Figure 3:"):
         assert cap in txt, cap
     n_refs = len(re.findall(r"^@\w+\{", BIB.read_text(), re.M))
-    assert len(re.findall(r"^\s*\[\d+\]", txt, re.M)) == n_refs
+    refs_txt = txt.split("References", 1)[1].split("Pre-registration outcomes", 1)[0]
+    assert len(re.findall(r"^\s*\[\d+\]", refs_txt, re.M)) == n_refs
 
 
 def _result_numbers() -> set[str]:
@@ -198,6 +205,8 @@ def test_zenodo_metadata_is_built_from_the_paper() -> None:
     assert committed == ez.build(), "run scripts/export_zenodo.py"
     assert committed["creators"] == [{"name": "Theodoro, Caio", "orcid": "0009-0005-7343-981X"}]
     assert committed["license"] == "cc-by-4.0" and committed["upload_type"] == "publication"
+    assert committed["publication_date"] == "2026-09-02"
+    assert committed["version"] == "paper-v2.0"
     assert "Not peer reviewed." in committed["description"]
     n_bib = len(re.findall(r"^@\w+\{", BIB.read_text(), re.M))
     assert len(committed["references"]) == n_bib
@@ -209,5 +218,6 @@ def test_zenodo_metadata_is_built_from_the_paper() -> None:
 def test_citation_file_and_licences_agree() -> None:
     cff = (ROOT / "CITATION.cff").read_text()
     assert "license: MIT" in cff and "0009-0005-7343-981X" in cff
+    assert "date-released: 2026-09-02" in cff
     assert (ROOT / "LICENSE").read_text().startswith("MIT License")
     assert "CC BY 4.0" in (ROOT / "README.md").read_text()

@@ -16,16 +16,21 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import export_paper_tables as ex  # noqa: E402
 
-TITLE = ("Reading the Rows: Five Measurement Defects in an Audit of an Answer Endpoint, "
-         "and the One Result That Remained")
+TITLE = ("Affirming Unattested Expertise at Ceiling Confidence: "
+         "Auditing a Search-Augmented Answer Endpoint and Five Harness Failure Modes")
 ACCENTS = {r"{\'e}": "é", r"{\"a}": "ä", r"\'e": "é", r"\"a": "ä"}
+NOTES = ("Work begun 2 September 2026 (first repository commit fad6dc8); paper first compiled "
+         "and deposited 23 November 2026 (paper-v1.0, Zenodo record 24454863). This version, "
+         "paper-v2.0, is of 23 November 2026.")
 
 
 def tex_to_text(s: str, m: dict[str, str]) -> str:
     s = re.sub(r"\\(ti[A-Z]\w*)\{\}", lambda g: m[g[1]].replace("{,}", ","), s)
     s = re.sub(r"\\texttt\{([^}]*)\}", r"\1", s)
+    s = re.sub(r"\\emph\{([^}]*)\}", r"\1", s)
+    s = s.replace(r"\ensuremath{-}", "-").replace("$-$", "-")
     s = s.replace(r"\%", "%").replace("$", "").replace("~", " ").replace(r"\,", " ")
-    s = s.replace(r"\ge", ">=").replace(r"\noindent", "")
+    s = s.replace("---", " — ").replace("--", "-").replace(r"\ge", ">=").replace(r"\noindent", "")
     s = re.sub(r"\s+", " ", s).strip()
     return s
 
@@ -81,6 +86,8 @@ def reference(f: dict[str, str]) -> str:
             venue += f", {unbrace(f['pages'])}"
     elif "booktitle" in f:
         venue = unbrace(f["booktitle"])
+        if "pages" in f:
+            venue += f", pp. {unbrace(f['pages'])}"
     if "note" in f:
         venue = (venue + ". " if venue else "") + f["note"]
     if "doi" in f:
@@ -115,15 +122,16 @@ def build() -> dict:
         "upload_type": "publication",
         "publication_type": "preprint",
         "creators": [{"name": "Theodoro, Caio", "orcid": "0009-0005-7343-981X"}],
-        "publication_date": "2026-11-23",
+        "publication_date": "2026-09-02",
         "license": "cc-by-4.0",
         "description": desc,
-        "keywords": ["benchmark auditing", "measurement error", "expertise verification",
-                     "negative results", "pre-registration"],
+        "notes": NOTES,
+        "keywords": ["expertise verification", "expertise retrieval", "calibration",
+                     "benchmark auditing", "measurement error", "pre-registration"],
         "language": "eng",
         "related_identifiers": related,
         "references": [reference(f) for f in bib],
-        "version": "paper-v1.0",
+        "version": "paper-v2.0",
     }
 
 

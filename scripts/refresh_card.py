@@ -45,6 +45,10 @@ def live_loc() -> int:
 def live_spend() -> dict[str, float]:
     cache = ROOT / "data" / "replay.jsonl"
     if not cache.exists():
+        card_path = ROOT / "MEASUREMENT_CARD.json"
+        if card_path.exists():
+            prev = json.loads(card_path.read_text()).get("spend_usd") or {}
+            return {k: v for k, v in prev.items() if k != "total"}
         return {}
     # A cache key's first field is the ARM, and since E2 an arm is no longer a
     # provider: four renderings of one provider are four arms. Arm-scoped keys

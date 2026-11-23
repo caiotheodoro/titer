@@ -225,7 +225,7 @@ The paper's tables and figures regenerate from `results/` (`make paper`). Replay
 measurement needs the local replay cache and `--window 2026-09`; a fresh clone does
 not have it. Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
-**282 tests green.** Total spend to produce all of the above: **$41.35**.
+**286 tests green.** Total spend to produce all of the above: **$41.35**.
 
 ## Layout
 
@@ -237,7 +237,8 @@ not have it. Commands and footguns: [`docs/REPRODUCTION.md`](docs/REPRODUCTION.m
 | [`CONTRACTS.md`](CONTRACTS.md) | Frozen definitions. No change without a decision entry **and** evidence. |
 | [`docs/PRE-REGISTRATION.md`](docs/PRE-REGISTRATION.md) · [`-EXPERTISE`](docs/PRE-REGISTRATION-EXPERTISE.md) | Frozen before `src/`, hashes published. Never edited. |
 | [`docs/RETRACTIONS.md`](docs/RETRACTIONS.md) | The two formal retractions. Committed at W0, before any measurement. |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 46 entries, each with the counterfactual. Two (D042, D044) correct earlier ones. |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Append-only, 53 entries, each with the counterfactual. Two (D042, D044) correct earlier ones. |
+| [`docs/DESIGN-V2.md`](docs/DESIGN-V2.md) | Draft next-phase protocol (test–retest, blind two-reader adjudication, multi-prompt sweep, paired strata, second endpoint, legal/vendor gate). |
 | [`docs/RED-TEAM.md`](docs/RED-TEAM.md) | 17 attacks on our own claims; 8 carried LIVE, 2 open. |
 | [`docs/BENCHMARK.md`](docs/BENCHMARK.md) · [`RUBRIC`](docs/RUBRIC.md) · [`COVERAGE`](docs/COVERAGE.md) | Results, the independent read (74/90 against a 78/90 self-score), and what this cannot see. |
 | [`docs/MARKET.md`](docs/MARKET.md) | Where an attestation layer would sell, with the case against it. |
@@ -250,12 +251,9 @@ required, recorded as a count and never as an identity.
 
 ## Paper
 
-[`paper/titer.tex`](paper/titer.tex) (`make paper`, needs tectonic): the five
-defects, the surviving measurement with its limits, and the defects found in this
-repository while writing it. Every number in it is generated from `results/` by
-`scripts/export_paper_tables.py` and checked by `tests/test_paper.py`.
+[`paper/titer.tex`](paper/titer.tex) (`make paper`, needs tectonic): *Affirming Unattested Expertise at Ceiling Confidence: Auditing a Search-Augmented Answer Endpoint and Five Harness Failure Modes* (`paper-v2.0`, D052). Every number is generated from `results/` (including the zero-spend post-hoc statistics in `results/posthoc_stats.json`, D050) by `scripts/export_paper_tables.py` and checked by `tests/test_paper.py`.
 
-The paper is deposited on [Zenodo](https://doi.org/10.5281/zenodo.24454863) (D048).
+The first preprint version (`paper-v1.0`) is deposited on [Zenodo](https://doi.org/10.5281/zenodo.24454863) (D048); `.zenodo.json` is prepared for `paper-v2.0` (D053).
 
 ## Data and licence
 

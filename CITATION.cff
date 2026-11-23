@@ -1,28 +1,32 @@
 cff-version: 1.2.0
 message: "If you use this work, please cite the paper."
-title: "Reading the Rows: Five Measurement Defects in an Audit of an Answer Endpoint, and the One Result That Remained"
+title: "Affirming Unattested Expertise at Ceiling Confidence: Auditing a Search-Augmented Answer Endpoint and Five Harness Failure Modes"
 type: article
 authors:
   - family-names: Theodoro
     given-names: Caio
     orcid: "https://orcid.org/0009-0005-7343-981X"
-date-released: 2026-11-23
+date-released: 2026-09-02
 doi: 10.5281/zenodo.24454863
 repository-code: "https://github.com/caiotheodoro/titer"
 url: "https://huggingface.co/spaces/caiotheodoro/titer"
 license: MIT
 keywords:
+  - expertise verification
+  - expertise retrieval
+  - calibration
   - benchmark auditing
   - measurement error
-  - expertise verification
-  - negative results
   - pre-registration
 abstract: >-
-  A worked case of auditing an answer endpoint's affirmations of claims about named people
-  against SEC filings and OpenAlex authorship records. Six headline numbers were produced;
-  five were defects of the measurement, each found by reading below the number. The sixth,
-  a false-affirmation rate, survived three attacks and is reported with its intervals and
-  limits, including an oracle error of unknown size. The code and results are MIT, the paper CC BY 4.0.
+  An empirical audit of a commercial search-augmented answer endpoint (Exa /answer) on
+  expertise verification and biographical resolution claims anchored to OpenAlex authorship
+  records and SEC Section 16 filings. The endpoint confirms 96.0% of attested expertise
+  claims while affirming 16.8% of adjacent-subfield, 13.2% of adjacent-field, and 8.4% of
+  different-domain claims with no matching OpenAlex work (n=250 per stratum), with stated
+  confidence pinned at ceiling and worse than a constant forecast (Brier 0.1191 vs 0.1005).
+  Alongside the empirical results, the paper documents five automated-evaluation failure modes
+  caught by row-level inspection. The code and results are MIT, the paper CC BY 4.0.
 references:
   - type: data
     title: "titer - EDGAR officer corpus (pointers)"

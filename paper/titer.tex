@@ -1,13 +1,15 @@
-% Five of Six Headline Numbers Were the Instrument.
+% Affirming Unattested Expertise at Ceiling Confidence (v2).
 %
 % No measured number is typed in this file. Each is a macro (\tiXxx) or a table/figure that
 % scripts/export_paper_tables.py writes from results/*.json into paper/generated/.
 % tests/test_paper.py rebuilds that output, requires it byte-identical to the committed copy,
 % and refuses any decimal literal in this file that is not a generated value.
-% arXiv: primary cs.CY or stat.AP, cross-list cs.CL.
+% arXiv: primary cs.IR or cs.CY, cross-list cs.CL, stat.AP.
 \documentclass[11pt]{article}
 
-\usepackage[margin=1.1in]{geometry}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{pgfplots}
@@ -15,431 +17,268 @@
 \usepackage{amsmath}
 \usepackage{microtype}
 \usepackage{url}
+\usepackage[font=footnotesize,skip=3pt]{caption}
 \usepackage[hidelinks]{hyperref}
 \usepackage[numbers,sort&compress]{natbib}
 
 \setlength{\tabcolsep}{4pt}
 \sloppy
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {1.4ex \@plus .4ex \@minus .2ex}{-1em}{\normalfont\normalsize\bfseries}}
+\makeatother
+\setlength{\textfloatsep}{9pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
 
 \input{generated/numbers}
 
-\title{Reading the Rows:\\
-Five Measurement Defects in an Audit of an Answer Endpoint,\\
-and the One Result That Remained}
+\title{Affirming Unattested Expertise at Ceiling Confidence:\\
+Auditing a Search-Augmented Answer Endpoint and Five Harness Failure Modes}
 \author{Caio Theodoro\\\small Independent}
-\date{23 November 2026}
+\date{Work begun 2 September 2026; this version 23 November 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 \noindent
-A published number about a commercial data product is a property of the harness that produced it
-until someone has looked below the number. This paper is one worked case. I built an instrument that
-measures how often an API affirms a false claim about a named person, with ground truth taken from SEC
-Section 16 filings and OpenAlex authorship records. It produced six headline numbers. Five were defects
-of my measurement: a query packed into the wrong field, a filter that returned the answer, a parser that
-read names out of page titles, negatives that were true, and an estimator that forced a monotone shape
-onto a curve that is not monotone. None was visible in the number itself; each surfaced when I read the
-returned rows or the binned data underneath. The sixth, a corrected version of the fourth, survived three checks of my own design. Asked whether a named researcher has published in a topic, one endpoint (Exa \texttt{/answer},
-one prompt, September 2026) confirmed \tiAttRate{} of attested claims and affirmed claims that have no
-matching work in the author's OpenAlex record at \tiNearRate{} for an adjacent subfield, \tiFarRate{} for
-an adjacent field and \tiCtlRate{} for a wholly different domain ($n=\tiNearN{}$ per stratum; 95\% Wilson
-intervals $[\tiNearLo{},\tiNearHi{}]$, $[\tiFarLo{},\tiFarHi{}]$, $[\tiCtlLo{},\tiCtlHi{}]$). The
-different-domain rate is not zero, but a single-reader, unblinded reading of all \tiCtlK{} of its affirmations finds only \tiRdOther{} clearly the endpoint's error; the rest are broad topic labels or work that may belong to the author under another profile, so the rates are upper bounds that carry an oracle error of unknown size. The endpoint's schema-elicited confidence sits at ceiling and does not beat a constant forecast. The
-result describes one endpoint, one prompt and one window, drawn once, and the ground truth is partly a
-third-party classifier's output. I claim nothing about the vendor's other products, about other vendors,
-or about people-search indexes, whose arm stayed unmeasured after five budgets. I also list the defects I
-found in this repository while preparing the paper. Code, results and pre-registrations are public.
+Search-augmented answer APIs are increasingly queried to verify claims about named people, yet false affirmations carry asymmetric downstream costs in expert sourcing and due diligence. We audit one commercial answer endpoint (Exa \texttt{/answer}, one prompt and JSON schema, September 2026, \tiTotalCalls{} calls) against verifiable authorship records in OpenAlex and employment filings under SEC Section 16. Asked whether a named researcher has published expertise in a topic, the endpoint confirms \tiAttRate{} (95\% Wilson $[\tiAttLo{},\tiAttHi{}]$) of attested claims ($n=\tiAttN{}$) while affirming claims with no matching work in the author's OpenAlex record at \tiNearRate{} $[\tiNearLo{},\tiNearHi{}]$ for an adjacent subfield (NEAR), \tiFarRate{} $[\tiFarLo{},\tiFarHi{}]$ for an adjacent field (FAR), and \tiCtlRate{} $[\tiCtlLo{},\tiCtlHi{}]$ for a different domain (CONTROL; $n=\tiNearN{}$ each; post-hoc Cochran--Armitage trend $z=\tiPostTrendZ{}$, $p=\tiPostTrendP{}$ across unpaired draws). Schema-elicited confidence sits at ceiling (\tiCalTopShare{}\% of main-run answers in $[0.9, 1.0]$, mean \tiCalTopConf{} against accuracy \tiCalTopAcc{}) and performs worse than a constant base-rate forecast (Brier \tiBrier{} against \tiBrierBase{}; post-hoc Brier Skill Score \tiPostMainBss{}). An unblinded single-reader inspection of all \tiCtlK{} different-domain affirmations finds \tiRdOther{} (\tiRdErrRate{}) clearly attributable to endpoint error, with the rest reflecting broad topic labels or possible split author profiles; the measured rates are therefore upper bounds carrying unquantified error from OpenAlex's third-party classifier. Alongside the empirical findings, we document five measurement failure modes---wire-format mismatch, anchor leakage, parser artifacts, top-$N$ negative contamination, and forced monotonicity---caught only by row-level and bin-level inspection. Every measurement describes one endpoint, one prompt, and one draw; code, results, and frozen pre-registrations are public.
 \end{abstract}
 
 \section{Introduction}
+\label{sec:intro}
 
-A vendor accuracy number is the output of a harness, and a harness is code. The code has bugs, and a
-bug in the code is indistinguishable, in the output, from a property of the product.
+Automated verification of claims about named individuals---whether a researcher has published in a specialty, or whether an executive moved to a given issuer---has migrated from closed enterprise document collections~\citep{craswell2005trec,balog2006formal,balog2012expertise} to open-web, search-augmented language-model APIs. In domains such as expert sourcing, sanctions screening, and investigative journalism, errors are sharply asymmetric: failing to locate a qualified person costs a lookup, whereas confidently affirming a fabricated qualification admits an unqualified candidate or attributes a false record. Measuring those error rates directly requires ground truth independent of the web index under test and evaluation harnesses whose own defects cannot masquerade as vendor failures.
 
-I ran into this by building the thing that was supposed to prevent it. The instrument, called
-\texttt{titer}, asks a commercial API a question about a real person, scores the answer against a
-public record that does not depend on the web the API searches, and reports an interval. Its first
-design goal was a number a vendor could not wave away. In September 2026 it produced six headline numbers about commercial people-search and answer APIs. Five were artifacts of my measurement (the fourth is the first, contaminated reading of the quantity the sixth reports after correction; I keep the repository's count because the contaminated figure was the one that looked publishable). Each looked publishable, and one of them, a score of \tiPRunOneCorrect{} correct out of \tiPRunOneN{} against a
-people index, looked like the kind of finding that gets a post.
+We built \texttt{titer}, a pre-registered measurement instrument anchored to two public, non-self-reported records: OpenAlex scholarly authorship records~\citep{priem2022openalex} (\tiAuthors{} ORCID-linked authors across \tiTopics{} topics) and SEC Section 16 officer-and-director filings (\tiCorpusRows{} rows across \tiCorpusPeople{} filers). Applying this instrument to Exa \texttt{/answer} in September 2026 establishes two primary empirical findings. First, the endpoint confirms attested expertise at \tiAttRate{} ($n=\tiAttN{}$) while affirming claims with no matching OpenAlex work for that author at \tiNearRate{} (adjacent subfield), \tiFarRate{} (adjacent field), and \tiCtlRate{} (different domain; $n=\tiNearN{}$ per stratum). Second, the endpoint's schema-elicited confidence sits near ceiling regardless of correctness: in the main run, \tiCalTopShare{}\% of answers fall in $[0.9, 1.0]$ at mean confidence \tiCalTopConf{} against accuracy \tiCalTopAcc{}, yielding a Brier score of \tiBrier{} that is worse than a hindsight constant forecast (\tiBrierBase{}). Companion pre-registered tests on SEC filings further show that naming a past employer in free text substantially resolves colliding names on an answer endpoint (E2), that false identity merges do not rise with name-collision degree (H2), and that cross-sectional job-change reflection is non-monotone in elapsed time (H1).
 
-The sixth held up in part. It is also much smaller than the first drafts of it. This paper reports the
-five, the one, and the machinery around them, in the order I met them.
+Building the instrument also surfaced a recurring methodological hazard: across five separate runs, harness defects produced plausible, publishable headline scores---including \tiPRunOneCorrect{} of \tiPRunOneN{} on a structured people index, \tiWebCorrect{} of \tiWebN{} on a web baseline, and inflated false-affirmation rates of \tiRawFar{} and \tiRawNear{} from unverified top-$N$ negatives---that were indistinguishable in aggregate summaries from vendor failures and surfaced only when returned rows or binned rates were inspected directly.
 
-\paragraph{What the paper claims.} (1) A ledger of the five defects, how each was found, and the cheap
-check that would have caught it earlier. (2) One measurement that survived, with its intervals and its limits: an answer endpoint, asked a yes/no question about a researcher's publication record, affirms \tiNearRate{} to \tiCtlRate{} of claims that have no matching work in the author's OpenAlex record, with the gradient resolved only between the extremes and with an oracle error that my own reading of the control affirmations shows is not small. (3) The outcomes of four other
-pre-registered tests, three of which came out falsified or mis-specified. (4) A list of defects found
-in the repository itself while I prepared this paper, because the pattern did not stop.
-
-\paragraph{What it does not claim.} It does not rank vendors. It does not measure any vendor's
-people-search product. It does not show that harness defects move numbers more than vendor quality
-does, because I never varied vendor quality; it shows that in this case defects of the harness
-produced numbers that looked like findings. The pooled calibration figure depends on a task mix I
-chose. Every surviving number describes one endpoint, called with one prompt and one output schema.
+This paper makes four contributions:
+\begin{itemize}\setlength\itemsep{1pt}\setlength\parskip{0pt}
+\item \textbf{Verified-negative audit of expertise affirmation (\S\ref{sec:results}).} Per-stratum confirmation and false-affirmation rates across attested, adjacent-subfield, adjacent-field, and different-domain claims ($n=\tiNearN{}$ each), accompanied by post-hoc trend tests, a zero-spend citation-grounding audit ($n=\tiAaTotal{}$), and row-level inspection of all \tiCtlK{} different-domain affirmations.
+\item \textbf{Calibration and Brier decomposition (\S\ref{sec:results}).} Evidence that schema-elicited confidence is pinned at ceiling and underperforms a constant forecast across both task mixes (Brier \tiBrier{} vs.\ \tiBrierBase{} main; \tiCtlBrier{} vs.\ \tiPostCtlUnc{} control), with a post-hoc Murphy decomposition~\citep{murphy1973brier} showing that miscalibration penalty exceeds bin resolution by an order of magnitude.
+\item \textbf{Pre-registered identity-resolution tests (\S\ref{sec:employment}).} Within-task evidence on SEC filers that free-text employer context resolves colliding names (E2), that false merges concentrate in misses rather than rising with collision degree (H2), and that job-change reflection rises then falls with elapsed time (H1).
+\item \textbf{Taxonomy of five evaluation failure modes (\S\ref{sec:defects}).} A concise methodological catalogue of five harness bugs that generated spurious headline numbers, paired with the row-level diagnostics and automated regression checks that prevent recurrence.
+\end{itemize}
 
 \section{Related work}
+\label{sec:related}
 
-\paragraph{Benchmarks and their ground truth.} Label errors in widely used test sets are common
-enough to change conclusions \citep{northcutt2021labelerrors,beyer2020imagenet,gema2024mmlu}.
-\citet{bowman2021fix} ask what a benchmark must do to be trusted, and \citet{reuel2024betterbench} assess 24 benchmarks and find that most report no statistical
-significance. This paper is a case of the same thing at the scale of one repository, in which the
-defective ground truth was my own (Section~\ref{sec:defects}).
+\paragraph{Expertise retrieval and people search.}
+Classical expert-finding research---launched by the TREC Enterprise Track~\citep{craswell2005trec} and formalized via generative candidate- and document-centric models~\citep{balog2006formal,balog2012expertise}---ranked people inside closed organizational corpora against human relevance judgments. Modern commercial APIs instead answer open-web questions about named individuals without exposing their underlying index. PeopleSearchBench~\citep{shi2026peoplesearchbench} evaluates four commercial people-search platforms across 119 criteria-grounded queries using a judge validated against human annotators, without isolating constructed-false expertise claims or calibration. Anchoring tasks to public filings and bibliographic DOIs trades query breadth for mechanically checkable negatives.
 
-\paragraph{Statistics for evaluations.} \citet{miller2024errorbars} argues for error bars and paired
-comparisons in language-model evaluations, and \citet{biderman2024lessons} document how evaluation
-setup changes results. The instrument here uses Wilson intervals \citep{brown2001interval},
-Newcombe intervals for differences \citep{newcombe1998difference} and a paired bootstrap, and it
-refuses a pooled rate across strata designed to be balanced.
+\paragraph{Benchmark ground truth and evaluation statistics.}
+Label errors in standard benchmarks routinely distort system comparisons~\citep{northcutt2021labelerrors,beyer2020imagenet,gema2024mmlu}. \citet{bowman2021fix} and \citet{reuel2024betterbench} document pervasive gaps in statistical reporting across AI benchmarks, while \citet{miller2024errorbars} and \citet{biderman2024lessons} detail how uncertainty quantification and harness setup shift measured scores. Our analysis uses Wilson intervals~\citep{brown2001interval}, Newcombe hybrid score intervals for differences~\citep{newcombe1998difference}, paired bootstraps, and post-hoc Cochran--Armitage trend tests~\citep{cochran1954chi2,armitage1955trend}, and avoids pooling across balanced strata.
 
-\paragraph{Prompt sensitivity.} Results can move with the wording and format of the prompt
-\citep{sclar2023prompt,mizrahi2023state}. I used one prompt. That is a limitation, stated again in
-Section~\ref{sec:limits}.
+\paragraph{Prompt sensitivity, verifiability, and attribution.}
+Language-model outputs vary materially with prompt wording and formatting~\citep{sclar2023prompt,mizrahi2023state}. On generative search engines specifically, \citet{liu2023verifiability} found that on average 51.5\% of generated sentences were fully supported by citations and 74.5\% of citations supported their claims; \citet{rashkin2021ais}, \citet{bohnet2022attributed}, and \citet{ji2022hallucination} formalize attribution and hallucination auditing. Our citation audit (\S\ref{sec:results}) applies an automated bibliographic version of attribution checking against OpenAlex works.
 
-\paragraph{Verifiability and attribution.} \citet{liu2023verifiability} audited four generative
-search engines in 2023 and found that on average 51.5\% of generated sentences were fully supported by
-citations and 74.5\% of citations supported their sentence. \citet{rashkin2021ais} and
-\citet{bohnet2022attributed} define attribution tasks. My citation audit (Section~\ref{sec:a12}) is a
-small, mechanical version of the same question for one kind of claim, scored against OpenAlex rather
-than by annotators. \citet{ji2022hallucination} survey hallucination in generation.
+\paragraph{Confidence elicitation, calibration, and sycophancy.}
+Verbalized or schema-elicited confidence from black-box models frequently exhibits severe overconfidence~\citep{kadavath2022know,xiong2023uncertainty}, quantified via Expected Calibration Error~\citep{guo2017calibration} and Murphy's decomposition of the Brier score into reliability, resolution, and uncertainty~\citep{murphy1973brier}. Sycophancy---agreeing with a user's presupposition~\citep{sharma2023sycophancy}---is a plausible mechanism for affirming false yes/no claims, though not isolated by our single-prompt design.
 
-\paragraph{Confidence.} Models can be calibrated on some multiple-choice formats
-\citep{kadavath2022know}, and eliciting confidence from a black-box API is its own research area
-\citep{xiong2023uncertainty}; \citet{guo2017calibration} is the reference for calibration error.
-\citet{sharma2023sycophancy} document a tendency of assistants to match a user's stated view, which is
-one candidate explanation for affirming a claim in the question; I did not test it.
+\paragraph{Negative controls and pre-registration.}
+Negative controls detect residual bias in observational and measurement studies~\citep{lipsitch2010negative}; here the different-domain stratum tests whether affirmations persist when semantic proximity is removed. Pre-registration~\citep{nosek2018prereg} fixed our hypotheses, power rules, and falsification conditions before data collection (Appendix~\ref{app:prereg}).
 
-\paragraph{People search.} PeopleSearchBench \citep{shi2026peoplesearchbench} evaluates four
-people-search platforms on 119 queries with criteria-grounded verification and a judge validated against
-human annotators. It does not measure false identity merges or cost. The ground truth here is a filing or
-a bibliographic record rather than a judged web check, which trades its breadth for a checkable answer.
-
-\paragraph{Negative controls and pre-registration.} A negative control, an exposure that cannot cause the
-outcome, detects bias in observational work \citep{lipsitch2010negative}; the different-domain stratum was meant to play that role here, and Section~\ref{sec:results} shows it does so only in part. Pre-registration \citep{nosek2018prereg} fixed what would count as a falsification
-before the data, and it is the reason three of the hypotheses are reported as failures.
-
-\section{The instrument}
+\section{Instrument and experimental design}
 \label{sec:instrument}
 
-\paragraph{Ground truth.} Two public records. Section 16 of the Securities Exchange Act compels
-officers and directors to state, by name, that they held a role at an issuer on a date: \tiCorpusRows{}
-rows for \tiCorpusPeople{} filers in the corpus I built from the SEC's quarterly files. For expertise, the
-oracle is OpenAlex \citep{priem2022openalex}: \tiAuthors{} authors with ORCID identifiers, each with the topics
-of their works. No step in the instrument assigns a label with a model; the reading of control affirmations in Section~\ref{sec:results} is outside it. The topics themselves are another
-matter. OpenAlex assigns topics to works with a machine-learning classifier that reads the title, abstract
-and source name.\footnote{OpenAlex documentation, \url{https://help.openalex.org/api-entities/topics}, accessed 23 November 2026: ``Topics are inferred, not looked up.''}
-So the claim ``this author has no work in topic T'' means ``OpenAlex's classifier put none of this author's
-works in T''. A work on T that the classifier assigned elsewhere makes a false claim true. Section~\ref{sec:limits}
-returns to this.
+\paragraph{Ground truth oracles.}
+Two public records anchor all tasks. For employment transitions, SEC Section 16 Forms 3, 4, and 5 compel corporate officers and directors to attest by name to their role at an issuer on a filing date, yielding \tiCorpusRows{} rows for \tiCorpusPeople{} distinct filers. For research expertise, OpenAlex~\citep{priem2022openalex} supplies \tiAuthors{} authors with ORCID identifiers and their indexed works across a \tiTopics{}-topic hierarchy. No step in \texttt{titer} uses a model to assign ground-truth labels. OpenAlex itself, however, assigns topics to works using a third-party machine-learning classifier over titles, abstracts, and venues;\footnote{OpenAlex documentation, \url{https://help.openalex.org/api-entities/topics}, accessed 23 November 2026: ``Topics are inferred, not looked up.''} consequently, ``zero works in topic $T$'' denotes zero works assigned to $T$ under that author's OpenAlex profile.
 
-\paragraph{Claims.} Each task is one yes/no question, \emph{``Does \textless name\textgreater, affiliated with
-\textless institution\textgreater, have published research expertise in \textless topic\textgreater?''}
-An attested claim names a topic the author has works in. A constructed-false claim names a topic with zero
-works, chosen by a set operation over the OpenAlex topic hierarchy (\tiTopics{} topics) at three distances: the
-same field and a different subfield (NEAR), the same domain and a different field (FAR), and a
-different domain (CONTROL). Every false topic was checked against the author's complete list of works
-before the provider was asked. Catch-all labels are excluded. The construction rule is published; the pairs of
-named people and false claims are not, by a rule in the repository's ethics file.
+\paragraph{Claim construction.}
+Each expertise task poses one yes/no question: \emph{``Does \textless name\textgreater, affiliated with \textless institution\textgreater, have published research expertise in \textless topic\textgreater?''} An ATTESTED claim names a topic in which the author has published works. A constructed-false claim names a topic with zero matching works across the author's complete OpenAlex \texttt{/works} list, selected mechanically over the topic hierarchy at three distances: same field and different subfield (NEAR), same domain and different field (FAR), and different domain (CONTROL). Generic catch-all topic labels are excluded prior to sampling. Construction rules are public; pairings of named individuals with constructed-false claims are withheld under repository ethics rules.
 
-\paragraph{The endpoint.} Exa \texttt{/answer} runs a search and has a language model write an answer with
-sources; with an \texttt{outputSchema} it returns JSON that matches the schema.\footnote{Exa API documentation, \url{https://docs.exa.ai/reference/answer}, accessed 23 November 2026.} I supplied a schema with a boolean \texttt{affirms}, a number
-\texttt{confidence} from 0 to 1, and a string \texttt{evidence}. The confidence is therefore a number the
-endpoint was asked to write, not a score the vendor documents or exposes as a product feature. The
-endpoint is a general question-answering API. I am not aware that it is offered as an expertise
-verifier, so a rate here describes this endpoint under this use, and says nothing about what the vendor
-sells for that purpose. The model parameter was left at its default and is not recorded in the results.
+\paragraph{Endpoint, schema, and scoring.}
+Exa \texttt{/answer} executes web search and synthesizes a cited response conforming to a caller-supplied \texttt{outputSchema}.\footnote{Exa API documentation, \url{https://docs.exa.ai/reference/answer}, accessed 23 November 2026.} We supplied a JSON schema requesting boolean \texttt{affirms}, numeric \texttt{confidence} $\in [0, 1]$, and string \texttt{evidence}. Confidence is therefore schema-elicited rather than a vendor-documented product metric, and backend model parameters remained at API defaults. Affirming a constructed-false claim scores as a false affirmation (\texttt{FALSE\_MERGE}); unparseable responses score as \texttt{MISS} (never denial) and enter calibration with confidence $0$.
 
-\paragraph{Scoring.} A false claim that the endpoint affirms is a false affirmation (called
-\texttt{FALSE\_MERGE} in the repository). An answer that cannot be parsed scores as no answer, never as a denial,
-so a silent endpoint cannot earn a perfect score.
+\paragraph{Stratified design and pre-registration.}
+Sampling is stratified by claim polarity and semantic distance using seed \tiSeed{}, drawn once from pools of \tiPoolAtt{} ATTESTED, \tiPoolFar{} FAR, and \tiPoolNear{} NEAR claims for the main run (\$\tiEoneSpend{}, \tiCalN{} calls), and \tiCtlPoolAtt{} ATTESTED and \tiCtlPool{} CONTROL claims for the control run (\$\tiCtlSpend{}, \tiCtlCalN{} calls; \tiTotalCalls{} calls total; total project API spend across all arms was \$\tiSpendTotal{}). Pre-registration forbids reporting a pooled accuracy rate across balanced strata. Two pre-registrations (employment H1--H4; expertise E1--E4) were hash-frozen prior to their respective data collections; every deviation is recorded with its counterfactual in Appendix~\ref{app:prereg}.
 
-\paragraph{Design.} Sampling is stratified by claim polarity and negative distance, with each stratum drawn once,
-by seed \tiSeed{}, from pools of \tiPoolAtt{} attested, \tiPoolFar{} FAR and \tiPoolNear{} NEAR claims; the control
-run drew from pools of \tiCtlPoolAtt{} attested and \tiCtlPool{} different-domain claims. Rates are per stratum. The pre-registration forbids a pooled rate over
-a stratified design, because it would describe my choice of mix. Cost was \$\tiEoneSpend{} for the main run and
-\$\tiCtlSpend{} for the control run (\tiTotalCalls{} calls); total spend on the whole project, including a
-vendor arm that never produced a number, was \$\tiSpendTotal{}.
-
-\paragraph{Pre-registration and the reversal rule.} Two pre-registrations were frozen and their hashes published
-before the corresponding data. A change is a dated decision-log entry that must state what would have been
-reported under the original plan. The employment study (SEC filers, H1 to H4) was frozen first; the expertise
-study (E1 to E4) second.
-
-\section{Five defects and the one that remained}
-\label{sec:defects}
-
-Table~\ref{tab:defects} lists the six headline numbers. The last column is the check that would have caught the defect before a number existed, and whether a regression test for it exists now.
-
-\begin{table}[t]
-\centering\footnotesize
-\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}p{2.9cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{2.6cm}@{}}
-\toprule
-\# & The number & What it was & Found by & Earlier check \\
-\midrule
-1 & \tiPRunOneCorrect{} of \tiPRunOneN{} correct, Provider P & The company went into the free-text query instead of the documented structured filter; the run scored my wire format. & Reading rows: right names attached to eponymous small businesses. & Assert each adapter exercises the fields its API documents. Test exists. \\
-2 & \tiPRunTwoCorrect{} of \tiPRunTwoN{} again, after the fix & A current-state company filter returns people who work there now, so the anchor always came back; and the question asked a current-state index about a date years back. & One structured query returned the anchor as the top row. & Test that the renderer never filters on the scored anchor. Test exists. \\
-3 & Web floor, \tiWebCorrect{} of \tiWebN{} & A parser read person names out of page titles such as a filing number; \tiWebNotInCorpus{} of \tiWebN{} resolved to a name not in the corpus. & Printing the parsed ``names'' (my own parser's rows). & Print ten parsed rows before scoring. Not automated. \\
-4 & E1 at \tiRawFar{} and \tiRawNear{} (FAR, NEAR; $n=\tiRawN{}$ each) & The false topics were absent from OpenAlex's top-N topic summary for the author, not from the author's works. A dermatologic oncologist affirmed for ``Educational Methods'' had co-authored medical education research. & Reading the evidence strings behind affirmations. & Verify each negative against the full works list. Test exists. \\
-5 & Median reflection lag \tiHoneIsoLag{} days & Isotonic regression forced monotonicity on a reflection curve that rises and then falls. & Binned rates with intervals (the data under the fit). & Plot the binned rates before fitting a shape. Estimator withdrawn. \\
-6 & E1 at \tiCtlPoints{} to \tiNearPoints{}\% & The corrected form of number 4; Section~\ref{sec:results}. & Confirmatory run, control tier. & \\
-\bottomrule
-\end{tabularx}
-\caption{The six headline numbers. Counts and rates come from the committed result files; the descriptions are
-the repository's retraction and decision records. In number 1 the vendor is Provider P, a structured-filter people
-index; the repository names it, this paper does not, because no number about it is claimed.}
-\label{tab:defects}
-\end{table}
-
-\paragraph{Why Provider P stays unnamed and unmeasured.} Four result files record runs against Provider P with
-$n$ of \tiPRunOneN{}, \tiPRunTwoN{}, \tiPRunFourN{} and two arms of \tiPRunArmN{}. None produced a correct
-answer ($0$ correct in each, and \tiPRunArmCorrect{} in both arms of the last), and none supports a statement about
-the product. The first two runs exposed three defects (the free-text packing, the anchor filter and the past-dated question); five more surfaced in later pilots: entity filers (Section 16
-owners that are funds, not people) counted as people; the word ``formerly'' in my query matched company-history text;
-names sorted into an order no person writes; a surname particle taken as a given name; and the anchor company's
-tokens displacing the person they were meant to disambiguate. That is eight query-construction defects over five
-budgets (the repository's own prose says seven; the last was added after that count). One further failure was mechanical: a patch that did not apply, with the script printing success, so an earlier attempt at the two-arm contrast below ran one arm only. In the completed contrast the structured filter resolved \tiPRunArmResolvedFilter{} of \tiPRunArmN{} names and the bare name resolved \tiPRunArmResolvedName{}; of the resolved rows \tiPRunArmStale{} were the anchor employer and the third was a wrong person. With zero
-correct answers in both arms that is a description of the harness, not a result. The pre-registered power rule says what
-a real measurement costs: $n=\tiPowerN{}$ per arm for a half-width of 0.10 at an assumed rate of 0.15, about \$\tiPowerCost{} per arm at the \$\tiPowerPrice{} per search measured for Provider P.
-
-\paragraph{The pattern.} Every defect surfaced when I read the rows the provider returned or the binned data under a fitted number. None was visible in the headline count.
-Zero correct out of $n$ is what a bad query and a missing person have in common, and what separates them is the first
-rows of the response. The repository's rule since the first retraction is that before a budget is spent on an arm, one
-task goes through it and the returned rows are read verbatim. That rule is a human step. Six of the eight query defects (the structured request, the anchor filter, the word ``formerly'', the name order, the surname particle and the entity filers) and the negative verification now have a regression test; I would not call the pattern solved.
-
-\paragraph{The sixth number.} The E1 false-affirmation rate was first measured as \tiRawFar{} (FAR) and
-\tiRawNear{} (NEAR) on a corpus whose negatives were contaminated (defect 4). After the correction the rate changed
-and survived: \tiFarRate{} and \tiNearRate{} on a confirmatory run with verified negatives, and \tiCtlRate{} on a
-control tier added after the first two. ``Survived'' here means the rate stayed above zero with an interval that
-excludes it. The three checks were a post-hoc correction of the contaminated negatives, a confirmatory run on negatives verified against the full works list, and the control tier. The magnitude did not stay put, and the post-hoc correction overstated FAR (its point estimate sat above the confirmatory interval's centre). Numbers 4 and 6 are the same quantity before and after correction, so the count of independent artifacts is smaller than five of six; the correction moved the rate by a few points, and what it removed was the claim that the negatives were negatives.
-
-\section{What survived: false affirmations by one endpoint}
+\section{Empirical results on the answer endpoint}
 \label{sec:results}
 
-Table~\ref{tab:e1} and Figure~\ref{fig:forest} give the result.
-
-\begin{table}[t]
+\begin{table}[!tb]
 \centering\small
 \input{generated/tab_e1}
-\caption{Main run (first three rows; seed \tiSeed{}) and control run (last two rows; its false
-stratum is the CONTROL row); \tiTotalCalls{} calls in all. Attested rows report the share confirmed.
-Counts of ``no answer'' are claims on which the endpoint returned no parseable boolean.}
+\caption{Expertise verification on Exa \texttt{/answer}: main run (first three rows, seed \tiSeed{}) and control run (last two rows), \tiTotalCalls{} calls total. Attested rows report confirmation rates; false strata report false-affirmation rates. ``No answer'' counts responses without a parseable boolean.}
 \label{tab:e1}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[!tb]
 \centering
 \input{generated/fig_forest}
-\caption{False-claim affirmation rates with 95\% Wilson intervals, $n=\tiNearN{}$ per stratum, drawn once.}
+\caption{False-claim affirmation rates with 95\% Wilson intervals ($n=\tiNearN{}$ per stratum, drawn once).}
 \label{fig:forest}
 \end{figure}
 
-\paragraph{The control, and what is in it.} The CONTROL rate is \tiCtlRate{}: \tiCtlK{} of \tiCtlN{} claims
-about topics from a different OpenAlex domain than any of the author's works were affirmed. In these two runs the NEAR rate is \tiRatioNearCtl{} times the control rate, and the difference is $\tiNearCtlDiff{}$ with a Newcombe 95\% interval
-$[\tiNearCtlDiffLo{},\tiNearCtlDiffHi{}]$, computed from the committed counts. The FAR difference from control is
-$\tiFarCtlDiff{}$ $[\tiFarCtlDiffLo{},\tiFarCtlDiffHi{}]$ and NEAR minus FAR is
-$\tiNearFarDiff{}$ $[\tiNearFarDiffLo{},\tiNearFarDiffHi{}]$; both include zero, so topic distance is resolved only
-between the extremes. Two things make even that difference soft. NEAR and CONTROL come from separate runs on
-different draws of authors and topics, and the attested confirmation rate differs between those runs
-(\tiAttRate{} and \tiCtlAttRate{}). The control tier was added after I had seen the NEAR and FAR rates. And with one draw per stratum and no test and retest, run-to-run variation could produce a gap of this size; I did not measure it.
+\paragraph{False affirmations across semantic distance.}
+Table~\ref{tab:e1} and Figure~\ref{fig:forest} summarize the confirmatory expertise audit. On attested claims, the endpoint confirms \tiAttRate{} ($[\tiAttLo{},\tiAttHi{}]$, \tiAttK{}/\tiAttN{}) in the main run and \tiCtlAttRate{} ($[\tiCtlAttLo{},\tiCtlAttHi{}]$, \tiCtlAttK{}/\tiCtlAttN{}) in the control run; all \tiAttMiss{} main-run and \tiCtlAttMiss{} control-run unparseable outputs occurred on attested claims, with zero explicit denials. Because the endpoint denies most false claims across all three negative strata, discrimination resides in the contrast between polarities rather than in the attested confirmation rate alone.
 
-The repository had called the control a floor: at least \tiCtlPoints{} of the \tiNearPoints{} NEAR points are error
-under any reading. I read the cached evidence behind all \tiCtlK{} control affirmations. This reading is outside the instrument: one reader (the AI assistant, under my direction), not blinded, and not re-read by anyone else. I committed it as a file so it can be checked, and I offer it as a pointer to where the oracle fails and not as a measurement. \tiRdBroad{} are broad or generic
-topic labels on which the evidence supports a loose match; \tiRdSame{} cite work in the topic by a same-name person or
-by someone at the same institution, work that is not in the author's OpenAlex record, which is what a split author
-profile, a homonym or a classifier gap would look like; \tiRdOther{} name a different person, have no author, or do
-not support the topic at all. Only the last group is unambiguous endpoint error: \tiRdErrK{} of \tiRdErrN{}, a rate of
-\tiRdErrRate{} with a Wilson interval $[\tiRdErrLo{},\tiRdErrHi{}]$. So the control is not a clean negative control in
-the sense of \citet{lipsitch2010negative}, where a nonzero control is also what residual bias in the measurement looks
-like, and the \tiCtlRate{} here is partly that. I keep \tiCtlRate{} as the measured affirmation rate and
-\tiRdErrRate{} as the part I would defend as error, and I withdraw the claim that the control puts a floor of
-\tiCtlPoints{} points under the NEAR rate. The NEAR and FAR rates carry the same oracle error, and its share there is
-unknown.
+On constructed-false claims verified against each author's full \texttt{/works} record, the endpoint affirms \tiNearRate{} ($[\tiNearLo{},\tiNearHi{}]$, \tiNearK{}/\tiNearN{}) for NEAR (adjacent subfield), \tiFarRate{} ($[\tiFarLo{},\tiFarHi{}]$, \tiFarK{}/\tiFarN{}) for FAR (adjacent field), and \tiCtlRate{} ($[\tiCtlLo{},\tiCtlHi{}]$, \tiCtlK{}/\tiCtlN{}) for CONTROL (different domain). Pairwise Newcombe 95\% difference intervals resolve only the extremes: NEAR exceeds CONTROL by \tiNearCtlDiff{} ($[\tiNearCtlDiffLo{},\tiNearCtlDiffHi{}]$, a \tiRatioNearCtl{}$\times$ ratio), whereas FAR minus CONTROL (\tiFarCtlDiff{}, $[\tiFarCtlDiffLo{},\tiFarCtlDiffHi{}]$) and NEAR minus FAR (\tiNearFarDiff{}, $[\tiNearFarDiffLo{},\tiNearFarDiffHi{}]$) both span zero.
 
-\paragraph{Discrimination.} The attested arm records \tiAttK{} confirmations and \tiAttMiss{} unparsed answers and no denial, so an always-yes responder would confirm all \tiAttN{} there; all unparsed answers fall on attested claims, and I did not investigate why. The endpoint is not that responder, because it denied
-most of the false claims in every false stratum; the information is in the pair of arms, never in the attested rate
-alone.
+Post hoc, we evaluate the ordered gradient across the three false strata (\tiNearK{}/\tiNearN{}, \tiFarK{}/\tiFarN{}, \tiCtlK{}/\tiCtlN{}). Under an independence assumption, Pearson's homogeneity test gives $\chi^2 = \tiPostChiSq{}$ ($df=2$, $p = \tiPostChiP{}$), the Cochran--Armitage linear trend test with equal scores $(2, 1, 0)$ yields $z = \tiPostTrendZ{}$ ($p = \tiPostTrendP{}$), and a two-sided Fisher's exact test comparing NEAR against CONTROL gives $p = \tiPostFisherNcP{}$ (odds ratio \tiPostFisherNcOr{}). Comparing the two attested arms across runs (\tiAttK{}/\tiAttN{} vs.\ \tiCtlAttK{}/\tiCtlAttN{}) yields a Newcombe difference of \tiPostAttDiff{} ($[\tiPostAttDiffLo{},\tiPostAttDiffHi{}]$, Fisher $p = \tiPostAttFisherP{}$). Although the baseline shift does not reach significance, NEAR/FAR and CONTROL come from separate, unpaired runs; these tests quantify sampling variation only and do not substitute for a paired within-author draw (\S\ref{sec:limits}).
 
-\paragraph{Grounding.} The repository audited \tiAaTotal{} affirmations: all \tiCtlK{} control affirmations, every false affirmation in the cache from the main run (\tiAaFarMain{} FAR, \tiAaNearMain{} NEAR) and from the retracted contaminated run (\tiAaFarRaw{} FAR, \tiAaNearRaw{} NEAR), and \tiAaAttN{} of the \tiAaAttAvail{} attested affirmations (those of both runs and the control). For each, up to three of the endpoint's own cited titles were resolved against OpenAlex, asking whether any is a work this author wrote (Table~\ref{tab:a12}).
-No model reads the evidence string. The cost was zero because the citations were already cached.
-\label{sec:a12}
+\paragraph{Row-level inspection of the control arm.}
+The CONTROL stratum was added post hoc to test whether affirmations vanish when the false topic lies in a wholly different domain. Because \tiCtlK{} of \tiCtlN{} different-domain claims were affirmed, we conducted an unblinded, single-reader inspection of the cached evidence strings behind all \tiCtlK{} affirmations (committed as a structured artifact so it can be audited). Exactly \tiRdBroad{} involve generic topic labels supporting a loose topical match; \tiRdSame{} cite work in the claimed topic attributed to a same-name person or the same institution absent from the author's OpenAlex profile (consistent with a split profile, homonym, or classifier gap); and \tiRdOther{} name a different person, supply an unattributed title, or fail to support the topic altogether. Only the final group represents unambiguous endpoint error: \tiRdErrK{} of \tiRdErrN{} (\tiRdErrRate{}, 95\% Wilson $[\tiRdErrLo{},\tiRdErrHi{}]$). The control arm therefore does not operate as a pure negative control~\citep{lipsitch2010negative} and does not establish a strict error floor beneath NEAR and FAR.
 
-\begin{table}[t]
+\begin{table}[!tb]
 \centering\small
 \input{generated/tab_a12}
-\caption{Affirmations whose citations include a work the author actually wrote. A cited title that OpenAlex could
-not resolve counts as not backed, so the final column bounds how much of the gap is the resolver and not the endpoint.}
+\caption{Citation-grounding audit across \tiAaTotal{} cached affirmations (\$0 API spend). A cited title that OpenAlex could not resolve counts as not backed; the final column shows the unresolvable-title share.}
 \label{tab:a12}
 \end{table}
 
-A true affirmation cites one of the author's own works \tiAaAttRate{} of the time, an adjacent false one about a
-quarter of the time, and the \tiAaCtlN{} control affirmations never. The lower rate for false claims is not by itself
-evidence of fabrication: between a third and two thirds of the affirmations in every stratum had no resolvable title, and this
-share is highest for the control. ``Backed'' is a weak bar, because a real work by the right author on a different topic
-counts. The adjacent rows include \tiAaFarRaw{} and \tiAaNearRaw{} affirmations from the retracted run, whose negatives were contaminated, so those rates are inflated by claims that were true, and the control row shares OpenAlex's author profile with the oracle that scored the claims, so the two are not independent instruments. Read the table as: about one in four adjacent false affirmations cites something real by that author, an upper bound on the share of false affirmations that cite a real work by the author. An earlier partial audit,
-processed in file order and not by sampling, put the false strata about ten points lower; the complete audit
-corrects it, and an interval does not protect a biased subset.
+\paragraph{Citation grounding.}
+\label{sec:a12}
+At zero additional API spend, we resolved up to three cited titles per affirmation against OpenAlex for \tiAaTotal{} cached affirmations: all \tiAaCtlN{} CONTROL affirmations, all false affirmations across both the confirmatory main run (\tiAaFarMain{} FAR, \tiAaNearMain{} NEAR) and the earlier contaminated run (\tiAaFarRaw{} FAR, \tiAaNearRaw{} NEAR), and \tiAaAttN{} of \tiAaAttAvail{} attested affirmations (Table~\ref{tab:a12}). Attested affirmations cite a verifiable work by the target author \tiAaAttRate{} of the time, adjacent false affirmations do so roughly a quarter of the time (\tiAaNearRate{} NEAR, \tiAaFarRate{} FAR), and CONTROL affirmations never (\tiAaCtlRate{}, $0/\tiAaCtlN{}$). Because ``backed'' requires only any real work by the author (even on another topic), because the adjacent rows pool in affirmations from the contaminated run, and because \tiAaAttNoTitleShare{}\% to \tiAaCtlNoTitleShare{}\% of affirmations contained no OpenAlex-resolvable title, Table~\ref{tab:a12} acts as an upper bound on author-level grounding rather than an independent oracle test.
 
-\paragraph{Confidence.} The endpoint returned a confidence that sits near the ceiling. \tiCalTopN{} of \tiCalN{}
-answers (\tiCalTopShare{}\%) fall in the 0.9 to 1.0 bin, at mean stated confidence \tiCalTopConf{} against accuracy
-\tiCalTopAcc{} (a gap of \tiCalTopGap{} points); expected calibration error is \tiEce{} and the Brier score
-\tiBrier{}. Figure~\ref{fig:rel} plots the bins. Three caveats bound this. The confidence is a number the endpoint was asked to write into my schema, and an unparsed answer enters the calibration with confidence zero. The top-bin accuracy is \tiCalTopAcc{}; the accuracy pooled over all \tiCalN{} answers, \tiCalAccAll{}, is set by my mix of one third attested and two
-thirds false claims, so the gap in the top bin and the pooled ECE would differ under another mix; a constant forecaster at the pooled accuracy, a base rate known only in hindsight, would score a Brier of \tiBrierBase{}, lower than the endpoint's \tiBrier{}, so these confidences
-do not beat a constant forecast. And the control run, with a 50/50 mix, gives \tiCtlCalTopConf{} against
-\tiCtlCalTopAcc{} in the top bin (\tiCtlCalTopN{} of \tiCtlCalN{} answers), with \tiCtlEmptyBins{} empty bins, ECE
-\tiCtlEce{}.
-
-\begin{figure}[t]
+\begin{figure}[!tb]
 \centering
 \input{generated/fig_reliability}
-\caption{Reliability of the stated confidence. Bins with fewer than five answers are omitted. The top bin holds
-\tiCalTopN{} of the \tiCalN{} answers in the main run.}
+\caption{Reliability diagram for schema-elicited confidence (bins with $n \ge 5$). In the main run, \tiCalTopN{} of \tiCalN{} answers sit in the top $[0.9, 1.0]$ bin.}
 \label{fig:rel}
 \end{figure}
 
-\section{Other pre-registered tests}
+\begin{table}[!tb]
+\centering\small
+\input{generated/tab_brier}
+\caption{Post-hoc Murphy (1973) 10-bin Brier score decomposition across both expertise runs. Constant denotes the hindsight base-rate Brier score (Uncertainty, $\bar{y}(1-\bar{y})$); Rel.\ is reliability (miscalibration penalty); Res.\ is bin resolution; Resid.\ is exact minus binned Brier; BSS $= 1 - \text{Brier}/\text{Constant}$.}
+\label{tab:brier}
+\end{table}
 
-\paragraph{E2: naming the past employer helps (D029 not supported on this surface).} The employment study's decision D029 held that a name plus a biographical (capability) constraint would not resolve an identity better than the name alone. On the answer
-endpoint, naming the past employer in free text raised the correct rate in all four collision bands, with paired
-intervals excluding zero (Table~\ref{tab:e2}; $n=\tiEtwoN{}$ per band, seed \tiEtwoSeed{}). A name alone resolved \tiEtwoMAK{} of \tiEtwoMAN{} tasks in the medium band and \tiEtwoHAK{} of \tiEtwoHAN{} in the high band. The hypothesis was about structured-filter indexes,
-the surface where it stayed unmeasured, so the result is scoped to the answer endpoint, and is a new observation on a different surface more than a refutation. Colliding bands are
-searched for, not sampled, so no rate here is a population rate.
+\paragraph{Stated confidence and Murphy Brier decomposition.}
+Schema-elicited confidence sits pinned near ceiling (Figure~\ref{fig:rel}). In the main run, \tiCalTopN{} of \tiCalN{} answers (\tiCalTopShare{}\%) fall into $[0.9, 1.0]$ with mean confidence \tiCalTopConf{} against accuracy \tiCalTopAcc{} (a \tiCalTopGap{}-point overconfidence gap), producing ECE \tiEce{} and Brier score \tiBrier{}. Against a hindsight constant forecaster predicting the pooled main-run accuracy (\tiCalAccAll{}), whose Brier score is \tiBrierBase{}, the endpoint's confidence is strictly worse. The control run (50/50 polarity mix) exhibits the same ceiling pattern: \tiCtlCalTopN{} of \tiCtlCalN{} answers land in $[0.9, 1.0]$ at mean confidence \tiCtlCalTopConf{} against accuracy \tiCtlCalTopAcc{} (\tiCtlEmptyBins{} empty bins, ECE \tiCtlEce{}, Brier \tiCtlBrier{} vs.\ constant \tiPostCtlUnc{}).
 
-\begin{table}[t]
+Post hoc, Table~\ref{tab:brier} decomposes both Brier scores into Murphy's~\citep{murphy1973brier} reliability, resolution, and uncertainty components across the committed 10-bin summaries. In both task mixes, the Brier Skill Score is substantially negative (\tiPostMainBss{} main; \tiPostCtlBss{} control), and the miscalibration penalty (reliability: \tiPostMainRel{} main, \tiPostCtlRel{} control) exceeds bin resolution (\tiPostMainRes{} main, \tiPostCtlRes{} control) by more than an order of magnitude. The stated confidence carries negligible discriminative signal once answers concentrate at ceiling.
+
+\section{Employment-surface pre-registered tests}
+\label{sec:employment}
+
+Three pre-registered employment-surface tests on SEC Section 16 filers completed on Exa \texttt{/answer}. Outcomes of all remaining registered arms appear in Appendix~\ref{app:prereg}.
+
+\begin{table}[!tb]
 \centering\small
 \input{generated/tab_e2}
-\caption{Correct-identity rate by name-collision band and rendering. Arm C adds the past employer in free text; arm D
-adds the attested date and role. Paired differences are within task.}
+\caption{E2: correct-identity rate by name-collision band and query rendering ($n=\tiEtwoN{}$ per band, seed \tiEtwoSeed{}). Arm C adds the past employer in free text; Arm D adds attested date and role. Paired differences are within task (10,000 bootstrap resamples).}
 \label{tab:e2}
 \end{table}
 
-\paragraph{H2: no rise in false merges with collision (prediction not supported).} The employment hypothesis said confidently wrong identities would rise
-with collision degree. Table~\ref{tab:h2} shows no rise: the point estimates are highest where names do not collide, and a plausible reason
-is that on a colliding name the endpoint mostly fails to name anyone resolvable, and a miss is not a wrong identity. It cost nothing, because the strata it needed were already in E2's draw. The cell counts are small, three, zero, one and zero out of \tiHtwoUN{}, and the intervals overlap, so this shows
-no rise with collision; it does not show a fall.
+\paragraph{E2: Free-text employer context disambiguates colliding names.}
+We pre-registered the hypothesis (motivated by structured-filter people indexes) that supplying a biographical constraint would not improve identity resolution over a bare name. On Exa \texttt{/answer}, that hypothesis is falsified (Table~\ref{tab:e2}). Name alone resolved \tiEtwoMAK{} of \tiEtwoMAN{} tasks in the medium collision band and \tiEtwoHAK{} of \tiEtwoHAN{} in the high band. Adding the past employer in free text (Arm C) lifted correct resolution across all four bands, with paired 95\% bootstrap intervals excluding zero in every band. Adding the attested filing date and role class (Arm D vs.\ C) yielded no measurable gain once names collided at medium or high degree. Because colliding bands are stratified rather than randomly sampled, rates describe band performance rather than population incidence, and the result scopes to free-text answer engines rather than structured-filter indexes.
 
-\begin{table}[t]
+\begin{table}[!tb]
 \centering\small
 \input{generated/tab_h2}
-\caption{Wrong-identity rate of the full-context arm by collision degree.}
+\caption{H2: wrong-identity (\texttt{FALSE\_MERGE}) rate of the full-context arm by name-collision degree.}
 \label{tab:h2}
 \end{table}
 
-\paragraph{H1: the staleness curve is not monotone.} Reflection of a job change rises and then falls
-(Figure~\ref{fig:h1}, Table~\ref{tab:h1}). An isotonic fit forced a monotone shape and produced a median lag of
-\tiHoneIsoLag{} days, which is what defect 5 was. The fall after three years is most likely my oracle ageing out of
-reality, not the index regressing; the experiment that would separate the two, E4, was not completed, see below. The
-hypothesis is mis-specified, neither confirmed nor falsified.
+\paragraph{H2: False merges do not rise with collision degree.}
+Hypothesis H2 predicted that confidently wrong identity merges would increase with name-collision degree $d$. Evaluated at zero extra cost over E2's stratified draw (Table~\ref{tab:h2}), wrong-identity counts are \tiHtwoUK{}, \tiHtwoLK{}, \tiHtwoMK{}, and \tiHtwoHK{} out of \tiHtwoUN{} across the unique, low, medium, and high bands. Intervals overlap across bands, showing no rise with collision (and not establishing a decrease). Inspection of resolution reasons explains the mechanism: on colliding names, the endpoint usually fails to identify a resolvable individual and scores \texttt{MISS}, preventing a confident wrong merge.
 
-\begin{figure}[t]
+\begin{figure}[!tb]
 \centering
 \input{generated/fig_h1}
-\caption{Share of filings whose employer the endpoint reflected, by elapsed time, $n=100$ per bin, 95\% Wilson
-intervals.}
+\caption{H1: share of SEC filings whose attested employer was reflected by the endpoint, by elapsed time since filing ($n=100$ per bin, 95\% Wilson intervals).}
 \label{fig:h1}
 \end{figure}
 
-\begin{table}[t]
+\begin{table}[!tb]
 \centering\small
 \input{generated/tab_h1}
-\caption{The data behind Figure~\ref{fig:h1}.}
+\caption{Binned reflection rates underlying Figure~\ref{fig:h1}.}
 \label{tab:h1}
 \end{table}
 
-\paragraph{E4: no result.} The repository's earlier text reports a coverage comparison between SEC filers and
-scholars with a difference interval that contains zero. The committed result file holds \texttt{NO VERDICT}: the
-scholar arm was scored on only four of 250 rows when the file was last written, and the larger run that produced the
-quoted figures has no surviving artifact. I do not report E4.
+\paragraph{H1: Job-change reflection is non-monotone.}
+Cross-sectional reflection of an attested employer change rises over the first three years after a filing and then declines beyond three years (Figure~\ref{fig:h1}, Table~\ref{tab:h1}). The late decline plausibly reflects executives moving again after the filing date (oracle ageing) rather than index regression. Because reflection is non-monotone, no unique half-life exists and the pre-registered survival hypothesis is mis-specified.
 
-\paragraph{A policy on a simulator.} A 130-parameter policy trained on a simulator fitted to \tiEnvObs{} real
-observations beats the always-abstain floor (\tiFloorAbst{}) by \tiPolMargin{}, mean \tiPolMean{} with a
-seed standard deviation of \tiPolSd{} over \tiPolSeeds{} seeds. That spread is not evidence of stability:
-\tiPolSame{} of the \tiPolSeeds{} seeds returned the identical score, so the seeds do not explore. The policy abstains
-on \tiPolAbstain{}\% of tasks, answers at \tiPolPrec{}\% precision, and states confidence 1.0 on every answer, a confidence that carries no information, in an environment that prices it. The floors measured on the fitted simulator are \tiFloorNever{} for never verifying and \tiFloorDeep{} for always verifying deeply, and spending three times more bought slightly fewer correct answers there (\tiFloorDeepCorrect{} against \tiFloorNeverCorrect{} correct of \tiFloorN{} simulated tasks). The environment is a simulator of my own fit, scored on \tiPolTasks{} frozen tasks; no statement about a live agent follows.
+\section{Measurement failure modes caught by row-level inspection}
+\label{sec:defects}
 
-\section{Limitations and threats to validity}
+Automated API benchmarks interpose five software layers between a research question and a reported metric: query rendering, API filtering, response parsing, negative-example construction, and statistical summarization. Across the development of \texttt{titer}, each layer produced an aggregate failure that was indistinguishable in summary tables from a property of the system under evaluation. Table~\ref{tab:defects} catalogues these five failure modes, the spurious metrics they generated, the inspection step that exposed each defect, and the preventative gate.
+
+\begin{table}[!tb]
+\centering\footnotesize
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.6cm}@{}}
+\toprule
+Layer & Spurious output & Defect mechanism & Row-level diagnostic & Preventative gate \\
+\midrule
+1. Wire format & \tiPRunOneCorrect{}/\tiPRunOneN{} correct (Provider P) & Employer packed into free-text query instead of documented structured filters. & Returned rows showed right names at eponymous small businesses. & Adapter test asserting documented filter fields; 1-row pilot. \\
+2. API filtering & \tiPRunTwoCorrect{}/\tiPRunTwoN{} correct (Provider P) & Current-state company filter always returned the anchor employer on historical move tasks. & Single structured query returned the anchor employer at rank 1. & Unit test forbidding filters on the scored anchor fact. \\
+3. Response parsing & \tiWebCorrect{}/\tiWebN{} correct (web baseline) & Entity parser extracted filing identifiers from web page titles (\tiWebNotInCorpus{}/\tiWebN{} absent from corpus). & Printing raw parsed entity strings before scoring. & Inspect 10 parsed outputs on pilot before full run. \\
+4. Negative oracle & \tiRawFar{} FAR, \tiRawNear{} NEAR ($n=\tiRawN{}$) & False topics checked against OpenAlex top-$N$ summary rather than exhaustive \texttt{/works}; true papers scored false. & Reading evidence strings revealed genuine co-authored papers. & Exhaustive \texttt{/works} check and catch-all exclusion (tested). \\
+5. Summarization & Median lag \tiHoneIsoLag{} days (H1) & Isotonic regression forced monotonicity onto a rise-and-fall reflection curve. & Plotting binned empirical Wilson rates beneath the fitted curve. & Plot binned rates with CIs prior to shape-constrained fits. \\
+\bottomrule
+\end{tabularx}
+\caption{Five measurement failure modes encountered during automated evaluation, each invisible in summary metrics alone. Provider P denotes the unmeasured structured-filter people index (Appendix~\ref{app:prereg}).}
+\label{tab:defects}
+\end{table}
+
+\paragraph{The diagnostic principle.}
+Aggregate accuracy cannot separate a defective measurement layer from an underperforming API: zero correct answers looks identical whether a record is absent or a wire format is wrong, and a \tiRawNear{} affirmation rate looks identical whether negatives are contaminated or the endpoint hallucinates. Two lightweight operational practices caught all five defects before publication: (i) executing a single-task or small-pilot call and reading the raw API payload and parsed fields verbatim before committing evaluation budget, and (ii) plotting binned empirical proportions with confidence intervals before fitting any shape-constrained estimator. Where possible, we encoded these lessons into automated regression tests (verifying structured filter usage, anchor exclusion, and exhaustive \texttt{/works} negative checks), though row-level inspection of new task surfaces remains an irreducible manual step.
+
+\section{Limitations}
 \label{sec:limits}
 
-I state these in the order I think they matter.
+\begin{itemize}\setlength\itemsep{2pt}\setlength\parskip{0pt}
+\item \textbf{One endpoint, one prompt, one schema, one draw.} Every surviving empirical number describes Exa \texttt{/answer} called with a single prompt wording and JSON \texttt{outputSchema}, queried once per task in September 2026 (seed \tiSeed{}) with unpinned backend model parameters. Prompt wording sensitivity~\citep{sclar2023prompt,mizrahi2023state}, sycophantic framing effects~\citep{sharma2023sycophancy}, and stochastic run-to-run variation (test--retest stability) were not measured.
+\item \textbf{Unpaired cross-run distance gradient.} NEAR and FAR come from the main run and CONTROL from a separate post-hoc run drawn independently from a smaller author pool whose attested confirmation rate was higher (\tiCtlAttRate{} vs.\ \tiAttRate{}). The pairwise Newcombe intervals and post-hoc $\chi^2$, Cochran--Armitage, and Fisher tests treat strata as independent and do not account for cross-run variance.
+\item \textbf{Oracle error and uncalibrated control floor.} OpenAlex topics come from a third-party ML classifier attached to single author profiles; split profiles, homonyms, unindexed works, and broad topic labels can turn a constructed negative into a valid match. Because an unblinded single-reader pass found only \tiRdOther{} of \tiCtlK{} CONTROL affirmations (\tiRdErrRate{}) clearly attributable to endpoint error, the control arm does not bound prompt-interpretation or oracle-error objections. The NEAR and FAR rates are therefore upper bounds carrying an unquantified oracle-error component; a random spot check of \tiSpotN{} negatives found zero contamination (upper bound \tiSpotHiPct{}\%), but affirmed claims selectively enrich for profile splits and classifier blind spots. Additionally, publication history is narrower than applied expertise.
+\item \textbf{Population skew and calibration task mix.} ORCID-linked researchers (\tiAuthors{}) and SEC Section 16 filers (\tiCorpusPeople{}; \tiUsablePct{}\%, \tiUsableN{} usable tasks after four narrowings) have unusually high public web visibility, so error rates may not generalize to less-documented populations. Calibration summaries (ECE, Brier, Murphy components) depend on our schema-elicited confidence and balanced stratum mix (1/3 attested in the main run, 1/2 in the control run), with unparsed responses scored at confidence $0$.
+\item \textbf{Endpoint scope and vendor coverage.} Exa \texttt{/answer} is a general question-answering API rather than a dedicated expertise verifier or people-search index. The Provider P structured-index arm remained unmeasured (Appendix~\ref{app:prereg}), and other commercial providers were excluded by Terms of Service reviewed on 2 September 2026.
+\item \textbf{Terms of Service and vendor right-of-reply.} Section 4.2(a) of Exa's self-serve Terms (read 2 September and 23 November 2026) restricts publishing information obtained through the service; we report aggregate rates only with no record-level outputs and signed no Order Form or MSA. Resolving that clause formally and offering the vendor a documented right-of-reply remain open gates before any peer-reviewed venue submission.
+\item \textbf{Reproducibility boundary.} Committed JSON artifacts regenerate every table, figure, and test in this paper. Raw API responses and named person--false-claim pairs are withheld under repository privacy and ethics rules, so live re-execution requires a new paid draw (roughly \$\tiEoneSpend{} for the main strata) against a potentially updated endpoint.
+\end{itemize}
 
-\paragraph{One endpoint, one prompt, one window, one draw.} Every surviving number describes Exa \texttt{/answer},
-called with a single prompt wording and a single schema, in September 2026, with each task asked once. Prompt wording
-changes results \citep{sclar2023prompt,mizrahi2023state}, and I tested no second wording. Model identity and version
-were not pinned. Answer engines are stochastic and change; I ran no test and retest on the same tasks, so the rates
-carry sampling uncertainty but not run-to-run uncertainty. A single re-run of the main strata costs about \$\tiEoneSpend{}
-and was not made. No across-seed spread exists for the endpoint measurements because there is one draw by one seed.
-Nothing here describes the vendor's other products, the same endpoint today, or any other vendor.
+\section{Conclusion}
+\label{sec:conclusion}
 
-\paragraph{The question was not the endpoint's purpose.} A general answer endpoint asked a yes/no expertise question with
-a forced schema is being used in a way the vendor may not intend. A rate that is high for this use says nothing about the
-use the vendor designs for. Part of the false-affirmation rate may be the question: ``published research expertise in T''
-is a vague phrase, and the control run is the only test I have of that.
+Auditing Exa \texttt{/answer} against OpenAlex authorship records and SEC Section 16 filings yields a clear empirical profile alongside a methodological caution. On expertise verification, the endpoint confirms \tiAttRate{} of attested claims while affirming \tiNearRate{} of adjacent-subfield, \tiFarRate{} of adjacent-field, and \tiCtlRate{} of different-domain unattested claims, with schema-elicited confidence pinned at ceiling and scoring worse than a constant base-rate forecast across both task mixes (Brier \tiBrier{} vs.\ \tiBrierBase{} main; \tiCtlBrier{} vs.\ \tiPostCtlUnc{} control). On SEC filings, free-text employer context substantially improves resolution of colliding names, false merges do not rise with collision degree, and job-change reflection is non-monotone. Simultaneously, five harness failure modes encountered during construction underscore that aggregate benchmark scores remain uninterpretable until raw returned rows and binned rates are inspected.
 
-\paragraph{The oracle is a classifier's output, attached to an author profile.} Zero works in topic T is relative to an automated topic assignment and to one OpenAlex author profile, not to the person. A work on T that the classifier labelled otherwise, a thin or non-English abstract, a work OpenAlex does not index, or a second profile for the same person would make a false claim true, and a same-name person at the same institution would make the endpoint's answer correct about someone else. My reading of the control affirmations (Section~\ref{sec:results}) found both patterns. The size of this error in the NEAR and FAR strata is unknown, and the rates there are upper bounds for that reason. This does not conflict with the spot check of sampled negatives: a random negative rarely meets a split profile, while an affirmed answer is selected for it, because an endpoint that finds real work in the topic is the case in which the oracle failed. The spot check of \tiSpotN{} sampled negatives found none contaminated (an upper
-bound of \tiSpotHiPct{}\% by the repository's interval), which does not rule out a rate in that range, and the check shares the
-classifier's blind spot. Contamination in the earlier run was measured at a rate that changed the result, which is why
-every negative is now checked against the full works list. Publication record is also not expertise: an engineer who does
-not publish is invisible here, so a false claim means only ``no publication in this topic''.
+Closing the remaining threats to validity requires new API spend, independent human readers, and vendor engagement, all specified in the repository's v2 protocol (\texttt{docs/DESIGN-V2.md}): test--retest repeats on the \tiTotalCalls{} tasks, a blind two-reader adjudication over all 75 NEAR and FAR affirmations (plus the \tiCtlK{} CONTROL affirmations), a 2--4 prompt wording sweep, a paired within-author draw across all three negative distances, evaluation of a second answer endpoint alongside Provider P at its registered sample size ($n=\tiPowerN{}$ per arm), and legal review of Terms \S4.2(a) with a formal vendor right-of-reply prior to venue submission.
 
-\paragraph{Post hoc steps.} The control tier was added after I saw the NEAR and FAR rates. The pre-registered E1 clause
-that the rate rises with name-collision degree was not tested: E1 draws from a random corpus in which few authors share a
-name. The correction to the contaminated negatives was made after an unfavourable result, which is why a confirmatory
-run exists, and the confirmatory numbers are the ones I report.
+\section*{Disclosures and availability}
 
-\paragraph{Population and calibration.} The authors are those with ORCID identifiers and a recent institution in OpenAlex;
-the SEC filers are officers and directors of registered issuers (\tiAuthors{} authors and \tiCorpusPeople{} filers),
-who are better documented on the web than a typical target. Better documentation plausibly lowers the error measured here relative to a less-documented population, and no measured success rate generalises; oracle error pushes the false-affirmation rates the other way, and I cannot net the two. The usable share of SEC filers is
-\tiUsablePct{}\% (\tiUsableN{} tasks) after four forced narrowings. The calibration finding depends on a schema-elicited confidence and a task mix chosen by me.
+The code, analysis scripts, and manuscript were drafted with an AI coding assistant under the author's direction and review. The author works at a commercial AI gateway company; nothing from that product, its customers, or its internal data is used here. All inputs derive from public records or synthetic tests, and all API measurements used self-serve accounts with no vendor funding, review, or enterprise agreement. Exa has not yet been sent these results or offered a right of reply; resolving self-serve Terms \S4.2(a) and offering a vendor reply are explicit pre-venue gates (\S\ref{sec:limits}). Constructed-false claims are test inputs only and are never published paired with named individuals; any individual in the public-record corpora may request removal.
 
-\paragraph{What is not reported.} The employment pre-registration also fixed H3, calibration of the free signals, and H4, a trained policy; both stayed unfinished for that population (decision D030) and the expertise study's E3 and the simulator policy stand in. The E1 clause on collision degree was not tested. Nothing was dropped for performing badly; E4 is absent because its artifact is.
-
-\paragraph{Provider arms.} The people-index arm is unmeasured. The comparison set was fixed by what each vendor's terms
-permit, and absence of a vendor says nothing about that vendor. Terms were read on 2 September 2026 and may have changed.
-
-\paragraph{Reproducibility.} The result files are committed and every number in this paper regenerates from them. The raw
-provider responses are not published: they are a provider's output and carry the person-level content the ethics rules
-exclude, so a reader cannot replay the endpoint from a clone, and a fresh run is a new draw against a changed endpoint,
-costing about \$\tiEoneSpend{} for the main strata. The replay cache was keyed by calendar month, so replaying September
-results in a later month returned nothing until I added a \texttt{--window} flag (below).
-
-\section{Defects found in the repository while preparing this paper}
-\label{sec:audit}
-
-The same habit of reading below the number found more. I corrected each in the repository before posting.
-
-\begin{enumerate}\setlength\itemsep{0pt}
-\item The E4 coverage figures quoted in the README, the benchmark file and the decision log have no committed artifact; the
-committed file records four scored scholar rows and no verdict. The prose is corrected.
-\item ``Every measurement regenerates from the replay cache with no key'' was false for a fresh clone: the cache is not
-committed. The documentation now says what regenerates (the tables, figures, gates and tests) and what does not.
-\item The replay cache key includes the calendar month, so a September replay returned zero entries in any later month.
-The three runners take \texttt{--window}.
-\item The measurement card carried superseded floor numbers and an observation count of 500 where the fitted environment used
-\tiEnvObs{}. It is regenerated from the artifacts.
-\item The README said the control's attested arm was matched on the same authors. The two arms were drawn independently from
-one 300-author pool; the wording is corrected.
-\item ``No model assigns a ground-truth label'' read as a property of the oracle. It is true of every step of the instrument and not of
-OpenAlex's topic assignment (Section~\ref{sec:instrument}). The wording is corrected.
-\item The README compared one provider at ``42.4\% in one published comparison and 78\% in another''. I could not find a source for either figure and removed it, along with the inference drawn from it; the text was public in the repository.
-\item The repository called the control tier a floor, ``at least \tiCtlPoints{} of the \tiNearPoints{} NEAR points are error under any reading'', and called the citation audit a second independent test of it. Reading the \tiCtlK{} control affirmations (Section~\ref{sec:results}) shows neither holds: most are broad labels or possible split profiles, and both instruments rest on the same OpenAlex author profile. The wording is withdrawn.
-\item The citation audit mixed affirmations from the retracted run into the adjacent strata (\tiAaFarRaw{} FAR and \tiAaNearRaw{} NEAR of them) without saying so.
-\item The README counted seven query-construction defects; the count is eight (R001, D028 twice, D035 five times).
-\item ``H2 inverted'' and ``false merges run backwards'' described three, zero, one and zero events with overlapping intervals.
-\end{enumerate}
-
-\section{Disclosures and availability}
-
-I wrote this paper and the code with an AI coding assistant under my direction and review. I work at a commercial AI gateway
-company. Nothing from that product, its customers or its data is used here; all data are public records or synthetic, and the
-results come from public APIs used through self-serve accounts. I have no agreement with any vendor named, and none
-funded or reviewed this work. The vendor whose endpoint is measured has not been sent these results, and I did not offer it a reply before posting. The measurement ran through self-serve access under the vendor's terms as I read them in September 2026. Section 4.2(a) of those terms, as I read them on 23 November 2026, restricts publishing information obtained through the service, so I report aggregate rates only, with no record-level provider output, and I entered no enterprise agreement. Whether aggregate rates fit within that clause is my reading and not legal advice; check the vendor's current terms before relying on this. Nothing here
-is a statement about a person: the instrument scores a provider's answers and constructs false claims about named
-researchers only as test inputs, which are not published. A person who appears in the corpus may ask to be removed.
-
-The code and results are under the MIT licence (the repository's licence) and this paper under CC BY 4.0. Repository: \url{https://github.com/caiotheodoro/titer}. Datasets (pointers, not records):
-\url{https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers} and
-\url{https://huggingface.co/datasets/caiotheodoro/titer-expertise-claims}.
+Repository work began on 2 September 2026 (first commit \texttt{fad6dc8}); the first preprint version (\texttt{paper-v1.0}, Zenodo record 24454863) was compiled on 23 November 2026, and this revision (\texttt{paper-v2.0}) is of 23 November 2026. Code and results are released under the MIT licence and this paper under CC BY 4.0. Repository: \url{https://github.com/caiotheodoro/titer}. Public pointer datasets (CC0): \url{https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers} and \url{https://huggingface.co/datasets/caiotheodoro/titer-expertise-claims}.
 
 \bibliographystyle{plainnat}
-\bibliography{refs}
+{\footnotesize\setlength{\bibsep}{0pt}\bibliography{refs}}
+
+\appendix
+
+\section{Pre-registration outcomes, retractions, and audit record}
+\label{app:prereg}
+
+Two pre-registrations were hash-frozen prior to data collection: the SEC employment study (\texttt{docs/PRE-REGISTRATION.md}, frozen 2 September 2026, covering H1--H4) and the OpenAlex expertise study (\texttt{docs/PRE-REGISTRATION-EXPERTISE.md}, frozen 3 September 2026, covering E1--E4). Table~\ref{tab:prereg} summarizes the disposition of every registered hypothesis, control arm, and unmeasured comparison.
+
+\begin{table}[!htb]
+\centering\footnotesize
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Arm / ID & Registered question & Status & Disposition and key figures \\
+\midrule
+E1 & False expertise affirmation & Retracted (R002), re-run & Raw top-$N$ rates (\tiRawFar{}, \tiRawNear{}, $n=\tiRawN{}$) retracted. Confirmatory verified-negative rates: \tiNearRate{} NEAR, \tiFarRate{} FAR, \tiAttRate{} ATTESTED ($n=\tiNearN{}$ each; Table~\ref{tab:e1}). Collision-degree clause not tested in E1 draw. \\
+CONTROL & Different-domain negative control & Post hoc & Added after main run: \tiCtlRate{} (\tiCtlK{}/\tiCtlN{}), control attested \tiCtlAttRate{}. Single-reader pass: \tiRdOther{}/\tiCtlK{} (\tiRdErrRate{}) clear endpoint error. \\
+E2 & Capability constraint on colliding names & Falsified on answer API & Free-text past employer raised accuracy across all 4 bands (Table~\ref{tab:e2}); D029 remains untested on structured-filter indexes. \\
+E3 & Confidence calibration & Measured & \tiCalTopShare{}\% in $[0.9, 1.0]$ (mean \tiCalTopConf{} vs.\ \tiCalTopAcc{}); ECE \tiEce{}, Brier \tiBrier{} vs.\ constant \tiBrierBase{} (Table~\ref{tab:brier}). \\
+E4 & SEC vs.\ scholar coverage & No verdict & Committed artifact holds only 4/250 scored scholar rows (\texttt{NO VERDICT}); earlier unbacked prose figures withdrawn. \\
+H1 & Job-change reflection half-life & Mis-specified & Non-monotone rise-and-fall curve (Figure~\ref{fig:h1}, Table~\ref{tab:h1}); Kaplan--Meier replaced by isotonic, then withdrawn after spurious \tiHoneIsoLag{}-day lag. \\
+H2 & False merges rise with collision $d$ & Falsified & \tiHtwoUK{}, \tiHtwoLK{}, \tiHtwoMK{}, \tiHtwoHK{} of \tiHtwoUN{} across bands (Table~\ref{tab:h2}); overlapping intervals show no rise. \\
+H3 & Free-signal calibration (SEC) & Superseded & Unfinished on SEC population; E3 measures calibration on the expertise arm. \\
+H4 & Live budget-aware policy (8B/4B) & Unmeasured live & No live-provider agent evaluation; an exploratory 130-parameter simulator policy (\tiEnvObs{} cached observations) was trained in the repository and is not claimed as a live result. \\
+Provider P & Structured people-search index & Retracted (R001), unmeasured & Eight harness query defects across five budgets (\tiPRunOneCorrect{}/\tiPRunOneN{}, \tiPRunTwoCorrect{}/\tiPRunTwoN{}, \tiPRunFourCorrect{}/\tiPRunFourN{}, \tiPRunArmCorrect{}/\tiPRunArmN{}); no vendor accuracy claimed. Registered power requires $n=\tiPowerN{}$/arm (\$\tiPowerCost{} at \$\tiPowerPrice{}/search). \\
+Web floor & Trivial free web baseline & Withdrawn & Parser extracted names from page titles (\tiWebCorrect{}/\tiWebN{}, \tiWebNotInCorpus{} absent from corpus); never validly measured. \\
+\bottomrule
+\end{tabularx}
+\caption{Complete ledger of pre-registered hypotheses, post-hoc arms, retractions, and unmeasured arms across both frozen registrations.}
+\label{tab:prereg}
+\end{table}
+
+\paragraph{Retractions and audit trail.}
+Two formal retractions are logged in \texttt{docs/RETRACTIONS.md}: R001 voided the initial Provider P arm after row inspection revealed free-text wire-format packing, and R002 voided raw E1 rates after evidence inspection revealed top-$N$ OpenAlex negative contamination. During manuscript preparation, a cold repository audit (recorded in \texttt{docs/DECISIONS.md}, D046) identified and corrected documentation discrepancies---withdrawing unbacked E4 scholar counts and unsourced third-party comparison numbers, refreshing stale measurement-card floors, disclosing that Table~\ref{tab:a12} pools retracted-run adjacent affirmations, clarifying that the control arm's attested and false draws were independent, and withdrawing earlier prose that treated the \tiCtlRate{} control rate as a strict error floor. Post-hoc statistical checks (unpaired trend tests and Murphy Brier decomposition) were logged in D049 prior to computation and recorded in D050.
 
 \end{document}

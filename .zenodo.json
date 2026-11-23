@@ -1,5 +1,5 @@
 {
-  "title": "Reading the Rows: Five Measurement Defects in an Audit of an Answer Endpoint, and the One Result That Remained",
+  "title": "Affirming Unattested Expertise at Ceiling Confidence: Auditing a Search-Augmented Answer Endpoint and Five Harness Failure Modes",
   "upload_type": "publication",
   "publication_type": "preprint",
   "creators": [
@@ -8,14 +8,16 @@
       "orcid": "0009-0005-7343-981X"
     }
   ],
-  "publication_date": "2026-11-23",
+  "publication_date": "2026-09-02",
   "license": "cc-by-4.0",
-  "description": "A published number about a commercial data product is a property of the harness that produced it until someone has looked below the number. This paper is one worked case. I built an instrument that measures how often an API affirms a false claim about a named person, with ground truth taken from SEC Section 16 filings and OpenAlex authorship records. It produced six headline numbers. Five were defects of my measurement: a query packed into the wrong field, a filter that returned the answer, a parser that read names out of page titles, negatives that were true, and an estimator that forced a monotone shape onto a curve that is not monotone. None was visible in the number itself; each surfaced when I read the returned rows or the binned data underneath. The sixth, a corrected version of the fourth, survived three checks of my own design. Asked whether a named researcher has published in a topic, one endpoint (Exa /answer, one prompt, September 2026) confirmed 0.9600 of attested claims and affirmed claims that have no matching work in the author's OpenAlex record at 0.1680 for an adjacent subfield, 0.1320 for an adjacent field and 0.0840 for a wholly different domain (n=250 per stratum; 95% Wilson intervals [0.1268,0.2193], [0.0956,0.1796], [0.0556,0.1250]). The different-domain rate is not zero, but a single-reader, unblinded reading of all 21 of its affirmations finds only 6 clearly the endpoint's error; the rest are broad topic labels or work that may belong to the author under another profile, so the rates are upper bounds that carry an oracle error of unknown size. The endpoint's schema-elicited confidence sits at ceiling and does not beat a constant forecast. The result describes one endpoint, one prompt and one window, drawn once, and the ground truth is partly a third-party classifier's output. I claim nothing about the vendor's other products, about other vendors, or about people-search indexes, whose arm stayed unmeasured after five budgets. I also list the defects I found in this repository while preparing the paper. Code, results and pre-registrations are public. Not peer reviewed. Code and protocol: https://github.com/caiotheodoro/titer",
+  "description": "Search-augmented answer APIs are increasingly queried to verify claims about named people, yet false affirmations carry asymmetric downstream costs in expert sourcing and due diligence. We audit one commercial answer endpoint (Exa /answer, one prompt and JSON schema, September 2026, 1250 calls) against verifiable authorship records in OpenAlex and employment filings under SEC Section 16. Asked whether a named researcher has published expertise in a topic, the endpoint confirms 0.9600 (95% Wilson [0.9279,0.9781]) of attested claims (n=250) while affirming claims with no matching work in the author's OpenAlex record at 0.1680 [0.1268,0.2193] for an adjacent subfield (NEAR), 0.1320 [0.0956,0.1796] for an adjacent field (FAR), and 0.0840 [0.0556,0.1250] for a different domain (CONTROL; n=250 each; post-hoc Cochran-Armitage trend z=2.81, p=0.0049 across unpaired draws). Schema-elicited confidence sits at ceiling (91.5% of main-run answers in [0.9, 1.0], mean 0.987 against accuracy 0.889) and performs worse than a constant base-rate forecast (Brier 0.1191 against 0.1005; post-hoc Brier Skill Score -0.1852). An unblinded single-reader inspection of all 21 different-domain affirmations finds 6 (0.0240) clearly attributable to endpoint error, with the rest reflecting broad topic labels or possible split author profiles; the measured rates are therefore upper bounds carrying unquantified error from OpenAlex's third-party classifier. Alongside the empirical findings, we document five measurement failure modes — wire-format mismatch, anchor leakage, parser artifacts, top-N negative contamination, and forced monotonicity — caught only by row-level and bin-level inspection. Every measurement describes one endpoint, one prompt, and one draw; code, results, and frozen pre-registrations are public. Not peer reviewed. Code and protocol: https://github.com/caiotheodoro/titer",
+  "notes": "Work begun 2 September 2026 (first repository commit fad6dc8); paper first compiled and deposited 23 November 2026 (paper-v1.0, Zenodo record 24454863). This version, paper-v2.0, is of 23 November 2026.",
   "keywords": [
+    "expertise verification",
+    "expertise retrieval",
+    "calibration",
     "benchmark auditing",
     "measurement error",
-    "expertise verification",
-    "negative results",
     "pre-registration"
   ],
   "language": "eng",
@@ -176,7 +178,13 @@
     "Brown, L. D., Cai, T. T., & DasGupta, A. (2001). Interval Estimation for a Binomial Proportion. Statistical Science, 16(2), 101-133. https://doi.org/10.1214/ss/1009213286.",
     "Newcombe, R. G. (1998). Interval estimation for the difference between independent proportions: comparison of eleven methods. Statistics in Medicine, 17(8), 873-890.",
     "Lipsitch, M., Tchetgen Tchetgen, E., & Cohen, T. (2010). Negative Controls: A Tool for Detecting Confounding and Bias in Observational Studies. Epidemiology, 21(3), 383-388. https://doi.org/10.1097/EDE.0b013e3181d61eeb.",
-    "Nosek, B. A., Ebersole, C. R., DeHaven, A. C., & Mellor, D. T. (2018). The preregistration revolution. Proceedings of the National Academy of Sciences, 115(11), 2600-2606. https://doi.org/10.1073/pnas.1708274114."
+    "Nosek, B. A., Ebersole, C. R., DeHaven, A. C., & Mellor, D. T. (2018). The preregistration revolution. Proceedings of the National Academy of Sciences, 115(11), 2600-2606. https://doi.org/10.1073/pnas.1708274114.",
+    "Craswell, N., de Vries, A. P., & Soboroff, I. (2005). Overview of the TREC 2005 Enterprise Track. Proceedings of the Fourteenth Text REtrieval Conference (TREC 2005), NIST Special Publication 500-266. https://doi.org/10.6028/NIST.SP.500-266.",
+    "Balog, K., Azzopardi, L., & de Rijke, M. (2006). Formal Models for Expert Finding in Enterprise Corpora. Proceedings of the 29th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR '06), pp. 43-50. https://doi.org/10.1145/1148170.1148181.",
+    "Balog, K., Fang, Y., de Rijke, M., Serdyukov, P., & Si, L. (2012). Expertise Retrieval. Foundations and Trends in Information Retrieval, 6(2--3), 127-256. https://doi.org/10.1561/1500000024.",
+    "Cochran, W. G. (1954). Some Methods for Strengthening the Common $\\chi^2$ Tests. Biometrics, 10(4), 417-451. https://doi.org/10.2307/3001616.",
+    "Armitage, P. (1955). Tests for Linear Trends in Proportions and Frequencies. Biometrics, 11(3), 375-386. https://doi.org/10.2307/3001775.",
+    "Murphy, A. H. (1973). A New Vector Partition of the Probability Score. Journal of Applied Meteorology, 12(4), 595-600. https://doi.org/10.1175/1520-0450(1973)012<0595:ANVPOT>2.0.CO;2."
   ],
-  "version": "paper-v1.0"
+  "version": "paper-v2.0"
 }
