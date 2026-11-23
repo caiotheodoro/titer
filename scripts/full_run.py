@@ -148,6 +148,11 @@ def main() -> int:
     ap.add_argument("--providers", default="ploid,exa,webfloor",
                     help="comma-separated arms to run")
     ap.add_argument("--out", default="full_run.json", help="results filename")
+    ap.add_argument("--window", default=None,
+                    help="replay-cache window, YYYY-MM. Defaults to the current month, "
+                         "which is right for a new run and wrong for a replay: the cache key "
+                         "includes it, so replaying September 2026 results in any later "
+                         "month needs --window 2026-09 or every task misses (D046).")
     ap.add_argument("--max-calls", type=int, default=None,
                     help="hard cap on LIVE calls per provider. The ledger caps "
                          "dollars; this caps credits, which is what a grant is "
@@ -221,7 +226,7 @@ def main() -> int:
     if strata:
         print(f"  strata: {strata}")
 
-    window = datetime.now().strftime("%Y-%m")
+    window = args.window or datetime.now().strftime("%Y-%m")
     cache = ReplayCache(ROOT / "data" / "replay.jsonl")
     arms = build_arms(args.spend, {a.strip() for a in args.providers.split(',')},
                       e2=args.e2)

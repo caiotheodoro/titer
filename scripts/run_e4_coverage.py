@@ -151,6 +151,11 @@ def main() -> int:
     ap.add_argument("--budget-usd", type=float, default=3.0)
     ap.add_argument("--max-calls", type=int, default=520)
     ap.add_argument("--out", default="e4_coverage.json")
+    ap.add_argument("--window", default=None,
+                    help="replay-cache window, YYYY-MM. Defaults to the current month, "
+                         "which is right for a new run and wrong for a replay: the cache key "
+                         "includes it, so replaying September 2026 results in any later "
+                         "month needs --window 2026-09 or every task misses (D046).")
     args = ap.parse_args()
 
     from titer.corpus.scholar import user_agent
@@ -166,7 +171,7 @@ def main() -> int:
     adapter = Exa(transport=exa_transport() if args.spend else None)
     cache = ReplayCache(ROOT / "data" / "replay.jsonl")
     ledger = Ledger(args.budget_usd)
-    window = datetime.now().strftime("%Y-%m")
+    window = args.window or datetime.now().strftime("%Y-%m")
     live = 0
     recs: list[dict] = []
 
