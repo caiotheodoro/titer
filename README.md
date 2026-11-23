@@ -253,7 +253,7 @@ required, recorded as a count and never as an identity.
 
 [`paper/titer.tex`](paper/titer.tex) (`make paper`, needs tectonic): *Affirming Unattested Expertise at Ceiling Confidence: Auditing a Search-Augmented Answer Endpoint and Five Harness Failure Modes* (`paper-v2.0`, D052). Every number is generated from `results/` (including the zero-spend post-hoc statistics in `results/posthoc_stats.json`, D050) by `scripts/export_paper_tables.py` and checked by `tests/test_paper.py`.
 
-The first preprint version (`paper-v1.0`) is deposited on [Zenodo](https://doi.org/10.5281/zenodo.24454863) (D048); `.zenodo.json` is prepared for `paper-v2.0` (D053).
+The current version, `paper-v2.0`, is on [Zenodo](https://doi.org/10.5281/zenodo.24481597) (concept DOI 10.5281/zenodo.24454862; D054). The first preprint version (`paper-v1.0`) was deposited earlier (D048).
 
 ## Data and licence
 

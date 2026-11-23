@@ -8,7 +8,7 @@ authors:
     affiliation: "Avenza Labs"
     orcid: "https://orcid.org/0009-0005-7343-981X"
 date-released: 2026-09-02
-doi: 10.5281/zenodo.24454863
+doi: 10.5281/zenodo.24481597
 repository-code: "https://github.com/caiotheodoro/titer"
 url: "https://huggingface.co/spaces/caiotheodoro/titer"
 license: MIT

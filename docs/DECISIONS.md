@@ -2426,3 +2426,23 @@ until the owner uploads `paper-v2.0` under all-versions DOI 10.5281/zenodo.24454
 
 **Reversal.** If the owner prefers the first PDF compilation date (`2026-11-23`) in metadata,
 `CITATION.cff`, `scripts/export_zenodo.py`, and `.zenodo.json` revert under a later entry.
+
+---
+
+## D054 - `paper-v2.0` published on Zenodo as a new version (2026-11-23)
+
+**Decision.** The `paper-v2.0` PDF is deposited as a new version of the paper's Zenodo concept record.
+
+- Version record: Zenodo record 24481597, DOI 10.5281/zenodo.24481597. Created 2026-11-23 20:36 UTC, published the same day.
+- Concept DOI (all versions): 10.5281/zenodo.24454862. The v1 record 24454863 is unchanged.
+- Publication date on the record: 2026-09-02 (first repository commit `fad6dc8`), per D053.
+- File: `titer.pdf` built from `paper/titer.tex` at commit `d9df9f1`, md5 `9e537defef784f330d360f17110c3e26`. The same md5 is on the Zenodo file and on the GitHub release asset.
+- Metadata (title, creators with ORCID and affiliation, keywords, version, description, related works, license) was taken from `.zenodo.json`. Zenodo stores the description with the em dash as `&mdash;`, which renders the same.
+
+**What can and cannot change.** The file cannot change after publication; Zenodo locks it. The metadata can still be edited on the record, so a metadata fix does not need a new version.
+
+**Not the registration clock.** The deposit is not the registration clock. The record's timestamps are a creation date, not a pre-registration. Pre-registrations stay in `docs/PRE-REGISTRATION*.md` with their own hashes.
+
+**Known gap.** The additional-description note from `.zenodo.json` (the `notes` field) did not persist in the draft through the form editor. The record has no additional description; the same text is in `.zenodo.json` and in D053.
+
+**Reversal.** If the deposit is found to be wrong, the v2 record is corrected by a metadata edit or a new version. The v1 record (24454863) and tag `paper-v1.0` remain. Any later change is recorded under a new dated entry.
