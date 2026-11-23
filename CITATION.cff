@@ -5,6 +5,7 @@ type: article
 authors:
   - family-names: Theodoro
     given-names: Caio
+    affiliation: "Avenza Labs"
     orcid: "https://orcid.org/0009-0005-7343-981X"
 date-released: 2026-09-02
 doi: 10.5281/zenodo.24454863

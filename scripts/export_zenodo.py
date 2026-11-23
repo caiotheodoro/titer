@@ -121,7 +121,9 @@ def build() -> dict:
         "title": TITLE,
         "upload_type": "publication",
         "publication_type": "preprint",
-        "creators": [{"name": "Theodoro, Caio", "orcid": "0009-0005-7343-981X"}],
+        "creators": [
+            {"name": "Theodoro, Caio", "affiliation": "Avenza Labs", "orcid": "0009-0005-7343-981X"}
+        ],
         "publication_date": "2026-09-02",
         "license": "cc-by-4.0",
         "description": desc,

@@ -203,7 +203,9 @@ def test_zenodo_metadata_is_built_from_the_paper() -> None:
     """The deposit can say nothing the paper does not: its abstract, references and ids are derived."""
     committed = json.loads((ROOT / ".zenodo.json").read_text())
     assert committed == ez.build(), "run scripts/export_zenodo.py"
-    assert committed["creators"] == [{"name": "Theodoro, Caio", "orcid": "0009-0005-7343-981X"}]
+    assert committed["creators"] == [
+        {"name": "Theodoro, Caio", "affiliation": "Avenza Labs", "orcid": "0009-0005-7343-981X"}
+    ]
     assert committed["license"] == "cc-by-4.0" and committed["upload_type"] == "publication"
     assert committed["publication_date"] == "2026-09-02"
     assert committed["version"] == "paper-v2.0"
