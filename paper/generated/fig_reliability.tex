@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+\begin{axis}[width=0.62\linewidth,height=6cm,xlabel={mean stated confidence},ylabel={accuracy},xmin=0.3,xmax=1.02,ymin=0.3,ymax=1.02,legend pos=south east,legend cell align=left,legend style={font=\footnotesize,draw=none,fill=none},grid=major,major grid style={dotted,gray!40},tick label style={font=\footnotesize},label style={font=\footnotesize}]
+\addplot[gray,dashed] coordinates {(0.3,0.3) (1.0,1.0)};
+\addlegendentry{perfect calibration}
+\addplot[only marks,mark=*,black] coordinates {(0.0000,0.8750) (0.2400,1.0000) (0.4433,0.5000) (0.6280,1.0000) (0.7600,1.0000) (0.8312,0.8235) (0.9874,0.8892)};
+\addlegendentry{main run (bins with $n \ge 5$)}
+\addplot[only marks,mark=square*,gray] coordinates {(0.0000,0.8333) (0.8486,1.0000) (0.9930,0.9500)};
+\addlegendentry{control run}
+\end{axis}
+\end{tikzpicture}

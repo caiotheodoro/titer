@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+\begin{axis}[width=0.55\linewidth,height=4.2cm,xlabel={false claims affirmed (rate, 95\% Wilson)},xmin=0,xmax=0.26,ytick={1,2,3},yticklabels={NEAR (adjacent subfield),FAR (adjacent field),CONTROL (different domain)},ymin=0.4,ymax=3.6,y dir=reverse,grid=major,major grid style={dotted,gray!40},tick label style={font=\footnotesize},label style={font=\footnotesize}]
+\addplot[black,thick] coordinates {(0.1268,1) (0.2193,1)};
+\addplot[only marks,mark=*,black] coordinates {(0.1680,1)};
+\addplot[black,thick] coordinates {(0.0956,2) (0.1796,2)};
+\addplot[only marks,mark=*,black] coordinates {(0.1320,2)};
+\addplot[black,thick] coordinates {(0.0556,3) (0.1250,3)};
+\addplot[only marks,mark=*,black] coordinates {(0.0840,3)};
+\end{axis}
+\end{tikzpicture}

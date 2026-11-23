@@ -1,0 +1,182 @@
+{
+  "title": "Reading the Rows: Five Instrument Defects in an Audit of an Answer Endpoint, and the One Result That Survived",
+  "upload_type": "publication",
+  "publication_type": "preprint",
+  "creators": [
+    {
+      "name": "Theodoro, Caio",
+      "orcid": "0009-0005-7343-981X"
+    }
+  ],
+  "publication_date": "2026-11-23",
+  "license": "cc-by-4.0",
+  "description": "A published number about a commercial data product is a property of the harness that produced it until someone has looked below the number. This paper is one worked case. I built an instrument that measures how often an API affirms a false claim about a named person, with ground truth taken from SEC Section 16 filings and OpenAlex authorship records. It produced six headline numbers. Five were defects of my measurement: a query packed into the wrong field, a filter that returned the answer, a parser that read names out of page titles, negatives that were true, and an estimator that forced a monotone shape onto a curve that is not monotone. None was visible in the number itself; each surfaced when I read the returned rows or the binned data underneath. The sixth, a corrected version of the fourth, survived three attacks. Asked whether a named researcher has published in a topic, one endpoint (Exa /answer, one prompt, September 2026) confirmed 0.9600 of attested claims and affirmed claims that have no matching work in the author's OpenAlex record at 0.1680 for an adjacent subfield, 0.1320 for an adjacent field and 0.0840 for a wholly different domain (n=250 per stratum; 95% Wilson intervals [0.1268,0.2193], [0.0956,0.1796], [0.0556,0.1250]). The different-domain rate is not zero, but I read all 21 of its affirmations and only 6 are clearly the endpoint's error; the rest are broad topic labels or work that may belong to the author under another profile, so the rates are upper bounds that carry an oracle error of unknown size. The endpoint's self-reported confidence sits at ceiling and does not beat a constant forecast. The result describes one endpoint, one prompt and one window, drawn once, and the ground truth is partly a third-party classifier's output. I claim nothing about the vendor's other products, about other vendors, or about people-search indexes, whose arm stayed unmeasured after five budgets. I also list the defects I found in this repository while preparing the paper. Code, results and pre-registrations are public. Not peer reviewed. Code and protocol: https://github.com/caiotheodoro/titer",
+  "keywords": [
+    "benchmark auditing",
+    "measurement error",
+    "expertise verification",
+    "negative results",
+    "pre-registration"
+  ],
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/caiotheodoro/titer",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://huggingface.co/datasets/caiotheodoro/titer-edgar-officers",
+      "resource_type": "dataset",
+      "scheme": "url"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://huggingface.co/datasets/caiotheodoro/titer-expertise-claims",
+      "resource_type": "dataset",
+      "scheme": "url"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2603.27476",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2411.00640",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2103.14749",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2006.07159",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2406.04127",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2104.02145",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2411.12990",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2405.14782",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2310.11324",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2401.00595",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2304.09848",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2212.08037",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2112.12870",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2202.03629",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2306.13063",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2207.05221",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:1706.04599",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2310.13548",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    },
+    {
+      "relation": "cites",
+      "identifier": "arXiv:2205.01833",
+      "resource_type": "publication-preprint",
+      "scheme": "arxiv"
+    }
+  ],
+  "references": [
+    "Shi, T., Wang, W., Xie, Z., Zhang, S., Xia, B., Zeng, C., Zhang, Q., Ai, L., Yu, Y., Zhang, K., Tang, F., Yu, Z., & Ding, L. (2026). PeopleSearchBench: Evaluating AI-Powered People Search Platforms with Criteria-Grounded Verification. arXiv preprint arXiv:2603.27476.",
+    "Miller, E. (2024). Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations. arXiv preprint arXiv:2411.00640.",
+    "Northcutt, C. G., Athalye, A., & Mueller, J. (2021). Pervasive Label Errors in Test Sets Destabilize Machine Learning Benchmarks. NeurIPS Datasets and Benchmarks Track. arXiv:2103.14749.",
+    "Beyer, L., Hénaff, O. J., Kolesnikov, A., Zhai, X., & van den Oord, A. (2020). Are we done with ImageNet?. arXiv preprint arXiv:2006.07159.",
+    "Gema, A. P., Leang, J. O. J., Hong, G., Devoto, A., Mancino, A. C. M., Saxena, R., He, X., Zhao, Y., Du, X., Madani, M. R. G., Barale, C., McHardy, R., Harris, J., Kaddour, J., van Krieken, E., & Minervini, P. (2024). Are We Done with MMLU?. arXiv preprint arXiv:2406.04127.",
+    "Bowman, S. R., & Dahl, G. E. (2021). What Will it Take to Fix Benchmarking in Natural Language Understanding?. arXiv preprint arXiv:2104.02145.",
+    "Reuel, A., Hardy, A., Smith, C., Lamparth, M., Hardy, M., & Kochenderfer, M. J. (2024). BetterBench: Assessing AI Benchmarks, Uncovering Issues, and Establishing Best Practices. arXiv preprint arXiv:2411.12990.",
+    "Biderman, S., Schoelkopf, H., Sutawika, L., Gao, L., Tow, J., Abbasi, B., et al. (2024). Lessons from the Trenches on Reproducible Evaluation of Language Models. arXiv preprint arXiv:2405.14782.",
+    "Sclar, M., Choi, Y., Tsvetkov, Y., & Suhr, A. (2023). Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting. arXiv preprint arXiv:2310.11324.",
+    "Mizrahi, M., Kaplan, G., Malkin, D., Dror, R., Shahaf, D., & Stanovsky, G. (2024). State of What Art? A Call for Multi-Prompt LLM Evaluation. arXiv preprint arXiv:2401.00595.",
+    "Liu, N. F., Zhang, T., & Liang, P. (2023). Evaluating Verifiability in Generative Search Engines. arXiv preprint arXiv:2304.09848.",
+    "Bohnet, B., Tran, V. Q., Verga, P., Aharoni, R., Andor, D., et al. (2022). Attributed Question Answering: Evaluation and Modeling for Attributed Large Language Models. arXiv preprint arXiv:2212.08037.",
+    "Rashkin, H., Nikolaev, V., Lamm, M., Aroyo, L., Collins, M., Das, D., Petrov, S., Tomar, G. S., Turc, I., & Reitter, D. (2021). Measuring Attribution in Natural Language Generation Models. arXiv preprint arXiv:2112.12870.",
+    "Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., Ishii, E., Bang, Y., Chen, D., Dai, W., Chan, H. S., Madotto, A., & Fung, P. (2022). Survey of Hallucination in Natural Language Generation. arXiv preprint arXiv:2202.03629.",
+    "Xiong, M., Hu, Z., Lu, X., Li, Y., Fu, J., He, J., & Hooi, B. (2023). Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs. arXiv preprint arXiv:2306.13063.",
+    "Kadavath, S., Conerly, T., Askell, A., Henighan, T., Drain, D., et al. (2022). Language Models (Mostly) Know What They Know. arXiv preprint arXiv:2207.05221.",
+    "Guo, C., Pleiss, G., Sun, Y., & Weinberger, K. Q. (2017). On Calibration of Modern Neural Networks. Proceedings of the 34th International Conference on Machine Learning. arXiv:1706.04599.",
+    "Sharma, M., Tong, M., Korbak, T., Duvenaud, D., Askell, A., Bowman, S. R., et al. (2023). Towards Understanding Sycophancy in Language Models. arXiv preprint arXiv:2310.13548.",
+    "Priem, J., Piwowar, H., & Orr, R. (2022). OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts. arXiv preprint arXiv:2205.01833.",
+    "Brown, L. D., Cai, T. T., & DasGupta, A. (2001). Interval Estimation for a Binomial Proportion. Statistical Science, 16(2), 101-133. https://doi.org/10.1214/ss/1009213286.",
+    "Newcombe, R. G. (1998). Interval estimation for the difference between independent proportions: comparison of eleven methods. Statistics in Medicine, 17(8), 873-890.",
+    "Lipsitch, M., Tchetgen Tchetgen, E., & Cohen, T. (2010). Negative Controls: A Tool for Detecting Confounding and Bias in Observational Studies. Epidemiology, 21(3), 383-388. https://doi.org/10.1097/EDE.0b013e3181d61eeb.",
+    "Nosek, B. A., Ebersole, C. R., DeHaven, A. C., & Mellor, D. T. (2018). The preregistration revolution. Proceedings of the National Academy of Sciences, 115(11), 2600-2606. https://doi.org/10.1073/pnas.1708274114."
+  ],
+  "version": "paper-v1.0"
+}

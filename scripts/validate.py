@@ -48,7 +48,7 @@ def gate_spine() -> None:
 EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 PHONE = re.compile(r"(?<!\d)(?:\+?\d{1,2}[ .-]?)?\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}(?!\d)")
 FORBIDDEN_PATH = re.compile(r"(^|/)(docs/private|\.cache|cache)(/|$)")
-SCAN_EXT = {".md", ".txt", ".json", ".py", ".toml", ".csv", ".tsv", ".jsonl"}
+SCAN_EXT = {".md", ".txt", ".json", ".py", ".toml", ".csv", ".tsv", ".jsonl", ".tex", ".bib"}
 # Placeholders that are documentation of a format, not a real contact.
 ALLOW_EMAIL = {"AdminContact@example.com", "you@example.com"}
 
