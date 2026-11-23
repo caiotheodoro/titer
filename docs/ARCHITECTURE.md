@@ -140,7 +140,7 @@ there is no claim.
 
 ## What is deliberately not built
 
-- No Sets integration. Ploid's `/v1/sets` is private preview and its own docs
+- No Sets integration. Provider P's `/v1/sets` is private preview and its own docs
   say not to build a production integration against it.
 - No enrichment calls. Out of scope by `docs/ETHICS.md` section 3, on
   proportionality grounds rather than budget.

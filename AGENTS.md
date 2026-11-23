@@ -46,7 +46,7 @@ Published. Results exist and are in `docs/BENCHMARK.md`.
   0.1320 (adjacent field) and 0.0840 (different domain). It states 0.987
   confidence against 0.889 accuracy. The control arm is not zero, but reading its 21 affirmations shows only 6 are clearly error, so it does not bound the prompt-interpretation or oracle-error objection (D046).
 - **Two formal retractions** (`docs/RETRACTIONS.md`). Five of six headline
-  numbers were artefacts of this harness. **No number about Ploid is claimed.**
+  numbers were artefacts of this harness. **No number about Provider P is claimed.**
 - `MEASUREMENT_CARD.json` reads `PARTIALLY_VERIFIED` and names ten unmet claims.
   It is **generated** by `scripts/refresh_card.py`. Never hand-edit it.
 - **Paper** (`paper/titer.tex`, Zenodo draft, D046): every number is generated from

@@ -163,8 +163,9 @@ What the runs did establish is about query construction, and it is useful:
 What a real measurement would cost is published instead of guessed: **n=49 per
 arm for a ±0.10 half-width, $9.80** at the measured $0.20 per search.
 
-The index was Ploid, named because hiding which surface we failed to measure
-would be its own kind of dishonesty. The full record, defects included, is in
+The index is called Provider P in this tree: no number about it is claimed, so its
+name adds nothing a reader can check. Code identifiers and result file names still
+carry it, and git history names it (D047). The full record, defects included, is in
 [R001](docs/RETRACTIONS.md), [D028](docs/DECISIONS.md),
 [D035](docs/DECISIONS.md) and [D040](docs/DECISIONS.md).
 

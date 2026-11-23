@@ -2,13 +2,13 @@
 
 ## Who sells people resolution
 
-Ploid, Exa (Websets), People Data Labs, Apollo, Clay, ZoomInfo, Cognism and a
-long tail. Two shapes: proprietary indexes (Ploid, PDL, Apollo) and
+Provider P, Exa (Websets), People Data Labs, Apollo, Clay, ZoomInfo, Cognism and a
+long tail. Two shapes: proprietary indexes (Provider P, PDL, Apollo) and
 orchestrators that waterfall over other tools (Clay).
 
 ## What they claim
 
-- **Ploid**: *"the largest living index of people in the world"*, 3B+ people,
+- **Provider P**: *"the largest living index of people in the world"*, 3B+ people,
   *"profiles refresh as people change jobs... so you reason over who someone is
   today, not who they were at the last crawl."* No published accuracy figure. A
   reported CEO interview cites 1.4B against the 3B+ marketing number; the primary
@@ -26,7 +26,7 @@ orchestrators that waterfall over other tools (Clay).
   for people data.
 
 Note the shape of this: the vendor with the strongest freshness claim
-(*"real time"*, Ploid) publishes no accuracy number, and the vendor that
+(*"real time"*, Provider P) publishes no accuracy number, and the vendor that
 publishes an honest freshness cadence (monthly, PDL) publishes no accuracy
 number either. Nobody publishes both, and nobody publishes an interval.
 
@@ -50,7 +50,7 @@ truth, a staleness curve against attested change dates, a calibration of the
 signals a caller gets for free, or a cost-priced decision policy over the
 provider's own tiers.
 
-Ploid's Terms §12 make the gap sharper rather than softer: *"We do not warrant
+Provider P's Terms §12 make the gap sharper rather than softer: *"We do not warrant
 that outputs will be accurate, complete, or suitable for any particular
 decision."* The marketing asserts currency; the contract warrants nothing; and
 no public instrument exists to tell a buyer which is closer to the truth.

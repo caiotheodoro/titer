@@ -26,19 +26,19 @@ different project. `docket` - names the oracle rather than the method.
 ## D002 - Cross-provider, not a single-vendor audit (2026-09-02)
 
 **Decision.** Measure multiple people-search providers behind one adapter layer,
-with Ploid as the lead subject rather than the only subject.
+with Provider P as the lead subject rather than the only subject.
 
 **Rationale.** A single-vendor audit is structurally identical to `vernier`'s
 Build AI play and dies entirely if API access is refused. A category instrument
 survives any one provider saying no, and the cross-provider contrast is the more
 citable claim.
 
-**Evidence.** `/v1/person` is 25 ACU, which is $5.00 at Ploid's published
+**Evidence.** `/v1/person` is 25 ACU, which is $5.00 at Provider P's published
 pay-as-you-go rate of $0.20/ACU. A design that depends on one vendor's goodwill
 at that price is one email from failure.
 
-**Alternatives rejected.** Ploid-only, for the above. All-providers-equally -
-rejected because Ploid is the specific product the work is aimed at, and
+**Alternatives rejected.** Provider P-only, for the above. All-providers-equally -
+rejected because Provider P is the specific product the work is aimed at, and
 pretending otherwise would obscure the motivation.
 
 ---
@@ -129,7 +129,7 @@ search matches. RL needs thousands of episodes. Live rollouts are arithmetically
 impossible, so the only honest options were a simulator with a real-call
 evaluation, or a simulator with no real evaluation at all.
 
-**Evidence.** Ploid pay-as-you-go is $0.20/ACU; `/v1/person` = 25 ACU = $5.00
+**Evidence.** Provider P pay-as-you-go is $0.20/ACU; `/v1/person` = 25 ACU = $5.00
 (the "$2.50 face value" in their docs is the Business seat rate of $0.10/ACU).
 Search is $0.10 per 10 matches. The free-plan credit grant is not published on
 the live pricing page and is budgeted as zero. User holds $5 of credit.
@@ -347,7 +347,7 @@ the same 402. No Space - loses the browsable shop window for the collection.
 ## D017 - Publish first, then a link-first email (2026-09-02)
 
 **Decision.** The artifact is standalone-valid and published before any outreach.
-Outreach is then a short link-first email to Ploid proposing collaboration.
+Outreach is then a short link-first email to Provider P proposing collaboration.
 
 **Rationale.** Naming the goal now prevents the framing drifting into a job
 application by W4, which would bend every README line and make it harder to lead
@@ -380,24 +380,24 @@ for naming exists: PeopleSearchBench and openbenchmarks both name vendors.
 
 ---
 
-## D019 - Provider set fixed: Ploid, Exa, free-web floor. Apollo and PDL excluded. (2026-09-02)
+## D019 - Provider set fixed: Provider P, Exa, free-web floor. Apollo and PDL excluded. (2026-09-02)
 
 **Supersedes the OPEN status of D018.** The Terms of Service gate is resolved.
 
-**Decision.** v1 measures **Ploid**, **Exa**, and a **free web-search floor**.
+**Decision.** v1 measures **Provider P**, **Exa**, and a **free web-search floor**.
 Apollo is excluded from v1 and written benchmark consent is requested in
 parallel. People Data Labs is excluded. Clay is excluded on comparability
 grounds, not legal ones.
 
 **Rationale and evidence, per provider.**
 
-- **Ploid - permitted, and the lowest-risk of the five.** The complete Terms
+- **Provider P - permitted, and the lowest-risk of the five.** The complete Terms
   (last updated 5 April 2026) contain no benchmarking clause, no publicity
   clause, no competitive-analysis clause and no non-disparagement. §4 prohibits
   scraping *"except through documented APIs or features we expressly permit"* -
   which expressly permits exactly what a benchmark harness does. The one
   redistribution limit is qualified: *"Resell, sublicense, or redistribute the
-  Services or outputs in a way that competes with Ploid"*, and a comparative
+  Services or outputs in a way that competes with Provider P"*, and a comparative
   measurement is not a competing product.
 
 - **Exa - permitted on self-serve only.** The click-through ToS contains no
@@ -436,7 +436,7 @@ grounds, not legal ones.
   orchestration quality and answer a different question. Recorded so that its
   absence is not read as a legal finding.
 
-**Alternatives rejected.** Ploid plus floor only - clean, but collapses back to
+**Alternatives rejected.** Provider P plus floor only - clean, but collapses back to
 the single-vendor audit D002 rejected. Gating W2 on consent from all five -
 strongest study, but makes the schedule hostage to vendor replies that may never
 arrive. Anonymising Apollo as "Vendor D" - rejected because §3(f)(vii) forbids
@@ -785,11 +785,11 @@ built to catch in other people's measurements, and we shipped four of them.
 facts disclosed are identical - person name plus the anchor employer - and the
 scored fact is withheld in every rendering.
 
-**Why.** Handing Ploid's `/v1/search` the task prompt verbatim returned **zero
+**Why.** Handing Provider P's `/v1/search` the task prompt verbatim returned **zero
 results**, while a short people-search query against the same index returned
 results. `/v1/search` is documented as taking a query, not a question; Exa's
 `/answer` is documented as an answer engine and takes the question as written.
-Scoring the prompt form against Ploid would have measured our input shape rather
+Scoring the prompt form against Provider P would have measured our input shape rather
 than their index, and produced a fabricated finding - the same failure
 `NotConfigured` exists to prevent.
 
@@ -801,7 +801,7 @@ tasks.
 **Also settled here: spend is read, not assumed.**
 
 - Exa reports `costDollars.total` per call.
-- Ploid reports `meta.credits_charged`, and it is **0** when a search returns
+- Provider P reports `meta.credits_charged`, and it is **0** when a search returns
   nothing - so an empty result is correctly free rather than billed at a list
   price we invented.
 
@@ -810,12 +810,12 @@ value-of-information claim circular. Where a response carries no cost field the
 fallback is tagged `usd_listprice_estimate`, so an assumed figure can never be
 mistaken for a measured one.
 
-**Not yet resolved.** Ploid's `person.title` is a LinkedIn *headline*, not a
+**Not yet resolved.** Provider P's `person.title` is a LinkedIn *headline*, not a
 role title, so its search tier cannot answer the "in what role" half of the
 task. That is passed through to `title_map/v1` unaltered: a headline naming no
 office becomes UNKNOWN and fails the title atom. Inferring a role from the
 headline would put a judged step in the scoring path. Whether this understates
-Ploid is a question for `docs/COVERAGE.md` once there are numbers.
+Provider P is a question for `docs/COVERAGE.md` once there are numbers.
 
 ---
 
@@ -965,11 +965,11 @@ The gap is in the source, not the normalizer, and it is published either way.
 ## D028 - The task must ask what a current-state index can answer (2026-09-03)
 
 **Two harness defects, found within minutes of each other, both of which made
-every Ploid outcome an artefact. Neither is about Ploid.**
+every Provider P outcome an artefact. Neither is about Provider P.**
 
 ### C1 - Filtering on the anchor employer forced the answer
 
-The corrected renderer sent `filters: {"company": <anchor>}`. Ploid's company
+The corrected renderer sent `filters: {"company": <anchor>}`. Provider P's company
 filter selects people **currently at that company**, so constraining it to the
 anchor guaranteed the anchor came back - and the anchor is precisely the answer
 we score as `STALE`. Every task would have been `STALE` by construction, and it
@@ -1012,14 +1012,14 @@ the cumulative figure: from 230,405 people to 16,896 usable tasks, **7.3%**.
 Every narrowing was forced by a mismatch between what we could attest and what
 the surface answers, and each is published rather than quietly applied.
 
-### What this says about the two Ploid runs
+### What this says about the two Provider P runs
 
 Both are void, and R001's diagnosis was **incomplete rather than wrong**. The
 free-text rendering was a real defect. But the corrected rendering had two more,
 and the run that produced 0/21 through the "fixed" harness (20 MISS, 1
-FALSE_MERGE, resolution failing on 20 of 21) was measuring C1 and C2, not Ploid.
+FALSE_MERGE, resolution failing on 20 of 21) was measuring C1 and C2, not Provider P.
 
-**No number about Ploid has survived any of the three runs.** The credits are
+**No number about Provider P has survived any of the three runs.** The credits are
 nearly gone. That is the honest state, and it is recorded rather than rounded
 into a finding.
 
@@ -1039,14 +1039,14 @@ methodology; this is what that gap is made of.
 later rather than asserted now.**
 
 **The claim.** People-search indexes cannot be given a *biographical* constraint.
-Ploid's published filter set is `title`, `seniority`, `company`, `industry`,
+Provider P's published filter set is `title`, `seniority`, `company`, `industry`,
 `location` - every field describes a person's **current state**. No query can
 express *"the Jane Chen who was at X in 2019."* Where a name collides, the
 caller therefore has no way to hand over the one piece of context that would
 disambiguate, and the index returns *a* Jane Chen rather than *the* one.
 
 **Why it is NOT the explanation for our results.** Four defects in our own
-harness were each independently sufficient to produce the Ploid outcomes we saw
+harness were each independently sufficient to produce the Provider P outcomes we saw
 (R001, D028). Attributing those to a product gap would be exactly the error this
 repository exists to name. Concretely, the one clean observation runs the other
 way: `{"query": "George Reyes", "filters": {"company": "Google"}}` returned the
@@ -1140,12 +1140,12 @@ identity spine; OpenAlex and DOIs carry the attestation.
 - A new frozen `docs/PRE-REGISTRATION-EXPERTISE.md`, hash-published. **The
   original pre-registration is never edited.** Its H1-H4 remain live for the
   EDGAR arm - unfinished, not falsified.
-- Ploid enters as an **architectural argument, explicitly unmeasured**, grounded
+- Provider P enters as an **architectural argument, explicitly unmeasured**, grounded
   in their own published filter set. Credits are exhausted and D029 is a
   hypothesis.
 - The product argument is *not* "sell search to expert platforms" - they build
   that. It is: the unserved need is institution-attested verification at API
-  speed, and Ploid already has the right architecture, missing the attestation
+  speed, and Provider P already has the right architecture, missing the attestation
   chain behind the word "verified" and a biographical input.
 
 **Alternatives rejected.** A strategy memo alone - produces no evidence, which is
@@ -1350,9 +1350,9 @@ falsification, which is the best value per dollar in this project.
 
 ## D035 - Four more harness defects, found by one pilot call before the budget (2026-09-04)
 
-A $5 Ploid top-up arrived. R001's rule is that before spending a budget on an
+A $5 Provider P top-up arrived. R001's rule is that before spending a budget on an
 arm, one task goes through it and the returned rows are read verbatim. That
-single call, plus two follow-ups, found **four defects**. None is about Ploid.
+single call, plus two follow-ups, found **four defects**. None is about Provider P.
 
 ### C3 - A Section 16 filer is not always a human
 
@@ -1442,7 +1442,7 @@ ranks against all of it.
 
 ### Outcome of the fourth budget
 
-**The run is void, and no number about Ploid is claimed. Again.**
+**The run is void, and no number about Provider P is claimed. Again.**
 
 `results/ploid_v4.json` records 0 correct of 18 (band `unique`, seed 23,
 $3.60). It is not reportable: C7 was live during it, proven on a task inside
@@ -1464,7 +1464,7 @@ What the rows do show, and what they do not:
 | ±0.10 | 49 | $9.80 |
 | ±0.05 | 196 | $39.20 |
 
-The measured cost is **$0.20 per search**, twice Ploid's published $0.10-per-10-
+The measured cost is **$0.20 per search**, twice Provider P's published $0.10-per-10-
 matches, because a live call reports `meta.credits_charged = 1` at $0.20/ACU.
 Publishing that number is the pre-registered `cannot_separate` branch doing its
 job: this budget could not separate anything, and the `n` that would is now on
@@ -1731,7 +1731,7 @@ text moves the correct rate from 0.05 to 0.20 at `low`, and from **0 of 80** to
 **structured filters** - `title`, `seniority`, `company`, `industry`,
 `location`, all current-state. Exa `/answer` is an answer engine and reads free
 text, so it was never the surface the argument was about. Falsifying it here
-does not falsify it for a filter-based index; the within-provider Ploid arm is
+does not falsify it for a filter-based index; the within-provider Provider P arm is
 that test.
 
 **The unexpected half.** `D - C` separates only at `low`. Handing over the
@@ -1752,7 +1752,7 @@ falsifiable, and it did not survive contact.
 
 ---
 
-## D040 - Two defects I introduced, and the Ploid arm they cost (2026-09-04)
+## D040 - Two defects I introduced, and the Provider P arm they cost (2026-09-04)
 
 Recorded because the record is the product, and these were committed by the
 tooling rather than caught by it.
@@ -1786,7 +1786,7 @@ now folds the arm back onto the provider that billed it. Corrected:
 
 ### The arm itself
 
-Ploid, within-provider, `medium` band, n=12 per arm, $4.00. Both arms **0
+Provider P, within-provider, `medium` band, n=12 per arm, $4.00. Both arms **0
 correct**. The difference is in resolution, not accuracy: name-only left 11 of
 12 as `colliding_name_no_employer` and resolved nothing; the filter resolved 3,
 and 2 of those came back `STALE` - the **anchor**, exactly as D028 C1 predicted
@@ -1797,7 +1797,7 @@ at n=12 with zero correct in both arms is not evidence**. The paired interval
 `0.0000 [0.0000, 0.0000]` is degenerate, not a null result. Required n is 49 per
 arm for a ±0.10 half-width, $9.80 per arm; this budget bought 12.
 
-**Five budgets, no Ploid accuracy number.** Unchanged, and stated rather than
+**Five budgets, no Provider P accuracy number.** Unchanged, and stated rather than
 softened.
 
 ---
@@ -2177,3 +2177,38 @@ never published, the paper stays in `paper/` and nothing else here depends on it
 **Addendum, 2026-11-23: the draft.** The Zenodo draft is record 24454863, unpublished, uploaded from
 `paper/titer.pdf` built by `make paper`, metadata from `.zenodo.json`. It has no DOI yet; none is
 claimed. Publishing it is a separate act and, if it happens, gets its own entry with its real date.
+
+
+---
+
+## D047 - The people-index vendor is called Provider P in the current tree (2026-11-23)
+
+**Decision.** In the current tree, the vendor of the people-search index whose arm stayed
+unmeasured is called Provider P in the README, `AGENTS.md`, `llms.txt`, the Space page and every
+non-frozen document under `docs/`, including this log and `RETRACTIONS.md`, where the name was
+replaced word for word and no claim was changed. The paper never named it.
+
+**Why.** No number about it is claimed, so the name lets a reader attach eight defects of my
+harness and a string of zero-correct runs to a product through the link to this repository. Naming
+it earlier was defended as honesty about which surface went unmeasured; the paper keeps that honesty
+by saying that the arm exists and was unmeasured, without naming the product.
+
+**What was kept, and why.**
+- Git history still carries the name in every earlier commit. It is not rewritten.
+- `docs/PRE-REGISTRATION.md`, `docs/PRE-REGISTRATION-EXPERTISE.md` and `CONTRACTS.md` are frozen and
+  hash-gated; they still name the vendor, and are not edited.
+- Result file names (`results/ploid_*.json`, `results/e2_ploid_medium.json`) are cited by path in
+  this log and by the paper's exporter and tests. Renaming them would break citations in text this
+  entry is not rewriting, so the file names stay and the paper reads them as "the Provider P files".
+- Code identifiers (`class Ploid`, the `ploid` arm key, adapter tests and the vendor's documented API
+  paths) stay: the adapter calls that vendor's documented API and replaying its cached runs needs
+  the name. Result files contain provider-supplied strings (for example an index name) that are
+  quoted data.
+- `MEASUREMENT_CARD.json` keeps the `ploid` spend key because `refresh_card.py` attributes spend
+  by the cache's provider field.
+
+**Counterfactual.** Left as it was, the repository would keep attaching harness defects to a named
+product after the paper had decided not to.
+
+**Reversal.** If a reason appears to name the vendor again, a new entry restores it; the record is
+in git history either way.

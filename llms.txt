@@ -22,7 +22,7 @@ and no verdict; the 203/250 figures of D045 are withdrawn, D046). A12's citation
 adjacent-false ones about a quarter, and CONTROL ones 0.0000 - zero of
 twenty-one (D044). H2 is FALSIFIED - false merges do not
 rise with collision (3, 0, 1, 0 events; intervals overlap; D041, D042, D046).
-Five budgets, still no Ploid accuracy number.
+Five budgets, still no Provider P accuracy number.
 
 Headline: Exa confirms attested expertise at 0.9600 [0.9279, 0.9781] and affirms
 claims about topics the person has never published in at 0.1680 (adjacent
@@ -47,7 +47,7 @@ supports a claim about the category.
 ## Honesty surface
 
 - [RETRACTIONS](docs/RETRACTIONS.md): two formal retractions. R001 voids the
-  entire Ploid arm; R002 voids the raw expertise rates.
+  entire Provider P arm; R002 voids the raw expertise rates.
 - [COVERAGE](docs/COVERAGE.md): what this cannot see, in PeopleSearchBench's
   vocabulary rather than ours. 7.3% of the EDGAR population is usable.
 - [RED-TEAM](docs/RED-TEAM.md): 17 attacks on our own claims; 8 carried LIVE,

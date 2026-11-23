@@ -65,9 +65,9 @@ published result is "this budget cannot separate these providers, and here is
 the `n` that would." The attack is correct that a small `n` limits the claim; it
 is wrong that this is discovered after the fact.
 
-## A6. "You excluded the providers that would have beaten Ploid." · MITIGATED
+## A6. "You excluded the providers that would have beaten Provider P." · MITIGATED
 
-Apollo and PDL are absent, and Ploid is the lead subject.
+Apollo and PDL are absent, and Provider P is the lead subject.
 
 **Status: MITIGATED, and worth checking.** Both exclusions are contractual, with
 the prohibiting clause quoted verbatim in `docs/DECISIONS.md` D019, and
@@ -126,9 +126,9 @@ The residual: we still query commercial providers with real people's names. That
 is unavoidable for the measurement to exist, it is within each provider's Terms,
 and the responses are stripped of contact fields before they touch disk.
 
-## A11. "Ploid's Terms disclaim accuracy, so there is no claim to test." · OPEN
+## A11. "Provider P's Terms disclaim accuracy, so there is no claim to test." · OPEN
 
-Ploid §12: *"We do not warrant that outputs will be accurate, complete, or
+Provider P §12: *"We do not warrant that outputs will be accurate, complete, or
 suitable for any particular decision."*
 
 **Status: OPEN, and it cuts both ways.** It is a fair objection to framing this
@@ -249,7 +249,7 @@ tracks people after they leave public companies). Not run. Until it is, H1 is
 
 ## A16. "One provider is not a benchmark." · LIVE
 
-Every surviving number describes **Exa**. Ploid is retracted, the web floor is
+Every surviving number describes **Exa**. Provider P is retracted, the web floor is
 a parser artefact, and no other provider was measured.
 
 **Status: LIVE and unfixable at this budget.** Nothing here supports a claim

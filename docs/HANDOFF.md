@@ -25,7 +25,7 @@ What to run, and what not to do. Read before touching anything.
 
 ## Published rate limits must reach the transport
 
-Ploid Free is **10 requests/minute**. That number was in the budget ledger below
+Provider P Free is **10 requests/minute**. That number was in the budget ledger below
 from W2 and never made it into `http.py`, which fired at 60/min and drew 14
 consecutive 429s - wasting most of a run on a grant denominated in credits.
 Rate-limited calls are not charged, so nothing was lost but time; a paid 429
@@ -46,7 +46,7 @@ eponymous small businesses is what a malformed query looks like, not what a
 missing person looks like.
 
 Corollary: check the provider's documented request shape against what the
-adapter actually sends. Ploid documents structured `filters`; we were putting
+adapter actually sends. Provider P documents structured `filters`; we were putting
 the company in the free text.
 
 ## The cited-path gate and clean clones
@@ -107,16 +107,16 @@ upload fails validation, not silently.
 
 | Item | Value | Source |
 |---|---|---|
-| Ploid pay-as-you-go | $0.20 / ACU | live pricing page, 2026-09-02 |
-| Ploid `/v1/person` | 25 ACU = **$5.00** PAYG | docs say "$2.50 face value"; that is the Business seat rate of $0.10/ACU |
-| Ploid search | $0.10 per 10 matches | live pricing page |
-| Ploid free-plan credits | **not published**, budgeted as zero | absent from the live page; the "200 credits" figure circulating in search snippets is from a superseded pricing model |
-| Ploid rate limit | Free 10 rpm, PAYG 30 rpm | errors-and-limits doc |
+| Provider P pay-as-you-go | $0.20 / ACU | live pricing page, 2026-09-02 |
+| Provider P `/v1/person` | 25 ACU = **$5.00** PAYG | docs say "$2.50 face value"; that is the Business seat rate of $0.10/ACU |
+| Provider P search | $0.10 per 10 matches | live pricing page |
+| Provider P free-plan credits | **not published**, budgeted as zero | absent from the live page; the "200 credits" figure circulating in search snippets is from a superseded pricing model |
+| Provider P rate limit | Free 10 rpm, PAYG 30 rpm | errors-and-limits doc |
 | Exa free tier | $20 on signup + $10/month recurring | pricing page |
 | Exa rate limit | `/search` 10 QPS | rate-limits doc |
-| Available | **$5 Ploid credit** | user, 2026-09-02 |
+| Available | **$5 Provider P credit** | user, 2026-09-02 |
 
-Do not build cost models from cached search snippets. The live Ploid page and
+Do not build cost models from cached search snippets. The live Provider P page and
 the snippets disagree on the entire pricing model.
 
 ## Source access notes

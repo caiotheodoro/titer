@@ -159,7 +159,7 @@ most. Context helps everywhere and helps most where it is most needed.
    population, and it is the number that makes the other arms interpretable.
 
 **Scope, stated rather than assumed.** D029 is a claim about people-search
-indexes with **structured filters** - Ploid's documented `title`, `seniority`,
+indexes with **structured filters** - Provider P's documented `title`, `seniority`,
 `company`, `industry`, `location`, every one a current-state field. Exa
 `/answer` is an answer engine, a different surface, and falsifying the claim
 there does not falsify it for a filter-based index. Arm B is the within-provider
@@ -171,7 +171,7 @@ D032 applies too: a colliding sample is deliberately enriched, case-control, so
 
 ### E2 arm B: the filter-based surface, where D029 was actually aimed
 
-Ploid, within-provider, `medium` band, n=12 per arm, paired, $4.00. **Both arms
+Provider P, within-provider, `medium` band, n=12 per arm, paired, $4.00. **Both arms
 scored 0 correct**, so no accuracy claim is made and none can be.
 
 | | A: name only | B: name + documented `company` filter |
@@ -182,7 +182,7 @@ scored 0 correct**, so no accuracy claim is made and none can be.
 | `colliding_name_no_employer` | **11** | 0 |
 
 **Read the resolution column, not the outcome column.** With the name alone,
-11 of 12 queries returned people whose employer Ploid did not give, so the
+11 of 12 queries returned people whose employer Provider P did not give, so the
 collision could not be broken and nothing could be scored. With the filter, 3
 resolved - and 2 of those came back as `STALE`, meaning the row returned was
 the **anchor**, which is what D028 C1 predicted a current-state company filter
@@ -198,7 +198,7 @@ degenerate and must not be read as "no difference".
 p=0.15, which is **$9.80 per arm** at the measured $0.20 per search. This
 budget bought 12.
 
-**Five budgets, no Ploid accuracy number.** That remains the honest state.
+**Five budgets, no Provider P accuracy number.** That remains the honest state.
 
 ## H2: false merges are NOT measurable here, and the strata were never the budget
 
@@ -343,7 +343,7 @@ Random sampling put 251 of 299 tasks in the `unique` band and 2 in `high`. The
 per-band false-merge cells are empty by construction. H2's "increasing in d"
 claim is untouched by this run.
 
-### Ploid is unmeasured.
+### Provider P is unmeasured.
 
 Three runs, three harness defects, no surviving number. See
 `docs/RETRACTIONS.md` R001 and `docs/DECISIONS.md` D028.

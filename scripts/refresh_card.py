@@ -84,7 +84,7 @@ def main() -> int:
         "rationale": (
             "E1 and E3 are measured on verified negatives and survived attack. The "
             "employment study's H1 is mis-specified, H2's strata were empty by "
-            "construction, and the Ploid arm is retracted. A card that always exits "
+            "construction, and the Provider P arm is retracted. A card that always exits "
             "zero is decoration; this one names what is not established."),
         "code_state": {
             "python_loc": live_loc(),
@@ -137,7 +137,7 @@ def main() -> int:
             "E4: NO RESULT. 500 responses were collected ($2.50) but the committed results/e4_coverage.json records 4 of 250 scholar rows scored and NO VERDICT. The 203/250 figures quoted in earlier text (D045) have no surviving artifact and are withdrawn until the scholar arm is re-scored (D046). SEC arm: 250/250 scored at 0.1800 [0.1373,0.2324].",
             "H1 staleness: mis-specified - non-monotone, so no half-life exists (D033).",
             "H2: RUN and FALSIFIED as predicted (D041, corrected by D042, wording corrected by D046). FALSE_MERGE does not rise with collision degree: 0.0375 / 0.0000 / 0.0125 / 0.0000 across unique/low/medium/high, n=80 each (3, 0, 1, 0 events). The Wilson intervals overlap, so the data show no rise, not a fall. A plausible reason is that on a colliding name the provider mostly cannot name anyone resolvable and the outcome is MISS rather than a wrong identity. Never a budget problem: the W3 random draw left three of four bands empty (D027) and E2's stratified draw resolved it for $0.",
-            "Ploid: unmeasured after FIVE budgets (R001, D028, D035, D040). Eight query-construction defects (D046 recount), then a fifth arm too small to claim: 0 of 12 on both renderings. No accuracy number is claimed. What it would cost to know is published instead: n=49 per arm for a +/-0.10 half-width, $9.80 per arm at the measured $0.20 per search.",
+            "Provider P: unmeasured after FIVE budgets (R001, D028, D035, D040). Eight query-construction defects (D046 recount), then a fifth arm too small to claim: 0 of 12 on both renderings. No accuracy number is claimed. What it would cost to know is published instead: n=49 per arm for a +/-0.10 half-width, $9.80 per arm at the measured $0.20 per search.",
             "Trivial floor: withdrawn as a parser artefact, never validly measured.",
             "R4: a policy IS trained and clears the seed gate (0.0461 vs -0.1000, SD 0.0122 = 0.08x the margin, 6 seeds). It is a 130-parameter linear model on a simulator, not the 8B/4B W6 promised (D036), and it learned selectivity but not calibration - it states confidence 1.0 on every answer at 64% accuracy.",
         ],
